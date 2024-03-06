@@ -1,0 +1,23 @@
+{
+    "test1" : {
+        "models" : {
+            "Left Hand" : "hand_l.gltf",
+            "Right Hand" : "hand_r.gltf",
+            "Torso" : "Male_Parts/body_meshes_male_torso.stl"
+        },
+        "senseList" : ["pressure", "poke", "sparkle"]
+    },
+    "test2" : {
+        "models" : {
+            "1" : "Male_Forearms_R.gltf",
+            "2" : "Male_Hands_L.gltf",
+            "3" : "Male_Hands_R.gltf",
+            "4" : "Male_Head.gltf",
+            "5" : "Male_Legs_L.gltf",
+            "6" : "Male_Legs_R.gltf",
+            "7" : "Male_Torso.gltf",
+            "8" : "Female_Head.gltf"
+        },
+        "senseList" : ["sorrow", "elation", "jubilance", "ennui", "maleficence"]
+    }
+}
