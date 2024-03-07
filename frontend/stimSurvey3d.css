@@ -1,0 +1,204 @@
+:root {
+    --uiElementColor: #dedede;
+    --uiElementContrast: #676767;
+    --buttonColor: #6973AC;
+    --buttonActiveColor: #4d547e;
+    --sideWidth: 25%;
+    --bottomHeight: 48px;
+}
+
+html {
+    color: white;
+}
+
+.sidebar {
+    height: 100%;
+    width: var(--sideWidth);
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bottombar {
+    height: var(--bottomHeight);
+    width: calc(100% - var(--sideWidth));
+    position: fixed;
+    z-index: 1000;
+    left: var(--sideWidth);
+    bottom: 0;
+    background-color: #111;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    justify-content: left;
+    align-items: flex-start;
+}
+
+.tabContent {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    width:75%;
+    height:100%;
+    flex-direction: column;
+}
+
+.content {
+    height: calc(100% - var(--bottomHeight));
+    width: 75%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 25%;
+    overflow-x: hidden;
+}
+
+.imageButton {
+    border: 2px solid transparent;
+    background: none;
+}
+
+.imageButton:hover {
+    border: 2px solid var(--uiElementColor);
+    border-radius: 5px;
+    cursor: pointer;
+    background: none;
+}
+
+.imageButton.active {
+    border: 2px solid var(--buttonColor);
+    border-radius: 5px;
+    background: none;
+}
+
+.eyeButton {
+    border: 2px solid transparent;
+    padding: 4px !important;
+    background: none;
+}
+
+.eyeButton:hover {
+    border: 2px solid var(--uiElementColor);
+    border-radius: 5px;
+    cursor: pointer;
+    background: none;
+}
+
+.imageInButton {
+    width: 100px;
+}
+
+.square {
+    height: 25px;
+    width: 25px;
+    outline: 2px solid white;
+}
+
+.waitBox {
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    z-index: 1001;
+    position: fixed;
+    justify-content:center;
+    align-items:center;
+    font-size: 72px;
+    top: 0;
+    left: 0;
+}
+
+button {
+    background-color: var(--buttonColor);
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 16px;
+    margin: 4px 8px;
+    cursor: pointer;
+    float: left;
+    border-radius: 5px;
+}
+
+html {
+    font-family: sans-serif;
+}
+
+p {
+    font-size: 16px;
+    color: white;
+    margin: 8px 8px;
+}
+
+button:hover {
+    background-color: var(--buttonColor);
+}
+
+button:active {
+    background-color: var(--buttonActiveColor);
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 216px;
+    height: 8px;
+    border-radius: 5px;
+    background: var(--uiElementColor);
+    outline: none;
+    opacity: 0.9;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+  
+input[type="range"]:hover {
+    opacity: 1;
+}
+  
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--buttonColor);
+    cursor: pointer;
+}
+  
+input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--buttonColor);
+    cursor: pointer;
+}
+
+select {
+    height: 32px;
+    font-size: 16px;
+    width:100%;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+table {
+    font-family: sans-serif;
+    font-weight: normal;
+    color: white;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    table-layout: fixed;
+}
+
+th, td {
+    padding: 4px;
+}
