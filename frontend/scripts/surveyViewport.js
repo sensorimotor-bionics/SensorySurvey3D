@@ -16,7 +16,7 @@ export class SurveyViewport {
         Sets up classes needed to operate the 3D environment of the survey.
 
         Inputs:
-            parentElement: Object
+            parentElement: Element
                 The element you want to parent the viewport
     */
     constructor(parentElement) {

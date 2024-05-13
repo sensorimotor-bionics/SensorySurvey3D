@@ -123,7 +123,7 @@ button {
     text-align: center;
     text-decoration: none;
     display: block;
-    font-size: 16px;
+    font-size: 24px;
     margin: 4px 8px;
     cursor: pointer;
     float: left;
@@ -135,7 +135,7 @@ html {
 }
 
 p {
-    font-size: 16px;
+    font-size: 24px;
     color: white;
     margin: 8px 8px;
 }
