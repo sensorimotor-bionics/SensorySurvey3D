@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import * as VP from '../scripts/surveyViewport'
 import * as SVY from '../scripts/survey'
+import * as COM from '../scripts/common'
 
 document.title = "Participant - SensorySurvey3D"
 
@@ -11,6 +12,12 @@ var surveyManager;
 
 const socketURL = "ws://127.0.0.1:8000/participant-ws";
 var socket;
+
+/*  socketConnect
+	Connects to the survey's backend via websocket to enable data transfer. Surveys
+	are unable to start unless the backend is connected as the survey begins.
+	Attempts to reconnect every second if not connected.
+*/
 
 function socketConnect() {
     socket = new WebSocket(socketurl);
@@ -41,6 +48,9 @@ function socketConnect() {
 	}
 }
 
+/* USER INTERFACE */
+
+
 /* STARTUP CODE */
 
 window.onload = function() {
@@ -52,6 +62,9 @@ window.onload = function() {
 
     // Start the websocket
     socketConnect();
+
+	/* ARRANGE USER INTERFACE */
+
 
     /* EVENT LISTENERS */
 

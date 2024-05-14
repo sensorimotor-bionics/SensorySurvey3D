@@ -16,8 +16,6 @@ html {
     width: var(--sideWidth);
     position: fixed;
     z-index: 1000;
-    top: 0;
-    left: 0;
     background-color: #111;
     overflow-x: hidden;
     display: flex;
@@ -30,8 +28,6 @@ html {
     width: calc(100% - var(--sideWidth));
     position: fixed;
     z-index: 1000;
-    left: var(--sideWidth);
-    bottom: 0;
     background-color: #111;
     overflow: hidden;
     display: flex;
