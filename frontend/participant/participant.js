@@ -20,9 +20,9 @@ var socket;
 */
 
 function socketConnect() {
-    socket = new WebSocket(socketurl);
+    socket = new WebSocket(socketURL);
 
-	socket.onopen = () => startWaiting();
+	socket.onopen = () => console.log("Socket connected!");
 
 	socket.onmessage = (event) => {
 		const msg = JSON.parse(event.data);
@@ -36,7 +36,7 @@ function socketConnect() {
 	}
 
 	socket.onclose = function() {
-		console.log("Connection to websocket @ ", socketurl, " closed. Attempting reconnect in 1 second.");
+		console.log("Connection to websocket @ ", socketURL, " closed. Attempting reconnect in 1 second.");
 		setTimeout(function() {
 			socketConnect();
 		}, 1000);
@@ -50,6 +50,12 @@ function socketConnect() {
 
 /* USER INTERFACE */
 
+/*  revealEditorTabs
+	Reveals the "Draw" and "Qualify" tabs at the top of the sidebar.
+*/
+function revealEditorTabs()	{
+	
+}
 
 /* STARTUP CODE */
 
@@ -58,13 +64,14 @@ window.onload = function() {
     viewport = new VP.SurveyViewport(document.getElementById("3dContainer"));
 
     // Start the survey manager
-    surveyManager = SVY.SurveyManager();
+    surveyManager = new SVY.SurveyManager();
 
     // Start the websocket
     socketConnect();
 
 	/* ARRANGE USER INTERFACE */
-
+	COM.openSidebarTab("perceptTab");
+	COM.placeUI(COM.UI_POSITIONS.LEFT, COM.UI_POSITIONS.TOP)
 
     /* EVENT LISTENERS */
 

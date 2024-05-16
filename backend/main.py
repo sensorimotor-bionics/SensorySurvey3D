@@ -15,12 +15,12 @@ app = FastAPI()
 #     naturalness: int
 #     pain: int
 
-class Percept():
+class Survey():
     participant: str = ""
     config: dict = {}
     date: str = ""
     time: str = ""
-    sensations: list = []
+    percepts: list = []
 
     def toDict(self):
         return {
@@ -28,7 +28,7 @@ class Percept():
             "config": self.config,
             "date": self.date,
             "time": self.time,
-            "sensations": self.sensations
+            "percepts": self.percepts
         }
     
     def dateTimeNow(self):
@@ -48,9 +48,10 @@ currentSurvey = None
 def newSurvey(participant: str):
     global currentSurvey
     if currentSurvey == None:
-        currentSurvey = Percept()
+        currentSurvey = Survey()
         currentSurvey.participant = participant
         currentSurvey.config = jh.getDictionaryFromFile(CONFIG_PATH, "participant_config.json")[participant]
+        currentSurvey.dateTimeNow()
     else:
         print("Cannot begin new survey; there is already an ongoing survey.")
 

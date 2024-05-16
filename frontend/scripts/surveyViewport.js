@@ -24,6 +24,11 @@ export class SurveyViewport {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xffffff);
 
+        // Get the current style
+        var style = window.getComputedStyle(parentElement, null);
+		var width = parseInt(style.getPropertyValue("width"));
+		var height = parseInt(style.getPropertyValue("height"));
+
         // Create the camera
         this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
 
@@ -32,10 +37,10 @@ export class SurveyViewport {
 		this.renderer.setPixelRatio(window.devicePixelRatio);
 
         // Place the renderer element into the webpage
-        this.document.getElementById(parentElement).appendChild(this.renderer.domElement);
+        parentElement.appendChild(this.renderer.domElement);
 
         // Set up controls
-        this.controls = new OrbitControls(camera, renderer.domElement);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controlState = controlStates.CAMERA;
         this.toCamera();
         
@@ -43,16 +48,16 @@ export class SurveyViewport {
 
         // Set an ambient level of light so that all sides of the mesh are lit
 		this.ambientLight = new THREE.AmbientLight(0x404040, 15);
-		this.scene.add(ambientLight);
+		this.scene.add(this.ambientLight);
 
 		// Place lights above and below the mesh
 		this.light1 = new THREE.DirectionalLight(0xffffff, 4);
-		light1.position.set(2.75, 2, 2.5).normalize();
-		this.scene.add(light1);
+		this.light1.position.set(2.75, 2, 2.5).normalize();
+		this.scene.add(this.light1);
 
 		this.light2 = new THREE.DirectionalLight(0xffffff, 3);
-		light2.position.set(-2.75, -2, -2.5).normalize();
-		this.scene.add(light2);
+		this.light2.position.set(-2.75, -2, -2.5).normalize();
+		this.scene.add(this.light2);
 
         // Set initial camera position and save them
 		this.camera.position.set(0,0.75,0.75);

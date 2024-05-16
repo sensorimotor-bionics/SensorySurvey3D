@@ -23,7 +23,9 @@ export function placeUI(rightleft, topbottom) {
     var sidebars = document.getElementsByClassName("sidebar");
     var widthbars = document.getElementsByClassName("widthbar");
 
-    sidebarWidth = getComputedStyle(document.body).getPropertyValue("--sideWidth");
+    var sidebarWidth = getComputedStyle(document.body).getPropertyValue("--sideWidth");
+
+    sidebars[0].style.top = "0px";
 
     switch(rightleft) {
         case UI_POSITIONS.RIGHT:
@@ -52,4 +54,22 @@ export function placeUI(rightleft, topbottom) {
     }
 
     return true;
+}
+
+/*  openTab
+	Gets the element with the given ID, sets its display to "flex", then sets the
+	displays of all sidebarTab elements to "none". Enables switching between tabs.
+
+	Inputs:
+		tabID: str
+			The ID of the element you want to switch to; should be a sidebarTab element
+*/
+export function openSidebarTab(tabID) {
+    var i, tabContent, tab;
+	tab = document.getElementById(tabID);
+    tabContent = document.getElementsByClassName("sidebarTab");
+    for (i = 0; i < tabContent.length; i++) {
+        tabContent[i].style.display = "none";
+    }
+    tab.style.display = "flex";
 }

@@ -6,14 +6,67 @@
     <body>
 
         <div class="sidebar">
-            
+            <div id="tabSelector">
+                <button>Draw</button>
+                <button>Qualify</button>
+            </div>
+
+            <div id="perceptTab" class="sidebarTab">
+                <table style="width:100%" id="senseList">
+                    <thead>
+                        <th>Color</th>
+                        <th>Name</th>
+                        <th>View</th>
+                        <th>Edit</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <br>
+                <button id="newSense">New</button>
+                <button id="submitSurvey">Submit</button>
+            </div>
+
+            <div id="drawTab" class="sidebarTab">
+                <button id="cameraButton" class="paletteButton active">Camera</button><br>
+                <button id="panButton" class="paletteButton">Pan</button><br>
+                <button id="paintButton" class="paletteButton">Paint</button><br>
+                <button id="eraseButton" class="paletteButton">Erase</button>
+            </div>
+
+            <div id="qualifyTab" class="sidebarTab">
+                <div>
+                    <p>Intensity: <span id="intensityValue"></span></p>
+                    <div style="display:flex; flex-direction:row; align-items: center;">
+                        <p style="width:75px; text-align: right;">Faint</p>
+                        <input type="range" min="0" max="10" value="5.0" step="0.1" class="slider" id="intensitySlider">
+                        <p style="width:75px;">Intense</p>
+                    </div>
+                </div>
+                <div>
+                    <p>Naturalness: <span id="naturalnessValue"></span></p>
+                    <div style="display:flex; flex-direction:row; align-items: center;">
+                        <p style="width:75px; text-align: right;">Natural</p>
+                        <input type="range" min="0" max="10" value="5.0" step="0.1" class="slider" id="naturalnessSlider">
+                        <p style="width:75px;">Unnatural</p>
+                    </div>
+                </div>
+                <div>
+                    <p>Pain: <span id="painValue"></span></p>
+                    <div style="display:flex; flex-direction:row; align-items: center;">
+                        <p style="width:75px; text-align: right;">None</p>
+                        <input type="range" min="0" max="10" value="0" step="0.1" class="slider" id="painSlider">
+                        <p style="width:75px;">Worst</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="widthbar">
-        
+            <button>Hi</button>
         </div>
 
-        <div id="3dContainer" class="content"></div>
+        <div id="3dContainer" class="threeDContainer"></div>
 
     </body>
     <script type="module" text="text/javascript" src="participant.js"></script>

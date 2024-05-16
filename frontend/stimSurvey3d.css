@@ -37,7 +37,7 @@ html {
     align-items: flex-start;
 }
 
-.tabContent {
+.sidebarTab {
     display:flex;
     justify-content:center;
     align-items:center;
@@ -46,7 +46,7 @@ html {
     flex-direction: column;
 }
 
-.content {
+.threeDContainer {
     height: calc(100% - var(--bottomHeight));
     width: 75%;
     position: fixed;
@@ -56,19 +56,19 @@ html {
     overflow-x: hidden;
 }
 
-.imageButton {
+.paletteButton {
     border: 2px solid transparent;
     background: none;
 }
 
-.imageButton:hover {
+.paletteButton:hover {
     border: 2px solid var(--uiElementColor);
     border-radius: 5px;
     cursor: pointer;
     background: none;
 }
 
-.imageButton.active {
+.paletteButton.active {
     border: 2px solid var(--buttonColor);
     border-radius: 5px;
     background: none;
