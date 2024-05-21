@@ -65,10 +65,9 @@ export function placeUI(rightleft, topbottom) {
 			The ID of the element you want to switch to; should be a sidebarTab element
 */
 export function openSidebarTab(tabID) {
-    var i, tabContent, tab;
-	tab = document.getElementById(tabID);
-    tabContent = document.getElementsByClassName("sidebarTab");
-    for (i = 0; i < tabContent.length; i++) {
+	var tab = document.getElementById(tabID);
+    var tabContent = document.getElementsByClassName("sidebarTab");
+    for (var i = 0; i < tabContent.length; i++) {
         tabContent[i].style.display = "none";
     }
     tab.style.display = "flex";

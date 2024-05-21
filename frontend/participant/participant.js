@@ -50,11 +50,71 @@ function socketConnect() {
 
 /* USER INTERFACE */
 
-/*  revealEditorTabs
-	Reveals the "Draw" and "Qualify" tabs at the top of the sidebar.
+/*  toggleEditorTabs
+	Reveals or hides the "Draw" and "Qualify" tabs at the top of the sidebar,
+	depending on if they're hidden or revealed respectively.
 */
-function revealEditorTabs()	{
+function toggleEditorTabs(truefalse)	{
+	var editorTabs = document.getElementById("tabSelector");
+	if (truefalse) {
+		editorTabs.style.display = "flex";
+	}
+	else {
+		editorTabs.style.display = "none";
+	}
+}
+
+/*  openEditor
+	Displays the editor menu
+*/
+function openEditor() {
+	toggleEditorTabs(true);
+	COM.openSidebarTab("drawTab");
+}
+
+/*  openPerceptList
+	Displays the percept menu
+*/
+function openPerceptList() {
+	toggleEditorTabs(false);
+	COM.openSidebarTab("perceptTab");
+}
+
+/*  populateEditorWithPercept
+	Puts the data from the given percept into the editor UI
+*/
+function populateEditorWithPercept() {
 	
+}
+
+/* BUTTON CALLBACKS */
+
+/*  submit
+	Requests the current survey from the surveyManager and sends it along the websocket.
+	Resets the interface and starts the wait for a new survey to begin.
+*/
+function submit() {
+
+}
+
+/*  editPercept
+	Loads a given percept and opens the menu for it to be edited.
+
+	Inputs: 
+		percept: Percept
+			The percept that will be edited
+*/
+function editPercept(percept) {
+	// TODO - Load the 3D model and place it in space, don't load if it's already there
+
+}
+
+/*  newPercept
+	Add a new percept, then open the edit menu for that percept.
+*/
+function newPercept() {
+	var percept = surveyManager.currentSurvey.addPercept();
+	editPercept(percept);
 }
 
 /* STARTUP CODE */
@@ -72,6 +132,7 @@ window.onload = function() {
 	/* ARRANGE USER INTERFACE */
 	COM.openSidebarTab("perceptTab");
 	COM.placeUI(COM.UI_POSITIONS.LEFT, COM.UI_POSITIONS.TOP)
+	toggleEditorTabs();
 
     /* EVENT LISTENERS */
 

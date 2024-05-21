@@ -19,8 +19,7 @@ html {
     background-color: #111;
     overflow-x: hidden;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
 }
 
 .bottombar {
@@ -41,9 +40,34 @@ html {
     display:flex;
     justify-content:center;
     align-items:center;
-    width:75%;
+    width:100%;
     height:100%;
     flex-direction: column;
+}
+
+.tabSelector {
+    overflow: hidden;
+    background-color: var(--buttonColor);
+}
+
+.tabSelector button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    border-radius: 0px;
+    margin: 0px 0px;
+    width: 50%;
+}
+
+.tabSelector button.active {
+    background-color: var(--buttonActiveColor);
+}
+
+.tabSelector button:hover {
+    background-color: var(--uiElementContrast);
 }
 
 .threeDContainer {
@@ -137,7 +161,7 @@ p {
 }
 
 button:hover {
-    background-color: var(--buttonColor);
+    background-color: var(--uiElementContrast);
 }
 
 button:active {
