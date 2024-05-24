@@ -3,7 +3,7 @@ export class SurveyManager {
         Creates the objects necessary for operating the survey
     */
     constructor() {
-        this.currentSurvey = null
+        this.survey = null
     }
 
     /*  createNewSurvey
@@ -14,7 +14,7 @@ export class SurveyManager {
                 If true, overwrites the current survey even if it's full
     */
     createNewSurvey(participant, date, time, overwrite=false) {
-        if (this.currentSurvey && !overwrite){
+        if (this.survey && !overwrite){
             console.warn("Attempted to create survey while there is a preexisting survey without overwriting.");
             return false;
         }
@@ -26,7 +26,7 @@ export class SurveyManager {
         Clears the currentSurvey object
     */
     clearSurvey() {
-        this.currentSurvey = null;
+        this.survey = null;
         return true
     }
 
@@ -40,7 +40,7 @@ export class SurveyManager {
     submitSurvey(socket) {
         var msg = {
             type: "submit",
-            survey: this.currentSurvey.toJSON()
+            survey: this.survey.toJSON()
         }
 
         if (socket.readyState == WebSocket.OPEN) {
@@ -51,6 +51,10 @@ export class SurveyManager {
             console.error("Socket is not OPEN, cannot submit survey.")
             return false
         }
+    }
+
+    get survey() {
+        return this.survey;
     }
 }
 
@@ -118,151 +122,6 @@ export class Percept {
         this.name = null;
     }
 
-    // TODO - figure out setter for faces
-
-    /*  getFaces
-        Getter for faces
-
-        Outputs:
-            model: list
-                Current faces value
-    */
-    getFaces() {
-        return this.faces;
-    }
-
-    /*  setModel
-        Setter for model
-
-        Inputs:
-            value: str
-                Value to be set as model
-    */
-    setModel(value) {
-        this.model = value;
-    }
-
-    /*  getModel
-        Getter for model
-
-        Outputs:
-            model: str
-                Current model value
-    */
-    getModel() {
-        return this.model;
-    }
-
-    /*  setIntensity
-        Setter for intensity
-
-        Inputs:
-            value: float
-                Value to be set as intensity
-    */
-    setIntensity(value) {
-        this.intensity = value;
-    }
-
-    /*  getIntensity
-        Getter for intensity
-
-        Outputs:
-            intensity: float
-                Current intensity value
-    */
-    getIntensity() {
-        return this.intensity;
-    }
-
-    /*  setNaturalness
-        Setter for naturalness
-
-        Inputs:
-            value: float
-                Value to be set as naturalness
-    */
-    setNaturalness(value) {
-        this.naturalness = value;
-    }
-
-    /*  getNaturalness
-        Getter for naturalness
-
-        Outputs:
-            naturalness: float
-                Current naturalness value
-    */
-    getNaturalness() {
-        return this.naturalness;
-    }
-
-    /*  setPain
-        Setter for pain
-
-        Inputs:
-            value: float
-                Value to be set as pain
-    */
-    setPain(value) {
-        this.pain = value;
-    }
-
-    /*  getPain
-        Getter for pain
-
-        Outputs:
-            pain: float
-                Current pain value
-    */
-    getPain() {
-        return this.pain;
-    }
-
-    /*  setType
-        Setter for type
-
-        Inputs:
-            value: str
-                Value to be set as type
-    */
-    setType(value) {
-        this.type = value;
-    }
-
-    /*  getType
-        Getter for type
-
-        Outputs:
-            type: str
-                Current type value
-    */
-    getType() {
-        return this.type;
-    }
-    
-    /*  setName
-        Setter for name
-
-        Inputs:
-            value: str
-                Value to be set as name
-    */
-    setName(value) {
-        this.name = value;
-    }
-
-    /*  getName
-        Getter for type
-
-        Outputs:
-            type: str
-                Current type value
-    */
-    getName() {
-        return this.name;
-    }
-
     /*  toJSON
         Creates a JSON object of the percept.
 
@@ -270,16 +129,68 @@ export class Percept {
             output: JSON
                 This percept object turned into a JSON object
     */
-    toJSON() {
-        var output = {
-            faces      : this.faces,
-            model      : this.model,
-            intensity  : this.intensity,
-            naturalness: this.naturalness,
-            pain       : this.pain,
-            type       : this.type,
-            name       : this.name
-        }
-        return output;
+                toJSON() {
+                    var output = {
+                        faces      : this.faces,
+                        model      : this.model,
+                        intensity  : this.intensity,
+                        naturalness: this.naturalness,
+                        pain       : this.pain,
+                        type       : this.type,
+                        name       : this.name
+                    }
+                    return output;
+                }
+
+    get faces() {
+        return this.faces;
+    }
+
+    set model(value) {
+        this.model = value;
+    }
+
+    get model() {
+        return this.model;
+    }
+
+    set intensity(value) {
+        this.intensity = value;
+    }
+
+    get intensity() {
+        return this.intensity;
+    }
+
+    set naturalness(value) {
+        this.naturalness = value;
+    }
+
+    get naturalness() {
+        return this.naturalness;
+    }
+
+    set pain(value) {
+        this.pain = value;
+    }
+
+    get pain() {
+        return this.pain;
+    }
+
+    set type(value) {
+        this.type = value;
+    }
+
+    get type() {
+        return this.type;
+    }
+    
+    set name(value) {
+        this.name = value;
+    }
+
+    get name() {
+        return this.name;
     }
 }

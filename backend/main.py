@@ -1,89 +1,40 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-import json_handlers as jh
-from datetime import datetime
+from backend.survey3d import Survey, SurveyManager
 
 # The app we are serving
 app = FastAPI()
 
-# Stim data type (mirrors the one the frontend uses)
-# class Sensation(NamedTuple):
-#     type: str
-#     color: str
-#     name: str
-#     model: str
-#     intensity: int
-#     naturalness: int
-#     pain: int
-
-class Survey():
-    participant: str = ""
-    config: dict = {}
-    date: str = ""
-    time: str = ""
-    percepts: list = []
-
-    def toDict(self):
-        return {
-            "participant": self.participant,
-            "config": self.config,
-            "date": self.date,
-            "time": self.time,
-            "percepts": self.percepts
-        }
-    
-    def dateTimeNow(self):
-        now = datetime.now()
-        self.date = now.strftime("%Y-%m-%d")
-        self.time = now.strftime("%H-%M-%S")
-
+# The survey manager
+manager = SurveyManager()
 
 # The path we pull our configs from
-CONFIG_PATH = "./config/"
-DATA_PATH = "../../data/stimsurvey/"
+CONFIG_PATH = r"./config/"
+DATA_PATH = r"../../data/stimsurvey/"
 
-# State variables that guide what information is served and saved
-currentSurvey = None
-
-# Functions for controlling the flow of the session
-def newSurvey(participant: str):
-    global currentSurvey
-    if currentSurvey == None:
-        currentSurvey = Survey()
-        currentSurvey.participant = participant
-        currentSurvey.config = jh.getDictionaryFromFile(CONFIG_PATH, "participant_config.json")[participant]
-        currentSurvey.dateTimeNow()
-    else:
-        print("Cannot begin new survey; there is already an ongoing survey.")
-
-def saveSurvey():
-    global currentSurvey
-    currentSurvey.dateTimeNow()
-    print((currentSurvey.participant + "_" + currentSurvey.date + "_" + currentSurvey.time + ".json"))
-    jh.saveDictionaryToFile(currentSurvey.toDict(), DATA_PATH, (currentSurvey.participant + "_" + currentSurvey.date + "_" + currentSurvey.time))
-
-# Tell the backend to change to a new survey
 @app.websocket("/participant-ws")
 async def participant(websocket: WebSocket):
-    global currentSurvey
+    """
+    participant
+    The websocket entry point for the participant client
+    """
     await websocket.accept()
     try:
         while True:
             data = await websocket.receive_json()
             if data["type"] == "waiting":
-                if currentSurvey != None:
+                if manager.survey != None:
                     msg = {
                         "type" : "new",
-                        "survey" : currentSurvey.toDict()
+                        "survey" : manager.survey.toDict()
                     }
                     print("Sending survey to participant...")
                     await websocket.send_json(msg)
             elif data["type"] == "update":
-                currentSurvey.sensations = data["survey"]
+                manager.survey.percepts = data["survey"]
             elif data["type"] == "submit":
                 print("Saving survey...")
-                currentSurvey.sensations = data["survey"]
-                saveSurvey()
-                currentSurvey = None
+                manager.survey.percepts = data["survey"]
+                manager.saveSurvey()
             else:
                 raise ValueError("Bad type value in participant-ws")
     except WebSocketDisconnect:
@@ -91,24 +42,30 @@ async def participant(websocket: WebSocket):
 
 @app.websocket("/experimenter-ws")
 async def experimenter(websocket: WebSocket):
+    """
+    participant
+    The websocket entry point for the experimenter client
+    """
     await websocket.accept()
     try:
         while True:
             data = await websocket.receive_json()
             if data["type"] == "start":
-                print(f"Starting survey for {data['subject']}.")
-                newSurvey(data["subject"])
+                if manager.newSurvey(data["subject"]):
+                    print(f"Starting survey for {data['subject']}.")
+                else:
+                    print(f"Cannot start survey for {data['subject']}!")
             elif data["type"] == "requestSurvey":
-                if currentSurvey != None:
+                if manager.survey != None:
                     msg = {
                         "type" : "survey",
-                        "survey" : currentSurvey.toDict()
+                        "survey" : manager.survey.toDict()
                     }
                     await websocket.send_json(msg)
             elif data["type"] == "requestConfig":
                 msg = {
                     "type" : "config",
-                    "config" : jh.getDictionaryFromFile(CONFIG_PATH, "participant-config.json")
+                    "config" : manager.config
                 }
                 await websocket.send_json(msg)
             else:
