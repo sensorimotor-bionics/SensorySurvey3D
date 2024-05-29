@@ -3,7 +3,7 @@ export class SurveyManager {
         Creates the objects necessary for operating the survey
     */
     constructor() {
-        this.survey = null
+        this._survey = null
     }
 
     /*  createNewSurvey
@@ -53,6 +53,10 @@ export class SurveyManager {
         }
     }
 
+    set survey(value) {
+        this.survey = value;
+    }
+
     get survey() {
         return this.survey;
     }
@@ -68,13 +72,13 @@ export class Survey {
             date: str
                 The date, should be in YYYY-MM-DD format if received from the websocket
             time: str
-                The time the survey was begun, should be in HH:MM format if received from the websocket
+                The time the survey was begun, should be in HH:MM:SS format if received from the websocket
     */
     constructor(participant, date, time) {
-        this.participant = participant;
-        this.data = date;
-        this.time = time;
-        this.percepts = [];
+        this._participant = participant;
+        this._date = date;
+        this._time = time;
+        this._percepts = [];
     }
 
     /*  addPercept
@@ -98,13 +102,21 @@ export class Survey {
         }
 
         var output = {
-            participant: this.participant,
-            date       : this.date,
-            time       : this.time,
+            participant: this._participant,
+            date       : this._date,
+            time       : this._time,
             percepts   : json_percepts
         }
 
         return output;
+    }
+
+    set percepts(value) {
+        this._percepts = value;
+    }
+
+    get percepts() {
+        return this._percepts;
     }
 }
 
@@ -129,18 +141,18 @@ export class Percept {
             output: JSON
                 This percept object turned into a JSON object
     */
-                toJSON() {
-                    var output = {
-                        faces      : this.faces,
-                        model      : this.model,
-                        intensity  : this.intensity,
-                        naturalness: this.naturalness,
-                        pain       : this.pain,
-                        type       : this.type,
-                        name       : this.name
-                    }
-                    return output;
-                }
+    toJSON() {
+        var output = {
+            faces      : this.faces,
+            model      : this.model,
+            intensity  : this.intensity,
+            naturalness: this.naturalness,
+            pain       : this.pain,
+            type       : this.type,
+            name       : this.name
+        }
+        return output;
+    }
 
     get faces() {
         return this.faces;
@@ -192,5 +204,95 @@ export class Percept {
 
     get name() {
         return this.name;
+    }
+}
+
+export class SurveyTable {
+    /*  constructor
+        The constructor for the SurveyTable class
+
+        Inputs:
+            parentTable: Element
+                The <table> element the table will be a child of
+            isParticipant: bool
+                If true, creates the table with an edit column. If false, 
+                omits the edit column
+            viewCallback: function
+                The function that should be called when a view button is clicked
+            editCallback: function
+                The function that should be called when an edit button is clicked
+    */
+    constructor(parentTable, isParticipant, viewCallback, editCallback) {
+        this._isParticipant = isParticipant;
+        this._viewCallback = viewCallback;
+        this._editCallback = editCallback;
+
+        // Set up the table, with edit column if partitipant
+        var thead = document.createElement("thead")
+        parentTable.appendChild(thead);
+
+        this.tbody = document.createElement("tbody");
+        parentTable.appendChild(this.tbody);
+
+        var columns = ["Color", "Name", "View"];
+
+        if (this._isParticipant) { columns.push("Edit") }
+
+        for (var i = 0; i < columns.length; i++) {
+            var column = document.createElement("th");
+            column.innerHTML = columns[i];
+            thead.appendChild(column);
+        }
+    }
+
+    /*  addRow
+        Creates a row for a given percept and adds it to the table
+
+        Inputs:
+            percept: Percept
+                The percept who should be connected to the row
+    */
+    addRow(percept) {
+        // TODO - fix all of this
+        var row = document.createElement("tr");
+        row.id = percept.name;
+
+        var type = percept.type;
+
+        var name = document.createElement("td");
+        name.innerHTML = percept.name;
+        name.style["width"] = "40%";
+        row.appendChild(name);
+
+        var color = document.createElement("td");
+        var colorBox = document.createElement("div");
+        colorBox.classList.add("square");
+        colorBox.style["background-color"] = "#ffffff";
+        color.style["width"] = "25px";
+        row.appendChild(color);
+
+        var view = document.createElement("td");
+        var viewButton = document.createElement("button");
+        viewButton.classList.add("eyeButton");
+        // viewButton.addEventListener("click", function(e) {
+        //     viewSenseFromList(index, senses, e.currentTarget);
+        // })
+        var viewEye = document.createElement("img");
+        viewEye.src = "/images/eye.png";
+        viewEye.style["width"] = "32px";
+        viewButton.appendChild(viewEye);
+        view.appendChild(viewButton);
+        row.appendChild(view);
+
+        var edit = document.createElement("td");
+        var editButton = document.createElement("button");
+        editButton.innerHTML = "Edit";
+        // editButton.addEventListener("click", function() {
+        //     editSense(index, senses);
+        // });
+        edit.appendChild(editButton);
+        row.appendChild(edit);
+        
+        this.tbody.appendChild(row);
     }
 }

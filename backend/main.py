@@ -1,15 +1,15 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from backend.survey3d import Survey, SurveyManager
+from survey3d import Survey, SurveyManager
 
 # The app we are serving
 app = FastAPI()
 
-# The survey manager
-manager = SurveyManager()
-
 # The path we pull our configs from
 CONFIG_PATH = r"./config/"
 DATA_PATH = r"../../data/stimsurvey/"
+
+# The survey manager
+manager = SurveyManager(CONFIG_PATH, DATA_PATH)
 
 @app.websocket("/participant-ws")
 async def participant(websocket: WebSocket):

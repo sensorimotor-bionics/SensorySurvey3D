@@ -9,6 +9,13 @@ const controlStates = Object.freeze({
     ERASE: 3
 });
 
+const meshMaterial = new THREE.MeshPhongMaterial( {
+    color: 0xffffff,
+    flatShading: true,
+    vertexColors: true,
+    shininess: 0
+});
+
 export class SurveyViewport {
     /* SETUP */
 
@@ -30,7 +37,7 @@ export class SurveyViewport {
 		var height = parseInt(style.getPropertyValue("height"));
 
         // Create the camera
-        this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 1000);
 
         // Create the renderer
         this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -60,7 +67,7 @@ export class SurveyViewport {
 		this.scene.add(this.light2);
 
         // Set initial camera position and save them
-		this.camera.position.set(0,0.75,0.75);
+		this.camera.position.set(0, 0.75, 0.75);
 		this.controls.update();
         this.controls.saveState();
     }
@@ -121,6 +128,7 @@ export class SurveyViewport {
     */
     toPaint() {
         this.controlState = controlStates.PAINT;
+        this.controls.enabled = false;
     }
 
     /*  toErase
@@ -128,5 +136,48 @@ export class SurveyViewport {
     */
     toErase() {
         this.controlState = controlStates.ERASE;
+        this.controls.enabled = false;
+    }
+
+    /* 3D SPACE */
+
+    /*  loadModel
+        Loads a given model from a given .gltf file in /public/3dmodels. If successful,
+        extracts that model's geometry and places the geometry into the scene as a new
+        mesh.
+
+        Inputs:
+            filename: str
+                The name of the .gltf file you want to load in (should include ".gltf" at the end)
+    */
+    loadModel(filename) {
+        return new Promise(function(resolve, reject) {
+            var modelPath = "/3dmodels/" + filename;
+    
+            // Load the model, and pull the geometry out and create a mesh from that
+            // This step is necessary because vertex colors only work with three.js geometry
+            var loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                var geometry = gltf.scene.children[0].geometry;
+                const count = geometry.attributes.position.count;
+                geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+                mesh = new THREE.Mesh(geometry, meshMaterial);
+                this.scene.add(mesh);
+                resolve();
+            }, undefined, function() {
+                reject();
+            });
+        })	
+    }
+
+    /*  unloadModels
+        Unloads all "mesh" objects in the scene
+    */
+    unloadModels() {
+        var meshes = this.scene.getObjectsByProperty("isMesh", true);
+    
+        for (var i = 0; i < meshes.length; i++) {
+            this.scene.remove(meshes[i]);
+        }
     }
 }

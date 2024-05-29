@@ -89,12 +89,12 @@ function populateEditorWithPercept() {
 
 /* BUTTON CALLBACKS */
 
-/*  submit
+/*  submitCallback
 	Requests the current survey from the surveyManager and sends it along the websocket.
 	Resets the interface and starts the wait for a new survey to begin.
 */
-function submit() {
-
+function submitCallback() {
+	surveyManager.submitSurvey(socket);
 }
 
 /*  editPercept
@@ -104,15 +104,14 @@ function submit() {
 		percept: Percept
 			The percept that will be edited
 */
-function editPercept(percept) {
+function editPerceptCallback(percept) {
 	// TODO - Load the 3D model and place it in space, don't load if it's already there
-
 }
 
 /*  newPercept
 	Add a new percept, then open the edit menu for that percept.
 */
-function newPercept() {
+function newPerceptCallback() {
 	var percept = surveyManager.currentSurvey.addPercept();
 	editPercept(percept);
 }
@@ -135,5 +134,21 @@ window.onload = function() {
 	toggleEditorTabs();
 
     /* EVENT LISTENERS */
+	const newPercept = document.getElementById("newPercept");
+	newPercept.onpointerdown = newPerceptCallback;
 
+	const submit = document.getElementById("submit");
+	submit.onpointerdown = submitCallback;
+
+	const cameraButton = document.getElementById("cameraButton");
+	cameraButton.onpointerdown = viewport.toCamera;
+
+	const panButton = document.getElementById("panButton");
+	panButton.onpointerdown = viewport.toPan;
+
+	const paintButton = document.getElementById("paintButton");
+	paintButton.onpointerdown = viewport.toPaint;
+
+	const eraseButton = document.getElementById("eraseButton");
+	eraseButton.onpointerdown = viewport.toErase;
 }
