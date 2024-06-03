@@ -115,7 +115,7 @@ html {
     width: 100px;
 }
 
-.square {
+.colorSquare {
     height: 25px;
     width: 25px;
     outline: 2px solid white;
@@ -128,8 +128,8 @@ html {
     display: flex;
     z-index: 1001;
     position: fixed;
-    justify-content:center;
-    align-items:center;
+    justify-content: center;
+    align-items: center;
     font-size: 72px;
     top: 0;
     left: 0;

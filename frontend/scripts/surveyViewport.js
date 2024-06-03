@@ -42,9 +42,11 @@ export class SurveyViewport {
         // Create the renderer
         this.renderer = new THREE.WebGLRenderer({antialias: true});
 		this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setSize(width, height);
 
         // Place the renderer element into the webpage
-        parentElement.appendChild(this.renderer.domElement);
+        this.parentElement = parentElement;
+        this.parentElement.appendChild(this.renderer.domElement);
 
         // Set up controls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -70,6 +72,8 @@ export class SurveyViewport {
 		this.camera.position.set(0, 0.75, 0.75);
 		this.controls.update();
         this.controls.saveState();
+
+        window.onresize = this.onWindowResize;
     }
 
     /*  animate
@@ -84,7 +88,7 @@ export class SurveyViewport {
         this.controls.update();
 
         // Render the scene as seen from the camera
-        this.renderer.render(this.scene, this.camera)
+        this.renderer.render(this.scene, this.camera);
     }
 
     /* CONTROLS */
@@ -100,10 +104,10 @@ export class SurveyViewport {
 		this.controls.enableRotate = true;
 		this.controls.mouseButtons = {
 			LEFT: THREE.MOUSE.ROTATE,
-		};
+		}
         this.controls.touches = {
             ONE: THREE.TOUCH.PAN
-        };
+        }
     }
 
     /*  toPan
@@ -117,10 +121,10 @@ export class SurveyViewport {
 		this.controls.enableRotate = false;
 		this.controls.mouseButtons = {
 			LEFT: THREE.MOUSE.PAN,
-		};
+		}
         this.controls.touches = {
             ONE: THREE.TOUCH.PAN
-        };
+        }
     }
 
     /*  toPaint
@@ -140,6 +144,21 @@ export class SurveyViewport {
     }
 
     /* 3D SPACE */
+
+    /*  onWindowResize
+        Behavior for the viewport when the window is resized; makes the viewport
+        fit within the new 3D container dimensions
+    */
+    onWindowResize() {
+        var style = window.getComputedStyle(this.parentElement, null);
+        var width = parseInt(style.getPropertyValue("width"));
+        var height = parseInt(style.getPropertyValue("height"));
+
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+
+        this.renderer.setSize(width, height);
+    }
 
     /*  loadModel
         Loads a given model from a given .gltf file in /public/3dmodels. If successful,

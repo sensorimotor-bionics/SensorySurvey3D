@@ -3,7 +3,7 @@ export class SurveyManager {
         Creates the objects necessary for operating the survey
     */
     constructor() {
-        this._survey = null
+        this._survey = null;
     }
 
     /*  createNewSurvey
@@ -27,7 +27,7 @@ export class SurveyManager {
     */
     clearSurvey() {
         this.survey = null;
-        return true
+        return true;
     }
 
     /*  submitSurvey
@@ -45,11 +45,11 @@ export class SurveyManager {
 
         if (socket.readyState == WebSocket.OPEN) {
             socket.send(JSON.stringify(msg));
-            return true
+            return true;
         }
         else {
             console.error("Socket is not OPEN, cannot submit survey.")
-            return false
+            return false;
         }
     }
 
@@ -96,7 +96,7 @@ export class Survey {
                 This survey object turned into a JSON object
     */
     toJSON() {
-        var json_percepts = []
+        var json_percepts = [];
         for (var i = 0; i < this.percepts.length; i++) {
             json_percepts.push(this.percepts[i].toJSON());
         }
@@ -222,13 +222,13 @@ export class SurveyTable {
             editCallback: function
                 The function that should be called when an edit button is clicked
     */
-    constructor(parentTable, isParticipant, viewCallback, editCallback) {
+    constructor(parentTable, isParticipant, viewCallbackExternal, editCallbackExternal) {
         this._isParticipant = isParticipant;
-        this._viewCallback = viewCallback;
-        this._editCallback = editCallback;
+        this._viewCallbackExternal = viewCallbackExternal;
+        this._editCallbackExternal = editCallbackExternal;
 
         // Set up the table, with edit column if partitipant
-        var thead = document.createElement("thead")
+        var thead = document.createElement("thead");
         parentTable.appendChild(thead);
 
         this.tbody = document.createElement("tbody");
@@ -245,6 +245,27 @@ export class SurveyTable {
         }
     }
 
+    /*  viewCallback
+        Behavior for when a view button is clicked within the table, opens
+        eyes for viewed percept and closes them for all others
+
+        Inputs:
+            percept: Percept
+                The percept that should be passed to the external callback
+            target: Element
+                The eyeButton element that should be set to eye.png
+    */
+    viewCallback(percept, target) {
+        this._viewCallbackExternal(percept);
+
+        var eyeButtons = document.getElementsByClassName("eyeButton");
+        for (var i = 0; i < eyeButtons.length; i++) {
+            eyeButtons[i].getElementsByTagName('img')[0].src = "/images/close-eye.png";
+        }
+
+        target.getElementsByTagName('img')[0].src = "/images/eye.png";
+    }
+
     /*  addRow
         Creates a row for a given percept and adds it to the table
 
@@ -253,7 +274,6 @@ export class SurveyTable {
                 The percept who should be connected to the row
     */
     addRow(percept) {
-        // TODO - fix all of this
         var row = document.createElement("tr");
         row.id = percept.name;
 
@@ -266,7 +286,7 @@ export class SurveyTable {
 
         var color = document.createElement("td");
         var colorBox = document.createElement("div");
-        colorBox.classList.add("square");
+        colorBox.classList.add("colorSquare");
         colorBox.style["background-color"] = "#ffffff";
         color.style["width"] = "25px";
         row.appendChild(color);
@@ -274,9 +294,9 @@ export class SurveyTable {
         var view = document.createElement("td");
         var viewButton = document.createElement("button");
         viewButton.classList.add("eyeButton");
-        // viewButton.addEventListener("click", function(e) {
-        //     viewSenseFromList(index, senses, e.currentTarget);
-        // })
+        viewButton.addEventListener("pointerdown", function(e) {
+            this.viewCallback(percept, e.currentTarget);
+        })
         var viewEye = document.createElement("img");
         viewEye.src = "/images/eye.png";
         viewEye.style["width"] = "32px";
@@ -284,14 +304,16 @@ export class SurveyTable {
         view.appendChild(viewButton);
         row.appendChild(view);
 
-        var edit = document.createElement("td");
-        var editButton = document.createElement("button");
-        editButton.innerHTML = "Edit";
-        // editButton.addEventListener("click", function() {
-        //     editSense(index, senses);
-        // });
-        edit.appendChild(editButton);
-        row.appendChild(edit);
+        if (this._isParticipant) {
+            var edit = document.createElement("td");
+            var editButton = document.createElement("button");
+            editButton.innerHTML = "Edit";
+            editButton.addEventListener("pointerdown", function() {
+                this._editCallbackExternal(percept);
+            });
+            edit.appendChild(editButton);
+            row.appendChild(edit);
+        }
         
         this.tbody.appendChild(row);
     }

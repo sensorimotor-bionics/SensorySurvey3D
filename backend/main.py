@@ -43,7 +43,7 @@ async def participant(websocket: WebSocket):
 @app.websocket("/experimenter-ws")
 async def experimenter(websocket: WebSocket):
     """
-    participant
+    experimenter
     The websocket entry point for the experimenter client
     """
     await websocket.accept()
