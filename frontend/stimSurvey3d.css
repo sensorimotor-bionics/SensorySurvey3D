@@ -71,7 +71,7 @@ html {
 }
 
 .threeDContainer {
-    height: calc(100% - var(--bottomHeight));
+    height: 100%;
     width: 75%;
     position: fixed;
     z-index: 1;

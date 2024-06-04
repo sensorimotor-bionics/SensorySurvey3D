@@ -73,7 +73,7 @@ export class SurveyViewport {
 		this.controls.update();
         this.controls.saveState();
 
-        window.onresize = this.onWindowResize;
+        window.onresize = this.onWindowResize.bind(this);
     }
 
     /*  animate

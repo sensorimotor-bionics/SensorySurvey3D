@@ -8,6 +8,7 @@ document.title = "Participant - SensorySurvey3D"
 var viewport;
 var surveyManager;
 var surveyTable;
+var waitingInterval;
 
 /* WEBSOCKET */
 
@@ -30,7 +31,9 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "new":
-				newSurvey(msg.survey.config);
+				surveyManager.createNewSurvey(msg.survey.participant, msg.survey.config,
+												msg.survey.date, msg.survey.startTime,
+												msg.survey.endTime, false)
 				endWaiting();
 				break;
 		}
@@ -55,7 +58,7 @@ function socketConnect() {
 	Reveals or hides the "Draw" and "Qualify" tabs at the top of the sidebar,
 	depending on if they're hidden or revealed respectively.
 */
-function toggleEditorTabs(truefalse)	{
+function toggleEditorTabs(truefalse) {
 	var editorTabs = document.getElementById("tabSelector");
 	if (truefalse) {
 		editorTabs.style.display = "flex";
@@ -81,11 +84,56 @@ function openPerceptList() {
 	COM.openSidebarTab("perceptTab");
 }
 
+/*  populateTypeSelect
+	Clears all children of a <select> element, then takes a list and creates 
+	<option> elements for each element in the list as children of the select element 
+
+	Inputs:
+		selectElement: Element
+			The <select> element which the options should be childen of
+		optionList: list of str
+			The names of each option to be added to the selectElement
+*/
+function populateSelect(selectElement, optionList) {
+	selectElement.innerHTML = "";
+
+	for (var i = 0; i < optionList.length; i++) {
+		const newOption = document.createElement("option");
+        newOption.innerHTML = optionList[i].charAt(0).toUpperCase() + optionList[i].slice(1);
+        newOption.value = optionList[i];
+
+        selectElement.appendChild(newOption);
+	}
+}
+
 /*  populateEditorWithPercept
 	Puts the data from the given percept into the editor UI
+
+	Inputs:
+		percept: Percept
+			The percept whose data should be displayed
 */
-function populateEditorWithPercept() {
+function populateEditorWithPercept(percept) {
 	
+}
+
+/*  startWaiting
+	Sets the waitingInterval variable to a new interval which polls the
+	websocket for a new survey. Also opens the waitingTab
+*/
+function startWaiting() {
+	waitingInterval = setInterval(function() {
+		socket.send(JSON.stringify({type: "waiting"}));
+	}, 1000);
+	COM.openSidebarTab("waitingTab");
+}
+
+/*  endWaiting
+	Clears the waitingInterval, and opens the tab for the new survey
+*/
+function endWaiting() {
+	clearInterval(waitingInterval);
+	COM.openSidebarTab("perceptTab");
 }
 
 /* BUTTON CALLBACKS */
@@ -106,7 +154,7 @@ function submitCallback() {
 			The percept that will be edited
 */
 function editPerceptCallback(percept) {
-	// TODO - Load the 3D model and place it in space, don't load if it's already there
+	populateEditorWithPercept(percept);
 }
 
 /*  viewPerceptCallback
@@ -125,7 +173,7 @@ function viewPerceptCallback(percept) {
 */
 function newPerceptCallback() {
 	var percept = surveyManager.currentSurvey.addPercept();
-	editPercept(percept);
+	editPerceptCallback(percept);
 }
 
 /* STARTUP CODE */
@@ -141,9 +189,9 @@ window.onload = function() {
 
     // Start the websocket
     socketConnect();
+	startWaiting();
 
 	/* ARRANGE USER INTERFACE */
-	COM.openSidebarTab("waitingTab");
 	COM.placeUI(COM.UI_POSITIONS.LEFT, COM.UI_POSITIONS.TOP);
 	toggleEditorTabs();
 

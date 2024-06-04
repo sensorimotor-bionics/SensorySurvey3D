@@ -10,15 +10,25 @@ export class SurveyManager {
         Creates a blank survey object in the currentSurvey slot
 
         Inputs:
+            participant: str
+                The name of the participant
+            config: json
+                The config for the new survey
+            date: str
+                The date on which the survey is being conducted
+            startTime: str
+                The time of the survey's start
+            endTime: str
+                Should be blank if creating a new survey
             overwrite: bool
                 If true, overwrites the current survey even if it's full
     */
-    createNewSurvey(participant, date, time, overwrite=false) {
+    createNewSurvey(participant, config, date, startTime, endTime, overwrite=false) {
         if (this.survey && !overwrite){
             console.warn("Attempted to create survey while there is a preexisting survey without overwriting.");
             return false;
         }
-        this.currentSuvey = new Survey(participant, date, time);
+        this.survey = new Survey(participant, config, date, startTime, endTime);
         return true;
     }
 
@@ -54,11 +64,11 @@ export class SurveyManager {
     }
 
     set survey(value) {
-        this.survey = value;
+        this._survey = value;
     }
 
     get survey() {
-        return this.survey;
+        return this._survey;
     }
 }
 
@@ -69,15 +79,21 @@ export class Survey {
         Inputs:
             participant: str
                 The name of the participant filling out the current survey
+            config: json
+                The full config file 
             date: str
                 The date, should be in YYYY-MM-DD format if received from the websocket
-            time: str
+            startTime: str
                 The time the survey was begun, should be in HH:MM:SS format if received from the websocket
+            endTime: str
+                The time the survey was ended, same format    
     */
-    constructor(participant, date, time) {
+    constructor(participant, config, date, startTime, endTime) {
         this._participant = participant;
+        this._config = config;
         this._date = date;
-        this._time = time;
+        this._startTime = startTime;
+        this._endTime = endTime;
         this._percepts = [];
     }
 
@@ -103,8 +119,10 @@ export class Survey {
 
         var output = {
             participant: this._participant,
+            config     : this._config,
             date       : this._date,
-            time       : this._time,
+            startTime  : this._startTime,
+            endTime    : this._endTime,
             percepts   : json_percepts
         }
 
@@ -118,6 +136,10 @@ export class Survey {
     get percepts() {
         return this._percepts;
     }
+
+    get config() {
+        return this._config;
+    }
 }
 
 export class Percept {
@@ -125,13 +147,13 @@ export class Percept {
         Creates the objects necessary for operating the survey
     */
     constructor() {
-        this.faces = [];
-        this.model = null;
-        this.intensity = null;
-        this.naturalness = null;
-        this.pain = null;
-        this.type = null;
-        this.name = null;
+        this._faces = [];
+        this._model = null;
+        this._intensity = null;
+        this._naturalness = null;
+        this._pain = null;
+        this._type = null;
+        this._name = null;
     }
 
     /*  toJSON
@@ -143,51 +165,51 @@ export class Percept {
     */
     toJSON() {
         var output = {
-            faces      : this.faces,
-            model      : this.model,
-            intensity  : this.intensity,
-            naturalness: this.naturalness,
-            pain       : this.pain,
-            type       : this.type,
-            name       : this.name
+            faces      : this._faces,
+            model      : this._model,
+            intensity  : this._intensity,
+            naturalness: this._naturalness,
+            pain       : this._pain,
+            type       : this._type,
+            name       : this._name
         }
         return output;
     }
 
     get faces() {
-        return this.faces;
+        return this._faces;
     }
 
     set model(value) {
-        this.model = value;
+        this._model = value;
     }
 
     get model() {
-        return this.model;
+        return this._model;
     }
 
     set intensity(value) {
-        this.intensity = value;
+        this._intensity = value;
     }
 
     get intensity() {
-        return this.intensity;
+        return this._intensity;
     }
 
     set naturalness(value) {
-        this.naturalness = value;
+        this._naturalness = value;
     }
 
     get naturalness() {
-        return this.naturalness;
+        return this._naturalness;
     }
 
     set pain(value) {
-        this.pain = value;
+        this._pain = value;
     }
 
     get pain() {
-        return this.pain;
+        return this._pain;
     }
 
     set type(value) {
@@ -195,15 +217,15 @@ export class Percept {
     }
 
     get type() {
-        return this.type;
+        return this._type;
     }
     
     set name(value) {
-        this.name = value;
+        this._name = value;
     }
 
     get name() {
-        return this.name;
+        return this._name;
     }
 }
 
