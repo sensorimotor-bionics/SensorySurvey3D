@@ -7,8 +7,8 @@
 
         <div class="sidebar">
             <div id="tabSelector" class="tabSelector">
-                <button>Draw</button>
-                <button>Qualify</button>
+                <button id="drawTabButton">Draw</button>
+                <button id="qualifyTabButton">Qualify</button>
             </div>
 
             <div id="waitingTab" class="sidebarTab">
@@ -24,6 +24,7 @@
             </div>
 
             <div id="drawTab" class="sidebarTab">
+                <p>Model:</p>
                 <select id="modelSelect"></select>
                 <button id="cameraButton" class="paletteButton active">Camera</button><br>
                 <button id="panButton" class="paletteButton">Pan</button><br>
@@ -32,6 +33,7 @@
             </div>
 
             <div id="qualifyTab" class="sidebarTab">
+                <p>Type:</p>
                 <select id="typeSelect"></select>
                 <div>
                     <p>Intensity: <span id="intensityValue"></span></p>

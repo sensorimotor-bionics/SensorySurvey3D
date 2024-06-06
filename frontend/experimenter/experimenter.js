@@ -109,5 +109,5 @@ window.onload = function() {
 
     /* EVENT LISTENERS */
     const newSurvey = document.getElementById("newSurvey");
-    newSurvey.onpointerdown = newSurveyCallback;
+    newSurvey.onpointerup = newSurveyCallback;
 }

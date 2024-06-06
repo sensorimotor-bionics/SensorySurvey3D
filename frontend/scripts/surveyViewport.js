@@ -53,6 +53,7 @@ export class SurveyViewport {
         this.controlState = controlStates.CAMERA;
         this.toCamera();
         
+        this.pointer = new THREE.Vector2();
         this.raycaster = new THREE.Raycaster();
 
         // Set an ambient level of light so that all sides of the mesh are lit
@@ -74,6 +75,7 @@ export class SurveyViewport {
         this.controls.saveState();
 
         window.onresize = this.onWindowResize.bind(this);
+        document.onpointermove = this.onPointerMove.bind(this);
     }
 
     /*  animate
@@ -141,6 +143,23 @@ export class SurveyViewport {
     toErase() {
         this.controlState = controlStates.ERASE;
         this.controls.enabled = false;
+    }
+
+    /*  onPointerMove
+        Behavior for when the user's pointer object moves; sets values important
+        for raycasting
+
+        Inputs:
+            event: Event
+                The input event from which data can be extracted
+    */
+    onPointerMove(event) {
+        var style = window.getComputedStyle(this.parentElement, null);
+        var width = parseInt(style.getPropertyValue("width"));
+        var height = parseInt(style.getPropertyValue("height"));
+        this.pointer.x = (((event.clientX - (0.25 * window.innerWidth)) / width)
+                            * 2 - 1);
+	    this.pointer.y = -(event.clientY / height)* 2 + 1;
     }
 
     /* 3D SPACE */

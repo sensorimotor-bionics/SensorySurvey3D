@@ -31,16 +31,24 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "new":
-				surveyManager.createNewSurvey(msg.survey.participant, msg.survey.config,
-												msg.survey.date, msg.survey.startTime,
-												msg.survey.endTime, false)
+				surveyManager.createNewSurvey(msg.survey.participant, 
+												msg.survey.config,
+												msg.survey.date, 
+												msg.survey.startTime,
+												msg.survey.endTime, 
+												false);
+				populateSelect(document.getElementById("modelSelect"), 
+								Object.keys(msg.survey.config.models));
+				populateSelect(document.getElementById("typeSelect"), 
+								msg.survey.config.typeList);
 				endWaiting();
 				break;
 		}
 	}
 
 	socket.onclose = function() {
-		console.log("Connection to websocket @ ", socketURL, " closed. Attempting reconnect in 1 second.");
+		console.log("Connection to websocket @ ", socketURL, 
+					" closed. Attempting reconnect in 1 second.");
 		setTimeout(function() {
 			socketConnect();
 		}, 1000);
@@ -73,7 +81,8 @@ function toggleEditorTabs(truefalse) {
 */
 function openEditor() {
 	toggleEditorTabs(true);
-	COM.openSidebarTab("drawTab");
+	document.getElementById("drawTabButton").dispatchEvent(
+		new Event("pointerup"));
 }
 
 /*  openPerceptList
@@ -86,7 +95,8 @@ function openPerceptList() {
 
 /*  populateTypeSelect
 	Clears all children of a <select> element, then takes a list and creates 
-	<option> elements for each element in the list as children of the select element 
+	<option> elements for each element in the list as children of the select 
+	element 
 
 	Inputs:
 		selectElement: Element
@@ -99,7 +109,8 @@ function populateSelect(selectElement, optionList) {
 
 	for (var i = 0; i < optionList.length; i++) {
 		const newOption = document.createElement("option");
-        newOption.innerHTML = optionList[i].charAt(0).toUpperCase() + optionList[i].slice(1);
+        newOption.innerHTML = (optionList[i].charAt(0).toUpperCase() 
+								+ optionList[i].slice(1));
         newOption.value = optionList[i];
 
         selectElement.appendChild(newOption);
@@ -155,6 +166,7 @@ function submitCallback() {
 */
 function editPerceptCallback(percept) {
 	populateEditorWithPercept(percept);
+	openEditor();
 }
 
 /*  viewPerceptCallback
@@ -172,7 +184,7 @@ function viewPerceptCallback(percept) {
 	Add a new percept, then open the edit menu for that percept.
 */
 function newPerceptCallback() {
-	var percept = surveyManager.currentSurvey.addPercept();
+	var percept = surveyManager.survey.addPercept();
 	editPerceptCallback(percept);
 }
 
@@ -203,14 +215,59 @@ window.onload = function() {
 	submit.onpointerup = submitCallback;
 
 	const cameraButton = document.getElementById("cameraButton");
-	cameraButton.onpointerup = viewport.toCamera;
+	cameraButton.onpointerup = function() {
+		viewport.toCamera();
+		COM.activatePaletteButton("cameraButton");
+	}
 
 	const panButton = document.getElementById("panButton");
-	panButton.onpointerup = viewport.toPan;
+	panButton.onpointerup = function() {
+		viewport.toPan();
+		COM.activatePaletteButton("panButton");
+	}
 
 	const paintButton = document.getElementById("paintButton");
-	paintButton.onpointerup = viewport.toPaint;
+	paintButton.onpointerup = function() {
+		viewport.toPaint();
+		COM.activatePaletteButton("paintButton");
+	}
 
 	const eraseButton = document.getElementById("eraseButton");
-	eraseButton.onpointerup = viewport.toErase;
+	eraseButton.onpointerup = function() {
+		viewport.toErase();
+		COM.activatePaletteButton("eraseButton");
+	}
+
+	const drawTabButton = document.getElementById("drawTabButton");
+	const qualifyTabButton = document.getElementById("qualifyTabButton");
+	drawTabButton.onpointerup = function() {
+		COM.openSidebarTab("drawTab");
+		drawTabButton.classList.add('active');
+		qualifyTabButton.classList.remove('active');
+	}
+	qualifyTabButton.onpointerup = function() {
+		COM.openSidebarTab("qualifyTab");
+		drawTabButton.classList.remove('active');
+		qualifyTabButton.classList.add('active');
+	}
+
+	const intensitySlider = document.getElementById("intensitySlider");
+	intensitySlider.oninput = function() {
+		document.getElementById("intensityValue").innerHTML = 
+			intensitySlider.value;
+	}
+	intensitySlider.dispatchEvent(new Event("input"));
+
+	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	naturalnessSlider.oninput = function() {
+		document.getElementById("naturalnessValue").innerHTML = 
+			naturalnessSlider.value;
+	}
+	naturalnessSlider.dispatchEvent(new Event("input"));
+
+	const painSlider = document.getElementById("painSlider");
+	painSlider.oninput = function() {
+		document.getElementById("painValue").innerHTML = painSlider.value;
+	}
+	painSlider.dispatchEvent(new Event("input"));
 }

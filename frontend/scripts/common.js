@@ -56,13 +56,14 @@ export function placeUI(rightleft, topbottom) {
     return true;
 }
 
-/*  openTab
+/*  openSidebarTab
 	Gets the element with the given ID, sets its display to "flex", then sets the
 	displays of all sidebarTab elements to "none". Enables switching between tabs.
 
 	Inputs:
 		tabID: str
-			The ID of the element you want to switch to; should be a sidebarTab element
+			The ID of the element you want to switch to; should be a sidebarTab 
+            element
 */
 export function openSidebarTab(tabID) {
 	var tab = document.getElementById(tabID);
@@ -71,4 +72,16 @@ export function openSidebarTab(tabID) {
         tabContent[i].style.display = "none";
     }
     tab.style.display = "flex";
+}
+
+/*  activatePaletteButton
+    Palette buttons are elements intended to change the behavior of the controls
+    on the 
+*/
+export function activatePaletteButton(buttonID) {
+    var imageButtons = document.getElementsByClassName("paletteButton");
+	for (var i = 0; i < imageButtons.length; i++) {
+        imageButtons[i].classList.remove("active")
+    }
+	document.getElementById(buttonID).classList.add("active");
 }
