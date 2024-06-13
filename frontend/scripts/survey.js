@@ -4,6 +4,7 @@ export class SurveyManager {
     */
     constructor() {
         this._survey = null;
+        this._currentPercept = null;
     }
 
     /*  createNewSurvey
@@ -70,6 +71,14 @@ export class SurveyManager {
     get survey() {
         return this._survey;
     }
+
+    set currentPercept(value) {
+        this._currentPercept = value;
+    }
+
+    get currentPercept() {
+        return this._currentPercept;
+    }
 }
 
 export class Survey {
@@ -102,6 +111,31 @@ export class Survey {
     */
     addPercept() {
         this.percepts.push(new Percept());
+    }
+
+    /*  deletePercept
+        Remove a given percept from the list of percepts
+
+        Inputs:
+            percept: Percept
+                The percept to be removed from the list of percepts
+    */
+    deletePercept(percept) {
+        const index = this.percepts.indexOf(percept);
+
+        if (index > -1) {
+            this.percepts.splice(index, 1);
+        }
+
+        this.renamePercepts();
+    }
+
+    /*  renamePercepts
+        Names each percept in the list of percepts based on how many of
+        each percept type exists in the list
+    */
+    renamePercepts() {
+
     }
 
     /*  toJSON

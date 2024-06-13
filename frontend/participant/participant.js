@@ -165,7 +165,8 @@ function submitCallback() {
 			The percept that will be edited
 */
 function editPerceptCallback(percept) {
-	populateEditorWithPercept(percept);
+	surveyManager.currentPercept = percept;
+	populateEditorWithPercept(surveyManager.currentPercept);
 	openEditor();
 }
 
@@ -184,8 +185,26 @@ function viewPerceptCallback(percept) {
 	Add a new percept, then open the edit menu for that percept.
 */
 function newPerceptCallback() {
-	var percept = surveyManager.survey.addPercept();
+	const percept = surveyManager.survey.addPercept();
 	editPerceptCallback(percept);
+}
+
+/* perceptDoneCallback
+   Finish working with the surveyManager's currentPercept and return to the main menu
+*/
+function perceptDoneCallback() {
+	surveyManager.survey.renamePercepts();
+	surveyManager.currentPercept = null;
+	openPerceptList();
+}
+
+/* perceptDeleteCallback
+   Delete the currentPercept from the current survey
+*/
+function perceptDeleteCallback() {
+	// TODO - maybe add a confirm dialogue to this step?
+	surveyManager.survey.deletePercept(surveyManager.currentPercept);
+	openPerceptList();
 }
 
 /* STARTUP CODE */
@@ -208,11 +227,11 @@ window.onload = function() {
 	toggleEditorTabs();
 
     /* EVENT LISTENERS */
-	const newPercept = document.getElementById("newPercept");
-	newPercept.onpointerup = newPerceptCallback;
+	const newPerceptButton = document.getElementById("newPerceptButton");
+	newPerceptButton.onpointerup = newPerceptCallback;
 
-	const submit = document.getElementById("submit");
-	submit.onpointerup = submitCallback;
+	const submitButton = document.getElementById("submitButton");
+	submitButton.onpointerup = submitCallback;
 
 	const cameraButton = document.getElementById("cameraButton");
 	cameraButton.onpointerup = function() {
@@ -270,4 +289,10 @@ window.onload = function() {
 		document.getElementById("painValue").innerHTML = painSlider.value;
 	}
 	painSlider.dispatchEvent(new Event("input"));
+
+	const perceptDoneButton = document.getElementById("perceptDoneButton");
+	perceptDoneButton.oninput = perceptDoneCallback;
+
+	const perceptDeleteButton = document.getElementById("perceptDeleteButton");
+	perceptDeleteButton.oninput = perceptDeleteCallback;
 }
