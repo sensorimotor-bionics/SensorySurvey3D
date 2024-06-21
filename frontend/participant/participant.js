@@ -89,6 +89,7 @@ function openEditor() {
 	Displays the percept menu
 */
 function openPerceptList() {
+	surveyTable.update(surveyManager.survey);
 	toggleEditorTabs(false);
 	COM.openSidebarTab("perceptTab");
 }
@@ -125,7 +126,52 @@ function populateSelect(selectElement, optionList) {
 			The percept whose data should be displayed
 */
 function populateEditorWithPercept(percept) {
-	
+	const intensitySlider = document.getElementById("intensitySlider");
+	intensitySlider.value = percept.intensity;
+	intensitySlider.dispatchEvent(new Event("input"));
+
+	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	naturalnessSlider.value = percept.naturalness;
+	naturalnessSlider.dispatchEvent(new Event("input"));
+
+	const painSlider = document.getElementById("painSlider");
+	painSlider.value = percept.pain;
+	painSlider.dispatchEvent(new Event("input"));
+
+	const modelSelect = document.getElementById("modelSelect");
+	if (percept.model) {
+		modelSelect.value = percept.model;
+	}
+
+	const typeSelect = document.getElementById("typeSelect");
+	if (percept.type) {
+		typeSelect.value = percept.type;
+	}
+
+	// TODO - Needs some way to load the model then load the drawing onto the model
+}
+
+/*  savePerceptFromEditor
+	Takes the values in the relevant editor elements and saves them to the
+	corresponding fields in the surveyManager's currentPercept
+*/
+function savePerceptFromEditor() {
+	const intensitySlider = document.getElementById("intensitySlider");
+	surveyManager.currentPercept.intensity = intensitySlider.value;
+
+	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	surveyManager.currentPercept.naturalness = naturalnessSlider.value;
+
+	const painSlider = document.getElementById("painSlider");
+	surveyManager.currentPercept.pain = painSlider.value;
+
+	const modelSelect = document.getElementById("modelSelect");
+	surveyManager.currentPercept.model = modelSelect.value;
+
+	const typeSelect = document.getElementById("typeSelect");
+	surveyManager.currentPercept.type = typeSelect.value;
+
+	// TODO - get faces off of current model and save them
 }
 
 /*  startWaiting
@@ -185,14 +231,16 @@ function viewPerceptCallback(percept) {
 	Add a new percept, then open the edit menu for that percept.
 */
 function newPerceptCallback() {
-	const percept = surveyManager.survey.addPercept();
-	editPerceptCallback(percept);
+	surveyManager.survey.addPercept();
+	const percepts = surveyManager.survey.percepts
+	editPerceptCallback(percepts[percepts.length - 1]);
 }
 
 /* perceptDoneCallback
    Finish working with the surveyManager's currentPercept and return to the main menu
 */
 function perceptDoneCallback() {
+	savePerceptFromEditor();
 	surveyManager.survey.renamePercepts();
 	surveyManager.currentPercept = null;
 	openPerceptList();
@@ -291,8 +339,8 @@ window.onload = function() {
 	painSlider.dispatchEvent(new Event("input"));
 
 	const perceptDoneButton = document.getElementById("perceptDoneButton");
-	perceptDoneButton.oninput = perceptDoneCallback;
+	perceptDoneButton.onpointerup = perceptDoneCallback;
 
 	const perceptDeleteButton = document.getElementById("perceptDeleteButton");
-	perceptDeleteButton.oninput = perceptDeleteCallback;
+	perceptDeleteButton.onpointerup = perceptDeleteCallback;
 }

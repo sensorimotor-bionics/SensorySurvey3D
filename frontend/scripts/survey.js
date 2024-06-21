@@ -135,7 +135,21 @@ export class Survey {
         each percept type exists in the list
     */
     renamePercepts() {
+        for (var i = 0; i < this.percepts.length; i++) {
+            var percept = this.percepts[i];
+            var type = percept.type;
 
+            var priorTypeCount = 0;
+
+            for (var j = 0; this.percepts[j] !== percept; j++) {
+                if (this.percepts[j].type == type) {
+                    priorTypeCount++;
+                }  
+            }
+
+            percept.name = type.charAt(0).toUpperCase() + type.slice(1) + " "
+                            + (priorTypeCount + 1).toString();
+        }
     }
 
     /*  toJSON
@@ -183,9 +197,9 @@ export class Percept {
     constructor() {
         this._faces = [];
         this._model = null;
-        this._intensity = null;
-        this._naturalness = null;
-        this._pain = null;
+        this._intensity = 5;
+        this._naturalness = 5;
+        this._pain = 0;
         this._type = null;
         this._name = null;
     }
@@ -247,7 +261,7 @@ export class Percept {
     }
 
     set type(value) {
-        this.type = value;
+        this._type = value;
     }
 
     get type() {
@@ -283,6 +297,9 @@ export class SurveyTable {
         this._viewCallbackExternal = viewCallbackExternal;
         this._editCallbackExternal = editCallbackExternal;
 
+        console.log(typeof(this._viewCallbackExternal))
+        console.log(typeof(this._editCallbackExternal))
+
         // Set up the table, with edit column if partitipant
         var thead = document.createElement("thead");
         parentTable.appendChild(thead);
@@ -290,7 +307,7 @@ export class SurveyTable {
         this.tbody = document.createElement("tbody");
         parentTable.appendChild(this.tbody);
 
-        var columns = ["Color", "Name", "View"];
+        var columns = ["Name", "Color", "View"];
 
         if (this._isParticipant) { columns.push("Edit") }
 
@@ -312,7 +329,7 @@ export class SurveyTable {
                 The eyeButton element that should be set to eye.png
     */
     viewCallback(percept, target) {
-        this._viewCallbackExternal(percept);
+        this._viewCallbackExternal.call(percept);
 
         var eyeButtons = document.getElementsByClassName("eyeButton");
         for (var i = 0; i < eyeButtons.length; i++) {
@@ -333,7 +350,7 @@ export class SurveyTable {
         var row = document.createElement("tr");
         row.id = percept.name;
 
-        var type = percept.type;
+        const that = this;
 
         var name = document.createElement("td");
         name.innerHTML = percept.name;
@@ -351,7 +368,7 @@ export class SurveyTable {
         var viewButton = document.createElement("button");
         viewButton.classList.add("eyeButton");
         viewButton.addEventListener("pointerdown", function(e) {
-            this.viewCallback(percept, e.currentTarget);
+            that.viewCallback(percept, e.currentTarget);
         })
         var viewEye = document.createElement("img");
         viewEye.src = "/images/eye.png";
@@ -365,12 +382,34 @@ export class SurveyTable {
             var editButton = document.createElement("button");
             editButton.innerHTML = "Edit";
             editButton.addEventListener("pointerdown", function() {
-                this._editCallbackExternal(percept);
+                that._editCallbackExternal(percept);
             });
             edit.appendChild(editButton);
             row.appendChild(edit);
         }
         
         this.tbody.appendChild(row);
+    }
+
+    /*  clear
+        Clears the table
+    */
+    clear() {
+        this.tbody.innerHTML = "";
+    }
+
+    /*  update
+        Updates the table to reflect the percepts in a given Survey object
+
+        Inputs:
+            survey: Survey
+                The survey whose percepts should be reflected in the updated
+                table
+    */
+    update(survey) {
+        this.clear();
+        for (var i = 0; i < survey.percepts.length; i++) {
+            this.addRow(survey.percepts[i]);
+        }
     }
 }
