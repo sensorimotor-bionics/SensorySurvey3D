@@ -89,6 +89,7 @@ function openEditor() {
 	Displays the percept menu
 */
 function openPerceptList() {
+	surveyManager.survey.renamePercepts();
 	surveyTable.update(surveyManager.survey);
 	toggleEditorTabs(false);
 	COM.openSidebarTab("perceptTab");
@@ -157,13 +158,13 @@ function populateEditorWithPercept(percept) {
 */
 function savePerceptFromEditor() {
 	const intensitySlider = document.getElementById("intensitySlider");
-	surveyManager.currentPercept.intensity = intensitySlider.value;
+	surveyManager.currentPercept.intensity = parseFloat(intensitySlider.value);
 
 	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	surveyManager.currentPercept.naturalness = naturalnessSlider.value;
+	surveyManager.currentPercept.naturalness = parseFloat(naturalnessSlider.value);
 
 	const painSlider = document.getElementById("painSlider");
-	surveyManager.currentPercept.pain = painSlider.value;
+	surveyManager.currentPercept.pain = parseFloat(painSlider.value);
 
 	const modelSelect = document.getElementById("modelSelect");
 	surveyManager.currentPercept.model = modelSelect.value;
@@ -197,7 +198,8 @@ function endWaiting() {
 
 /*  submitCallback
 	Requests the current survey from the surveyManager and sends it along the 
-	websocket. Resets the interface and starts the wait for a new survey to begin.
+	websocket. Resets the interface and starts the wait for a new survey to 
+	begin.
 */
 function submitCallback() {
 	surveyManager.submitSurvey(socket);
@@ -228,26 +230,42 @@ function viewPerceptCallback(percept) {
 }
 
 /*  newPercept
-	Add a new percept, then open the edit menu for that percept.
+	Add a new percept, then open the edit menu for that percept. Set the model
+	and type values using whatever values were previously selected
 */
 function newPerceptCallback() {
 	surveyManager.survey.addPercept();
-	const percepts = surveyManager.survey.percepts
-	editPerceptCallback(percepts[percepts.length - 1]);
+	const percepts = surveyManager.survey.percepts;
+	const newPercept = percepts[percepts.length - 1];
+
+	const modelSelect = document.getElementById("modelSelect");
+	newPercept.model = modelSelect.value;
+
+	const typeSelect = document.getElementById("typeSelect");
+	newPercept.type = typeSelect.value; 
+
+	editPerceptCallback(newPercept);
 }
 
-/* perceptDoneCallback
-   Finish working with the surveyManager's currentPercept and return to the main menu
+/* 	perceptDoneCallback
+   	Finish working with the surveyManager's currentPercept and return to the 
+	main menu
 */
 function perceptDoneCallback() {
 	savePerceptFromEditor();
-	surveyManager.survey.renamePercepts();
 	surveyManager.currentPercept = null;
 	openPerceptList();
 }
 
-/* perceptDeleteCallback
-   Delete the currentPercept from the current survey
+/*  perceptCancelCallback
+	Return to the percept list without saving changes to the currentPercept
+*/
+function perceptCancelCallback() {
+	openPerceptList();
+}
+
+/*  perceptDeleteCallback
+	Delete the currentPercept from the current survey
 */
 function perceptDeleteCallback() {
 	// TODO - maybe add a confirm dialogue to this step?
@@ -263,8 +281,9 @@ window.onload = function() {
 
     surveyManager = new SVY.SurveyManager();
 
-	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), true,
-										viewPerceptCallback, editPerceptCallback)
+	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), 
+										true, viewPerceptCallback, 
+										editPerceptCallback)
 
     // Start the websocket
     socketConnect();
@@ -340,6 +359,9 @@ window.onload = function() {
 
 	const perceptDoneButton = document.getElementById("perceptDoneButton");
 	perceptDoneButton.onpointerup = perceptDoneCallback;
+
+	const perceptCancelButton = document.getElementById("perceptCancelButton");
+	perceptCancelButton.onpointerup = perceptCancelCallback;
 
 	const perceptDeleteButton = document.getElementById("perceptDeleteButton");
 	perceptDeleteButton.onpointerup = perceptDeleteCallback;

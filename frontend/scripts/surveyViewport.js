@@ -25,6 +25,8 @@ export class SurveyViewport {
         Inputs:
             parentElement: Element
                 The element you want to parent the viewport
+            defaultModelFilename: string
+                The name of the gltf file that is to be loaded by default
     */
     constructor(parentElement) {
         // Create the scene
@@ -74,8 +76,11 @@ export class SurveyViewport {
 		this.controls.update();
         this.controls.saveState();
 
+        // Set event listeners
         window.onresize = this.onWindowResize.bind(this);
         document.onpointermove = this.onPointerMove.bind(this);
+
+        this.currentModel = null;
     }
 
     /*  animate
@@ -179,43 +184,51 @@ export class SurveyViewport {
         this.renderer.setSize(width, height);
     }
 
+    /*  unloadModels
+        Unloads all "mesh" objects in the scene
+    */
+        unloadModels() {
+            var meshes = this.scene.getObjectsByProperty("isMesh", true);
+        
+            for (var i = 0; i < meshes.length; i++) {
+                this.scene.remove(meshes[i]);
+            }
+
+            this.currentModel = null;
+        }
+
     /*  loadModel
-        Loads a given model from a given .gltf file in /public/3dmodels. If successful,
-        extracts that model's geometry and places the geometry into the scene as a new
-        mesh.
+        Loads a given model from a given .gltf file in /public/3dmodels. If 
+        successful, extracts that model's geometry and places the geometry into 
+        the scene as a new mesh.
 
         Inputs:
             filename: str
-                The name of the .gltf file you want to load in (should include ".gltf" at the end)
+                The name of the .gltf file you want to load in (should include 
+                ".gltf" at the end)
     */
     loadModel(filename) {
+        this.unloadModels();
         return new Promise(function(resolve, reject) {
             var modelPath = "/3dmodels/" + filename;
     
-            // Load the model, and pull the geometry out and create a mesh from that
-            // This step is necessary because vertex colors only work with three.js geometry
+            // Load the model, and pull the geometry out and create a mesh 
+            // from that. This step is necessary because vertex colors 
+            // only work with three.js geometry
             var loader = new GLTFLoader();
             loader.load(modelPath, function(gltf) {
                 var geometry = gltf.scene.children[0].geometry;
                 const count = geometry.attributes.position.count;
-                geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(
+                                        new Float32Array(count * 3), 3));
                 mesh = new THREE.Mesh(geometry, meshMaterial);
                 this.scene.add(mesh);
+                this.currentModel = filename;
                 resolve();
             }, undefined, function() {
+                alert("Could not load model " + filename + ", please notify experiment team.")
                 reject();
             });
         })	
-    }
-
-    /*  unloadModels
-        Unloads all "mesh" objects in the scene
-    */
-    unloadModels() {
-        var meshes = this.scene.getObjectsByProperty("isMesh", true);
-    
-        for (var i = 0; i < meshes.length; i++) {
-            this.scene.remove(meshes[i]);
-        }
     }
 }

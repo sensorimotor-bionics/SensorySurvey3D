@@ -6,7 +6,7 @@ app = FastAPI()
 
 # The path we pull our configs from
 CONFIG_PATH = r"./config/"
-DATA_PATH = r"../../data/stimsurvey/"
+DATA_PATH = r"../data/"
 
 # The survey manager
 manager = SurveyManager(CONFIG_PATH, DATA_PATH)
@@ -30,10 +30,10 @@ async def participant(websocket: WebSocket):
                     print("Sending survey to participant...")
                     await websocket.send_json(msg)
             elif data["type"] == "update":
-                manager.survey.percepts = data["survey"]
+                manager.survey.percepts = data["survey"]["percepts"]
             elif data["type"] == "submit":
                 print("Saving survey...")
-                manager.survey.percepts = data["survey"]
+                manager.survey.percepts = data["survey"]["percepts"]
                 manager.saveSurvey()
             else:
                 raise ValueError("Bad type value in participant-ws")

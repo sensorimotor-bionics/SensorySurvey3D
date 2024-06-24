@@ -75,9 +75,10 @@ class Survey():
         Outputs: True if success, False if failure
         """
         if self.percepts:
-            print((self.participant + "_" + self.date + "_" + self.startTime + ".json"))
-            with open(f"{self.participant}_{self.date}_{self.startTime}.json", 'w') as file:
-                json.dump(self.toDict(), os.path.join(path, file, indent = 4))
+            filename = f"{self.participant}_{self.date}_{self.startTime}.json"
+            print(f"Saving survey to {filename}...")
+            with open(os.path.join(path, filename), 'w') as file:
+                json.dump(self.toDict(), file, indent = 4)
             return True
         else:
             print("Survey cannot be saved without any percepts!")
