@@ -273,11 +273,30 @@ function perceptDeleteCallback() {
 	openPerceptList();
 }
 
+/*  modelSelectChangeCallback
+	Calls for the model corresponding to the newly selected option to be loaded
+*/
+function modelSelectChangeCallback() {
+	const modelSelect = document.getElementById("modelSelect");
+	viewport.loadModel(surveyManager.survey.config.models[modelSelect.value])
+		.catch((err) => { console.error("loadModel Promise rejected: " + err) });
+}
+
+/*  typeSelectChangeCallback
+	Updates the drawing color on the mesh to reflect the newly selected type
+*/
+function typeSelectChangeCallback() {
+	const typeSelect = document.getElementById("typeSelect");
+	// TODO - take the value of typeSelect and use it to change the color on the mesh
+}
+
 /* STARTUP CODE */
 
 window.onload = function() {
     // Initialize required classes
-    viewport = new VP.SurveyViewport(document.getElementById("3dContainer"));
+    viewport = new VP.SurveyViewport(document.getElementById("3dContainer"),
+										new THREE.Color(0xffffff),
+										new THREE.Color(0x535353));
 
     surveyManager = new SVY.SurveyManager();
 
@@ -300,10 +319,10 @@ window.onload = function() {
 	const submitButton = document.getElementById("submitButton");
 	submitButton.onpointerup = submitCallback;
 
-	const cameraButton = document.getElementById("cameraButton");
-	cameraButton.onpointerup = function() {
-		viewport.toCamera();
-		COM.activatePaletteButton("cameraButton");
+	const orbitButton = document.getElementById("orbitButton");
+	orbitButton.onpointerup = function() {
+		viewport.toOrbit();
+		COM.activatePaletteButton("orbitButton");
 	}
 
 	const panButton = document.getElementById("panButton");
@@ -365,4 +384,12 @@ window.onload = function() {
 
 	const perceptDeleteButton = document.getElementById("perceptDeleteButton");
 	perceptDeleteButton.onpointerup = perceptDeleteCallback;
+
+	const modelSelect = document.getElementById("modelSelect");
+	modelSelect.onchange = modelSelectChangeCallback;
+
+	const typeSelect = document.getElementById("typeSelect");
+	typeSelect.onchange = typeSelectChangeCallback;
+
+	viewport.animate();
 }

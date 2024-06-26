@@ -3,13 +3,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const controlStates = Object.freeze({
-    CAMERA: 0,
+    ORBIT: 0,
     PAN: 1,
     PAINT: 2,
     ERASE: 3
 });
 
-const meshMaterial = new THREE.MeshPhongMaterial( {
+const meshMaterial = new THREE.MeshPhongMaterial({
     color: 0xffffff,
     flatShading: true,
     vertexColors: true,
@@ -28,10 +28,10 @@ export class SurveyViewport {
             defaultModelFilename: string
                 The name of the gltf file that is to be loaded by default
     */
-    constructor(parentElement) {
+    constructor(parentElement, backgroundColor, defaultColor) {
         // Create the scene
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xffffff);
+        this.scene.background = backgroundColor;
 
         // Get the current style
         var style = window.getComputedStyle(parentElement, null);
@@ -52,8 +52,8 @@ export class SurveyViewport {
 
         // Set up controls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controlState = controlStates.CAMERA;
-        this.toCamera();
+        this.controlState = controlStates.ORBIT;
+        this.toOrbit();
         
         this.pointer = new THREE.Vector2();
         this.raycaster = new THREE.Raycaster();
@@ -80,7 +80,9 @@ export class SurveyViewport {
         window.onresize = this.onWindowResize.bind(this);
         document.onpointermove = this.onPointerMove.bind(this);
 
+        this.mesh = null;
         this.currentModel = null;
+        this.defaultColor = defaultColor;
     }
 
     /*  animate
@@ -89,7 +91,7 @@ export class SurveyViewport {
     */
     animate() {
         // Queue the next frame
-        requestAnimationFrame(this.animate);
+        requestAnimationFrame(this.animate.bind(this));
         
         // Update the controls
         this.controls.update();
@@ -100,12 +102,12 @@ export class SurveyViewport {
 
     /* CONTROLS */
 
-    /*  toCamera
+    /*  toOrbit
         Configures the control object to allow the user to rotate the camera with the left
         mouse button or a single-finger touch. Also updates the controlState object to "camera".
     */
-    toCamera() {
-        this.controlState = controlStates.CAMERA;
+    toOrbit() {
+        this.controlState = controlStates.ORBIT;
 		this.controls.enabled = true;
 		this.controls.enablePan = false;
 		this.controls.enableRotate = true;
@@ -187,15 +189,15 @@ export class SurveyViewport {
     /*  unloadModels
         Unloads all "mesh" objects in the scene
     */
-        unloadModels() {
-            var meshes = this.scene.getObjectsByProperty("isMesh", true);
-        
-            for (var i = 0; i < meshes.length; i++) {
-                this.scene.remove(meshes[i]);
-            }
-
-            this.currentModel = null;
+    unloadModels() {
+        var meshes = this.scene.getObjectsByProperty("isMesh", true);
+    
+        for (var i = 0; i < meshes.length; i++) {
+            this.scene.remove(meshes[i]);
         }
+
+        this.currentModel = null;
+    }
 
     /*  loadModel
         Loads a given model from a given .gltf file in /public/3dmodels. If 
@@ -208,27 +210,78 @@ export class SurveyViewport {
                 ".gltf" at the end)
     */
     loadModel(filename) {
-        this.unloadModels();
-        return new Promise(function(resolve, reject) {
-            var modelPath = "/3dmodels/" + filename;
+        const that = this;
+        if (filename != this.currentModel) {
+            this.unloadModels();
+            return new Promise(function(resolve, reject) {
+                var modelPath = "/3dmodels/" + filename;
+        
+                // Load the model, and pull the geometry out and create a mesh 
+                // from that. This step is necessary because vertex colors 
+                // only work with three.js geometry
+                var loader = new GLTFLoader();
+                console.log(modelPath);
+                loader.load(modelPath, function(gltf) {
+                    var geometry = gltf.scene.children[0].geometry;
+                    const count = geometry.attributes.position.count;
+                    geometry.setAttribute('color', new THREE.BufferAttribute(
+                                            new Float32Array(count * 3), 3));
+                    that.mesh = new THREE.Mesh(geometry, meshMaterial);
+                    that.scene.add(that.mesh);
+                    that.currentModel = filename;
+                    that.populateColor(that.defaultColor);
+                    resolve();
+                }, undefined, function() {
+                    alert("Could not load model " + filename + ", please notify experiment team.")
+                    reject();
+                });
+            }.bind(that))
+        }
+        else {
+            this.populateColor(this.defaultColor);
+            return null;
+        }
+    }
+
+    /* MESH MANIPULATION */
     
-            // Load the model, and pull the geometry out and create a mesh 
-            // from that. This step is necessary because vertex colors 
-            // only work with three.js geometry
-            var loader = new GLTFLoader();
-            loader.load(modelPath, function(gltf) {
-                var geometry = gltf.scene.children[0].geometry;
-                const count = geometry.attributes.position.count;
-                geometry.setAttribute('color', new THREE.BufferAttribute(
-                                        new Float32Array(count * 3), 3));
-                mesh = new THREE.Mesh(geometry, meshMaterial);
-                this.scene.add(mesh);
-                this.currentModel = filename;
-                resolve();
-            }, undefined, function() {
-                alert("Could not load model " + filename + ", please notify experiment team.")
-                reject();
-            });
-        })	
+    /*  populateColorOnFaces
+        Takes a color and a list of vertices, then makes those vertices the 
+        chosen color
+
+        Inputs:
+            color: THREE.Color
+                The color to be put onto the faces
+            vertices: list of ints corresponding to faces
+                The vertices whose colors are to be changed
+    */ 
+    populateColorOnFaces(color, vertices) {
+        const geometry = this.mesh.geometry;
+        const colors = geometry.attributes.color;
+    
+        for (let i = 0; i < vertices.length; i++) {
+            colors.setXYZ(vertices[i], color.r, color.g, color.b);
+        }
+    
+        colors.needsUpdate = true;
+    }
+
+    /*  populateColor
+        Takes a color and populates every face of the mesh with that color
+
+        Inputs:
+            color: THREE.Color
+                The color to be put onto the faces
+    */
+    populateColor(color) {
+        const geometry = this.mesh.geometry;
+        const positions = geometry.attributes.position;
+        const colors = geometry.attributes.color;
+    
+        for (let i = 0; i < positions.array.length; i++) {
+            colors.setXYZ(i, color.r, color.g, color.b);
+        }
+    
+        colors.needsUpdate = true;
     }
 }
