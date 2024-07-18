@@ -16,6 +16,65 @@ const meshMaterial = new THREE.MeshPhongMaterial({
     shininess: 0
 });
 
+const eventQueueLength = 20;
+
+export class EventQueue {
+    /*  constructor
+        Sets up the objects needed to operate the queue
+
+        Inputs:
+            queueLength: int
+                The maximum number of events to be kept in the queue
+    */
+    constructor(queueLength) {
+        this.queueLength = queueLength;
+        this.queuePosition = 0;
+        this.queue = [];
+    }
+
+    /*  push
+        Pushes a new event onto the queue, removing all elements after
+        the current queuePosition. Culls events off of the front
+        if the length of the queue exceeds the queueLength
+
+        Inputs:
+            eventType: str
+                The type of event to be added to the queue
+            vertices: list of int
+                The vertices affected by the event
+    */
+    push(eventType, vertices) {
+        this.queue.splice(this.queue.length - this.queuePosition);
+        this.queue.push([eventType, vertices]);
+
+        if (this.queue.length > this.queueLength) {
+            this.queue.slice(this.queue.length - this.queueLength, 
+                this.queueLength);
+        }
+    }
+
+    /*  next
+        Gives the user the next event in the queue starting from the
+        end, according to the current queuePosition
+
+        Outputs:
+            output: list[2] of str and list of int
+    */
+    next() {
+        return this.queue.slice(
+            this.queue.length - this.queuePosition
+            ).pop();
+    }
+
+    /*  reset
+        Resets the queuePosition and queue
+    */
+    reset() {
+        this.queuePosition = 0;
+        this.queue = [];
+    }
+}
+
 export class SurveyViewport {
     /* SETUP */
 
@@ -83,6 +142,8 @@ export class SurveyViewport {
         this.mesh = null;
         this.currentModel = null;
         this.defaultColor = defaultColor;
+
+        this.eventQueue = new EventQueue(eventQueueLength);
     }
 
     /*  animate
