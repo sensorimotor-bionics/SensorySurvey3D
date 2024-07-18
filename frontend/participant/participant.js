@@ -12,7 +12,7 @@ var waitingInterval;
 
 /* WEBSOCKET */
 
-const socketURL = "ws://127.0.0.1:8000/participant-ws";
+const socketURL = COM.socketURL + "participant-ws";
 var socket;
 
 /*  socketConnect
@@ -37,10 +37,13 @@ function socketConnect() {
 												msg.survey.startTime,
 												msg.survey.endTime, 
 												false);
-				populateSelect(document.getElementById("modelSelect"), 
+				const modelSelect = document.getElementById("modelSelect");
+				populateSelect(modelSelect, 
 								Object.keys(msg.survey.config.models));
 				populateSelect(document.getElementById("typeSelect"), 
 								msg.survey.config.typeList);
+				viewport.loadModel(surveyManager.survey.config.
+									models[modelSelect.value]);
 				endWaiting();
 				break;
 		}
@@ -142,6 +145,7 @@ function populateEditorWithPercept(percept) {
 	const modelSelect = document.getElementById("modelSelect");
 	if (percept.model) {
 		modelSelect.value = percept.model;
+		viewport.loadModel(surveyManager.survey.config.models[modelSelect.value])
 	}
 
 	const typeSelect = document.getElementById("typeSelect");
@@ -309,7 +313,7 @@ window.onload = function() {
 	startWaiting();
 
 	/* ARRANGE USER INTERFACE */
-	COM.placeUI(COM.UI_POSITIONS.LEFT, COM.UI_POSITIONS.TOP);
+	COM.placeUI(COM.uiPositions.LEFT, COM.uiPositions.TOP);
 	toggleEditorTabs();
 
     /* EVENT LISTENERS */
@@ -356,25 +360,25 @@ window.onload = function() {
 		qualifyTabButton.classList.add('active');
 	}
 
-	const intensitySlider = document.getElementById("intensitySlider");
-	intensitySlider.oninput = function() {
-		document.getElementById("intensityValue").innerHTML = 
-			intensitySlider.value;
-	}
-	intensitySlider.dispatchEvent(new Event("input"));
+	// const intensitySlider = document.getElementById("intensitySlider");
+	// intensitySlider.oninput = function() {
+	// 	document.getElementById("intensityValue").innerHTML = 
+	// 		intensitySlider.value;
+	// }
+	// intensitySlider.dispatchEvent(new Event("input"));
 
-	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	naturalnessSlider.oninput = function() {
-		document.getElementById("naturalnessValue").innerHTML = 
-			naturalnessSlider.value;
-	}
-	naturalnessSlider.dispatchEvent(new Event("input"));
+	// const naturalnessSlider = document.getElementById("naturalnessSlider");
+	// naturalnessSlider.oninput = function() {
+	// 	document.getElementById("naturalnessValue").innerHTML = 
+	// 		naturalnessSlider.value;
+	// }
+	// naturalnessSlider.dispatchEvent(new Event("input"));
 
-	const painSlider = document.getElementById("painSlider");
-	painSlider.oninput = function() {
-		document.getElementById("painValue").innerHTML = painSlider.value;
-	}
-	painSlider.dispatchEvent(new Event("input"));
+	// const painSlider = document.getElementById("painSlider");
+	// painSlider.oninput = function() {
+	// 	document.getElementById("painValue").innerHTML = painSlider.value;
+	// }
+	// painSlider.dispatchEvent(new Event("input"));
 
 	const perceptDoneButton = document.getElementById("perceptDoneButton");
 	perceptDoneButton.onpointerup = perceptDoneCallback;

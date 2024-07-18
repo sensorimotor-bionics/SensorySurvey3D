@@ -170,7 +170,7 @@ button:active {
 
 input[type="range"] {
     -webkit-appearance: none;
-    width: 216px;
+    width: 100%;
     height: 8px;
     border-radius: 5px;
     background: var(--uiElementColor);
@@ -200,6 +200,12 @@ input[type="range"]::-moz-range-thumb {
     border-radius: 50%;
     background: var(--buttonColor);
     cursor: pointer;
+}
+
+.rangeContainer {
+    display:flex; 
+    flex-direction:row; 
+    align-items: center;
 }
 
 select {

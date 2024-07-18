@@ -11,7 +11,7 @@ var surveyTable;
 
 /* WEBSOCKET */
 
-const socketURL = "ws://127.0.0.1:8000/experimenter-ws";
+const socketURL = COM.socketURL + "experimenter-ws";
 var socket;
 
 /*  socketConnect
@@ -105,7 +105,7 @@ window.onload = function() {
 
 	/* ARRANGE USER INTERFACE */
     COM.openSidebarTab("newSurveyTab");
-	COM.placeUI(COM.UI_POSITIONS.LEFT, COM.UI_POSITIONS.TOP);
+	COM.placeUI(COM.uiPositions.LEFT, COM.uiPositions.TOP);
 
     /* EVENT LISTENERS */
     const newSurvey = document.getElementById("newSurvey");

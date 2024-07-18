@@ -1,4 +1,6 @@
-export const UI_POSITIONS = Object.freeze({
+export const socketURL = "ws://127.0.0.1:8000/";
+
+export const uiPositions = Object.freeze({
     TOP: 0,
     BOTTOM: 1,
     LEFT: 2,
@@ -28,11 +30,11 @@ export function placeUI(rightleft, topbottom) {
     sidebars[0].style.top = "0px";
 
     switch(rightleft) {
-        case UI_POSITIONS.RIGHT:
+        case uiPositions.RIGHT:
             sidebars[0].style.right = "0px";
             widthbars[0].style.right = sidebarWidth;
             break;
-        case UI_POSITIONS.LEFT:
+        case uiPositions.LEFT:
             sidebars[0].style.left = "0px";
             widthbars[0].style.left = sidebarWidth;
             break;
@@ -42,10 +44,10 @@ export function placeUI(rightleft, topbottom) {
     }
 
     switch(topbottom) {
-        case UI_POSITIONS.TOP:
+        case uiPositions.TOP:
             widthbars[0].style.top = "0px";
             break;
-        case UI_POSITIONS.BOTTOM:
+        case uiPositions.BOTTOM:
             widthbars[0].style.bottom = "0px";
             break;
         default:
