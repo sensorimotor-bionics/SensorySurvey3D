@@ -8,6 +8,8 @@ document.title = "Participant - SensorySurvey3D"
 var viewport;
 var surveyManager;
 var surveyTable;
+var zoomController;
+
 var waitingInterval;
 var submissionTimeoutInterval;
 
@@ -68,7 +70,7 @@ function socketConnect() {
 
 	socket.onclose = function() {
 		console.log("Connection to websocket @ ", socketURL, 
-					" closed. Attempting reconnect in 1 second.");
+					" closed. Attempting reconnection in 1 second.");
 		setTimeout(function() {
 			socketConnect();
 		}, 1000);
@@ -386,9 +388,12 @@ window.onload = function() {
     // Initialize required classes
     viewport = new VP.SurveyViewport(document.getElementById("3dContainer"),
 										new THREE.Color(0xffffff),
-										new THREE.Color(0x535353));
+										new THREE.Color(0x535353),
+										20);
 
-    surveyManager = new SVY.SurveyManager();
+	zoomController = new VP.ZoomController(viewport.camera, 2, 20);
+
+    surveyManager = new SVY.SurveyManager(); 
 
 	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), 
 										true, viewPerceptCallback, 
@@ -480,6 +485,24 @@ window.onload = function() {
 
 	const typeSelect = document.getElementById("typeSelect");
 	typeSelect.onchange = typeSelectChangeCallback;
+
+	const zoomOut = document.getElementById("zoomOut");
+	zoomOut.onpointerup = function() {
+		var value = zoomController.decrementZoom();
+		document.getElementById("zoomSlider").value = value;
+	}
+
+	const zoomIn = document.getElementById("zoomIn");
+	zoomIn.onpointerup = function() {
+		var value = zoomController.incrementZoom();
+		document.getElementById("zoomSlider").value = value;
+	}
+
+	const zoomSlider = document.getElementById("zoomSlider");
+	zoomSlider.oninput = function() {
+			var value = document.getElementById("zoomSlider").value;
+			zoomController.setZoom(value);
+	}
 
 	viewport.animate();
 }

@@ -22,10 +22,12 @@ export const uiPositions = Object.freeze({
             True if function is successful, false if failed
 */
 export function placeUI(rightleft, topbottom) {
-    var sidebars = document.getElementsByClassName("sidebar");
-    var widthbars = document.getElementsByClassName("widthbar");
+    const sidebars = document.getElementsByClassName("sidebar");
+    const widthbars = document.getElementsByClassName("widthbar");
+    const threeDContainer = document.getElementById("3dContainer");
 
-    var sidebarWidth = getComputedStyle(document.body).getPropertyValue("--sideWidth");
+    const sidebarWidth = getComputedStyle(document.body).
+                            getPropertyValue("--sideWidth");
 
     sidebars[0].style.top = "0px";
 
@@ -46,9 +48,13 @@ export function placeUI(rightleft, topbottom) {
     switch(topbottom) {
         case uiPositions.TOP:
             widthbars[0].style.top = "0px";
+            threeDContainer.style.top = getComputedStyle(document.body).
+                                        getPropertyValue("--widthbarHeight");
             break;
         case uiPositions.BOTTOM:
             widthbars[0].style.bottom = "0px";
+            threeDContainer.style.bottom = getComputedStyle(document.body).
+                                            getPropertyValue("--widthbarHeight");
             break;
         default:
             console.error("Receieved an invalid position for widthbar");

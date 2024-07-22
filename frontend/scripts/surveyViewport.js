@@ -16,9 +16,7 @@ const meshMaterial = new THREE.MeshPhongMaterial({
     shininess: 0
 });
 
-const eventQueueLength = 20;
-
-export class EventQueue {
+class EventQueue {
     /*  constructor
         Sets up the objects needed to operate the queue
 
@@ -75,6 +73,95 @@ export class EventQueue {
     }
 }
 
+export class ZoomController {
+    /*  constructor
+        Takes a camera object to allow the zoom controller to manipulate it
+
+        Inputs:
+            camera: THREE.PerspectiveCamera OR THREE.OrthographicCamera
+                The camera object to be manipulated by the zoom controller
+            minZoom: int
+                The minimum zoom level
+            maxZoom: int
+                The maximum zoom level
+    */
+    constructor(camera, minZoom, maxZoom) {
+        this.camera = camera;
+        this.minZoom = minZoom;
+        this.maxZoom = maxZoom;
+        this.reset();
+    }
+
+    /*  capZoom
+        Checks the current zoom value against the min and max, and sets the
+        value to be within bounds if outside
+    */
+    capZoom() {
+        this.camera.zoom = Math.min(Math.max(parseInt(this.camera.zoom), 
+                                    this.minZoom), 
+                                    this.maxZoom);
+    }
+
+    /*  incrementZoom
+        Increments the zoom value by 1, then updates the screen
+
+        Outputs:
+            this.camera.zoom: int
+                The current zoom value
+    */
+    incrementZoom() {
+        this.camera.zoom += 1
+        this.capZoom();
+        this.camera.updateProjectionMatrix();
+        return this.camera.zoom;
+    }
+    
+    /*  decrementZoom
+        Decrements the zoom value by 1, then updates the screen
+
+        Outputs:
+            this.camera.zoom: int
+                The current zoom value
+    */
+    decrementZoom() {
+        this.camera.zoom -= 1;
+        this.capZoom();
+        this.camera.updateProjectionMatrix();
+        return this.camera.zoom;
+    }
+
+    /*  setZoom
+        Sets the zoom to a given value, then updates the screen
+
+        Inputs:
+            value: int
+                The value the zoom should be set to
+
+        Outputs:
+            this.camera.zoom: int
+                The current zoom value
+    */
+    setZoom(value) {
+        this.camera.zoom = value;
+        this.capZoom();
+        this.camera.updateProjectionMatrix();
+        return this.camera.zoom;
+    }
+
+    /*  reset
+        Resets the camera value to the minZoom value, then updates the screen
+
+        Outputs:
+            this.camera.zoom: int
+                The current zoom value
+    */
+    reset() {
+        this.camera.zoom = this.minZoom;
+        this.camera.updateProjectionMatrix();
+        return this.camera.zoom;
+    }
+}
+
 export class SurveyViewport {
     /* SETUP */
 
@@ -87,7 +174,7 @@ export class SurveyViewport {
             defaultModelFilename: string
                 The name of the gltf file that is to be loaded by default
     */
-    constructor(parentElement, backgroundColor, defaultColor) {
+    constructor(parentElement, backgroundColor, defaultColor, eventQueueLength) {
         // Create the scene
         this.scene = new THREE.Scene();
         this.scene.background = backgroundColor;
