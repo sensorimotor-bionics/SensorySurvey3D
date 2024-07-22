@@ -34,7 +34,14 @@ async def participant(websocket: WebSocket):
             elif data["type"] == "submit":
                 print("Saving survey...")
                 manager.survey.percepts = data["survey"]["percepts"]
-                manager.saveSurvey()
+                result = manager.saveSurvey()
+                print(result)
+                msg = {
+                    "type" : "submitResponse",
+                    "success" : result
+                }
+
+                await websocket.send_json(msg)
             else:
                 raise ValueError("Bad type value in participant-ws")
     except WebSocketDisconnect:

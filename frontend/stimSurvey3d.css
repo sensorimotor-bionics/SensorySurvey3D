@@ -70,6 +70,10 @@ html {
     background-color: var(--uiElementContrast);
 }
 
+.tabSelector button:disabled {
+    background-color: var(--uiElementContrast);
+}
+
 .threeDContainer {
     height: 100%;
     width: 75%;
@@ -135,6 +139,16 @@ html {
     left: 0;
 }
 
+html {
+    font-family: sans-serif;
+}
+
+p {
+    font-size: 24px;
+    color: white;
+    margin: 8px 8px;
+}
+
 button {
     background-color: var(--buttonColor);
     border: none;
@@ -150,22 +164,17 @@ button {
     border-radius: 5px;
 }
 
-html {
-    font-family: sans-serif;
-}
-
-p {
-    font-size: 24px;
-    color: white;
-    margin: 8px 8px;
-}
-
 button:hover {
     background-color: var(--uiElementContrast);
 }
 
 button:active {
     background-color: var(--buttonActiveColor);
+}
+
+button:disabled {
+    background-color: var(--uiElementContrast);
+    cursor: default;
 }
 
 input[type="range"] {

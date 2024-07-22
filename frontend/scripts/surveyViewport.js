@@ -281,7 +281,6 @@ export class SurveyViewport {
                 // from that. This step is necessary because vertex colors 
                 // only work with three.js geometry
                 var loader = new GLTFLoader();
-                console.log(modelPath);
                 loader.load(modelPath, function(gltf) {
                     var geometry = gltf.scene.children[0].geometry;
                     const count = geometry.attributes.position.count;
@@ -291,6 +290,7 @@ export class SurveyViewport {
                     that.scene.add(that.mesh);
                     that.currentModel = filename;
                     that.populateColor(that.defaultColor);
+                    that.controls.reset();
                     resolve();
                 }, undefined, function() {
                     alert("Could not load model " + filename + ", please notify experiment team.")

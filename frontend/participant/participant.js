@@ -9,6 +9,7 @@ var viewport;
 var surveyManager;
 var surveyTable;
 var waitingInterval;
+var submissionTimeoutInterval;
 
 /* WEBSOCKET */
 
@@ -31,21 +32,37 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "new":
-				surveyManager.createNewSurvey(msg.survey.participant, 
-												msg.survey.config,
-												msg.survey.date, 
-												msg.survey.startTime,
-												msg.survey.endTime, 
-												false);
-				const modelSelect = document.getElementById("modelSelect");
-				populateSelect(modelSelect, 
-								Object.keys(msg.survey.config.models));
-				populateSelect(document.getElementById("typeSelect"), 
-								msg.survey.config.typeList);
-				viewport.loadModel(surveyManager.survey.config.
-									models[modelSelect.value]);
-				endWaiting();
+				if (
+					surveyManager.createNewSurvey(
+					msg.survey.participant, 
+					msg.survey.config,
+					msg.survey.date, 
+					msg.survey.startTime,
+					msg.survey.endTime, 
+					false
+				)) {
+					const modelSelect = document.getElementById("modelSelect");
+					populateSelect(modelSelect, 
+									Object.keys(msg.survey.config.models));
+					populateSelect(document.getElementById("typeSelect"), 
+									msg.survey.config.typeList);
+					viewport.loadModel(surveyManager.survey.config.
+										models[modelSelect.value]);
+					endWaiting();
+				}
 				break;
+			case "submitResponse":
+				if (msg.success) {
+					surveyManager.clearSurvey();
+					startWaiting();
+					endSubmissionTimeout(msg.success);
+				}
+				else if (submissionTimeoutInterval) {
+					alert("Submission unsuccessful: server could not save")
+				}
+				else {
+					alert("Received submitSuccess without making a submission!");
+				}
 		}
 	}
 
@@ -67,7 +84,11 @@ function socketConnect() {
 
 /*  toggleEditorTabs
 	Reveals or hides the "Draw" and "Qualify" tabs at the top of the sidebar,
-	depending on if they're hidden or revealed respectively.
+	depending on input
+
+	Inputs:
+		truefalse: bool
+			If true then show tabs, if false hide them
 */
 function toggleEditorTabs(truefalse) {
 	var editorTabs = document.getElementById("tabSelector");
@@ -76,6 +97,28 @@ function toggleEditorTabs(truefalse) {
 	}
 	else {
 		editorTabs.style.display = "none";
+	}
+}
+
+/*  toggleButtons
+	Find all button elements and enable or disable them, depending on input
+
+	Inputs:
+		truefalse: bool
+			If true disable buttons, if false enable them
+*/
+function toggleButtons(truefalse) {
+	const sidebar = document.getElementById("sidebar");
+
+	var buttons = sidebar.querySelectorAll("button");
+	for (var i = 0; i < buttons.length; i++) {
+		buttons[i].disabled = truefalse;
+		if (truefalse) {
+			buttons[i].style.pointerEvents = "none";
+		}
+		else {
+			buttons[i].style.pointerEvents = "auto";
+		}
 	}
 }
 
@@ -176,7 +219,7 @@ function savePerceptFromEditor() {
 	const typeSelect = document.getElementById("typeSelect");
 	surveyManager.currentPercept.type = typeSelect.value;
 
-	// TODO - get faces off of current model and save them
+	// TODO - get vertices off of current model and save them
 }
 
 /*  startWaiting
@@ -184,6 +227,7 @@ function savePerceptFromEditor() {
 	websocket for a new survey. Also opens the waitingTab
 */
 function startWaiting() {
+	console.log("startWaiting");
 	waitingInterval = setInterval(function() {
 		socket.send(JSON.stringify({type: "waiting"}));
 	}, 1000);
@@ -194,8 +238,44 @@ function startWaiting() {
 	Clears the waitingInterval, and opens the tab for the new survey
 */
 function endWaiting() {
-	clearInterval(waitingInterval);
+	waitingInterval = clearInterval(waitingInterval);
 	COM.openSidebarTab("perceptTab");
+}
+
+/*  startSubmissionTimeout
+	Sets an interval which times out after 5 seconds, alerting the user
+	that the submission did not go through
+*/
+function startSubmissionTimeout() {
+	var timeoutCount = 0;
+	submissionTimeoutInterval = setInterval(function() {
+		if (timeoutCount == 10) {
+			endSubmissionTimeout(false);
+		}
+		timeoutCount += 1;
+	}.bind(timeoutCount), 500);
+}
+
+/*  endSubmissionTimeout
+	Clears the timeout interval, displays a successful or unsuccessful
+	alert for the user, and restores button functionality
+
+	Inputs:
+		success: bool
+			A boolean representing if the submission was a success, determines
+			which alert is displayed
+*/
+function endSubmissionTimeout(success) {
+	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
+
+	if (success) {
+		alert("Submission was successful!")
+	}
+	else {
+		alert("Submission was unsuccessful: timeout reached");
+	}
+
+	toggleButtons(false);
 }
 
 /* BUTTON CALLBACKS */
@@ -206,7 +286,13 @@ function endWaiting() {
 	begin.
 */
 function submitCallback() {
-	surveyManager.submitSurvey(socket);
+	if (surveyManager.submitSurvey(socket)) {
+		toggleButtons(true);
+		startSubmissionTimeout();
+	}
+	else {
+		alert("Survey submission failed -- socket is not connected!");
+	}
 }
 
 /*  editPerceptCallback

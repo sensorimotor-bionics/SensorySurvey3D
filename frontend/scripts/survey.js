@@ -38,6 +38,7 @@ export class SurveyManager {
     */
     clearSurvey() {
         this.survey = null;
+        this.currentPercept = null;
         return true;
     }
 
@@ -367,7 +368,7 @@ export class SurveyTable {
         var view = document.createElement("td");
         var viewButton = document.createElement("button");
         viewButton.classList.add("eyeButton");
-        viewButton.addEventListener("pointerdown", function(e) {
+        viewButton.addEventListener("pointerup", function(e) {
             that.viewCallback(percept, e.currentTarget);
         })
         var viewEye = document.createElement("img");
@@ -381,7 +382,7 @@ export class SurveyTable {
             var edit = document.createElement("td");
             var editButton = document.createElement("button");
             editButton.innerHTML = "Edit";
-            editButton.addEventListener("pointerdown", function() {
+            editButton.addEventListener("pointerup", function() {
                 that._editCallbackExternal(percept);
             });
             edit.appendChild(editButton);
