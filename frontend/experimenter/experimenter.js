@@ -50,7 +50,8 @@ function socketConnect() {
 	}
 
 	socket.onclose = function() {
-		console.log("Connection to websocket @ ", socketURL, " closed. Attempting reconnect in 1 second.");
+		console.log("Connection to websocket @ ", socketURL, 
+			" closed. Attempting reconnect in 1 second.");
 		setTimeout(function() {
 			socketConnect();
 		}, 1000);
@@ -97,8 +98,8 @@ window.onload = function() {
 
     surveyManager = new SVY.SurveyManager();
 
-	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), false,
-										viewPerceptCallback, null)
+	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), 
+										false, viewPerceptCallback, null);
 
     // Start the websocket
     socketConnect();

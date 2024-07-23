@@ -234,8 +234,8 @@ export class SurveyViewport {
     }
 
     /*  animate
-        Queues the next frame and handles control inputs depending on the current controlState.
-        Must be called once to begin animating the scene.
+        Queues the next frame and handles control inputs depending on the 
+        current controlState. Must be called once to begin animating the scene.
     */
     animate() {
         // Queue the next frame
@@ -251,8 +251,9 @@ export class SurveyViewport {
     /* CONTROLS */
 
     /*  toOrbit
-        Configures the control object to allow the user to rotate the camera with the left
-        mouse button or a single-finger touch. Also updates the controlState object to "camera".
+        Configures the control object to allow the user to rotate the camera
+        with the left mouse button or a single-finger touch. Also updates the 
+        controlState object to "camera".
     */
     toOrbit() {
         this.controlState = controlStates.ORBIT;
@@ -268,8 +269,9 @@ export class SurveyViewport {
     }
 
     /*  toPan
-        Configures the control object to allow the user to pan the camera with the left
-        mouse button or a single-finger touch. Also updates the controlState object to "panning".
+        Configures the control object to allow the user to pan the camera with 
+        the left mouse button or a single-finger touch. Also updates the 
+        controlState object to "panning".
     */
     toPan() {
         this.controlState = controlStates.PAN;
@@ -369,7 +371,7 @@ export class SurveyViewport {
                 // only work with three.js geometry
                 var loader = new GLTFLoader();
                 loader.load(modelPath, function(gltf) {
-                    var geometry = gltf.scene.children[0].geometry;
+                    var geometry = gltf.scene.children[0].geometry.toNonIndexed();
                     const count = geometry.attributes.position.count;
                     geometry.setAttribute('color', new THREE.BufferAttribute(
                                             new Float32Array(count * 3), 3));
@@ -380,7 +382,8 @@ export class SurveyViewport {
                     that.controls.reset();
                     resolve();
                 }, undefined, function() {
-                    alert("Could not load model " + filename + ", please notify experiment team.")
+                    alert("Could not load model " + filename 
+                            + ", please notify experiment team.")
                     reject();
                 });
             }.bind(that))

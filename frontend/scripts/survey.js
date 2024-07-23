@@ -24,9 +24,11 @@ export class SurveyManager {
             overwrite: bool
                 If true, overwrites the current survey even if it's full
     */
-    createNewSurvey(participant, config, date, startTime, endTime, overwrite=false) {
+    createNewSurvey(participant, config, date, startTime, endTime, 
+        overwrite=false) {
         if (this.survey && !overwrite){
-            console.warn("Attempted to create survey while there is a preexisting survey without overwriting.");
+            console.warn("Attempted to create survey while there is a preexisting" 
+                + "survey without overwriting.");
             return false;
         }
         this.survey = new Survey(participant, config, date, startTime, endTime);
@@ -92,9 +94,11 @@ export class Survey {
             config: json
                 The full config file 
             date: str
-                The date, should be in YYYY-MM-DD format if received from the websocket
+                The date, should be in YYYY-MM-DD format if received from the 
+                websocket
             startTime: str
-                The time the survey was begun, should be in HH:MM:SS format if received from the websocket
+                The time the survey was begun, should be in HH:MM:SS format if 
+                received from the websocket
             endTime: str
                 The time the survey was ended, same format    
     */
@@ -293,7 +297,8 @@ export class SurveyTable {
             editCallback: function
                 The function that should be called when an edit button is clicked
     */
-    constructor(parentTable, isParticipant, viewCallbackExternal, editCallbackExternal) {
+    constructor(parentTable, isParticipant, viewCallbackExternal, 
+        editCallbackExternal) {
         this._isParticipant = isParticipant;
         this._viewCallbackExternal = viewCallbackExternal;
         this._editCallbackExternal = editCallbackExternal;
@@ -334,7 +339,8 @@ export class SurveyTable {
 
         var eyeButtons = document.getElementsByClassName("eyeButton");
         for (var i = 0; i < eyeButtons.length; i++) {
-            eyeButtons[i].getElementsByTagName('img')[0].src = "/images/close-eye.png";
+            eyeButtons[i].getElementsByTagName('img')[0].src 
+                = "/images/close-eye.png";
         }
 
         target.getElementsByTagName('img')[0].src = "/images/eye.png";

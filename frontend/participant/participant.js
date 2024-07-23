@@ -41,8 +41,8 @@ function socketConnect() {
 					msg.survey.date, 
 					msg.survey.startTime,
 					msg.survey.endTime, 
-					false
-				)) {
+					false)
+				) {
 					const modelSelect = document.getElementById("modelSelect");
 					populateSelect(modelSelect, 
 									Object.keys(msg.survey.config.models));
@@ -60,7 +60,7 @@ function socketConnect() {
 					endSubmissionTimeout(msg.success);
 				}
 				else if (submissionTimeoutInterval) {
-					alert("Submission unsuccessful: server could not save")
+					alert("Submission unsuccessful: server could not save");
 				}
 				else {
 					alert("Received submitSuccess without making a submission!");
@@ -190,7 +190,8 @@ function populateEditorWithPercept(percept) {
 	const modelSelect = document.getElementById("modelSelect");
 	if (percept.model) {
 		modelSelect.value = percept.model;
-		viewport.loadModel(surveyManager.survey.config.models[modelSelect.value])
+		viewport.loadModel(
+			surveyManager.survey.config.models[modelSelect.value]);
 	}
 
 	const typeSelect = document.getElementById("typeSelect");
@@ -210,7 +211,8 @@ function savePerceptFromEditor() {
 	surveyManager.currentPercept.intensity = parseFloat(intensitySlider.value);
 
 	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	surveyManager.currentPercept.naturalness = parseFloat(naturalnessSlider.value);
+	surveyManager.currentPercept.naturalness = parseFloat(
+		naturalnessSlider.value);
 
 	const painSlider = document.getElementById("painSlider");
 	surveyManager.currentPercept.pain = parseFloat(painSlider.value);
@@ -450,26 +452,6 @@ window.onload = function() {
 		drawTabButton.classList.remove('active');
 		qualifyTabButton.classList.add('active');
 	}
-
-	// const intensitySlider = document.getElementById("intensitySlider");
-	// intensitySlider.oninput = function() {
-	// 	document.getElementById("intensityValue").innerHTML = 
-	// 		intensitySlider.value;
-	// }
-	// intensitySlider.dispatchEvent(new Event("input"));
-
-	// const naturalnessSlider = document.getElementById("naturalnessSlider");
-	// naturalnessSlider.oninput = function() {
-	// 	document.getElementById("naturalnessValue").innerHTML = 
-	// 		naturalnessSlider.value;
-	// }
-	// naturalnessSlider.dispatchEvent(new Event("input"));
-
-	// const painSlider = document.getElementById("painSlider");
-	// painSlider.oninput = function() {
-	// 	document.getElementById("painValue").innerHTML = painSlider.value;
-	// }
-	// painSlider.dispatchEvent(new Event("input"));
 
 	const perceptDoneButton = document.getElementById("perceptDoneButton");
 	perceptDoneButton.onpointerup = perceptDoneCallback;

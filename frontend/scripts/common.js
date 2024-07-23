@@ -8,8 +8,9 @@ export const uiPositions = Object.freeze({
 });
 
 /*  placeUI
-    Places the side and width bars on the right or left, and top or bottom respectively.
-    Parameters can be changed to accomodate for handedness of participant.
+    Places the side and width bars on the right or left, and top or bottom 
+    respectively. Parameters can be changed to accomodate for handedness of 
+    participant.
 
     Inputs:
         rightleft: UI_POSITIONS
@@ -83,8 +84,14 @@ export function openSidebarTab(tabID) {
 }
 
 /*  activatePaletteButton
-    Palette buttons are elements intended to change the behavior of the controls
-    on the 
+    Palette buttons are elements intended to change the behavior of the viewport
+    controls; this function changes the style of the palette button to reflect
+    that it is the one that is "active", while making every other button
+    "inactive"
+
+    Inputs:
+        buttonID: str
+            The ID of the palette button element to be activated
 */
 export function activatePaletteButton(buttonID) {
     var imageButtons = document.getElementsByClassName("paletteButton");
