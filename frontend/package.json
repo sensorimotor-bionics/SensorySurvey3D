@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "three": "^0.165.0",
+    "three": "^0.166.1",
+    "three-mesh-bvh": "^0.7.6",
     "vite": "^5.3.0"
   }
 }

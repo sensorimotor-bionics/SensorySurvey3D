@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const controlStates = Object.freeze({
     ORBIT: 0,
@@ -203,6 +208,7 @@ export class SurveyViewport {
         
         this.pointer = new THREE.Vector2();
         this.raycaster = new THREE.Raycaster();
+        this.raycaster.firstHitOnly = true;
 
         // Set an ambient level of light so that all sides of the mesh are lit
 		this.ambientLight = new THREE.AmbientLight(0x404040, 15);
@@ -376,6 +382,7 @@ export class SurveyViewport {
                     geometry.setAttribute('color', new THREE.BufferAttribute(
                                             new Float32Array(count * 3), 3));
                     that.mesh = new THREE.Mesh(geometry, meshMaterial);
+                    geometry.computeBoundsTree();
                     that.scene.add(that.mesh);
                     that.currentModel = filename;
                     that.populateColor(that.defaultColor);
@@ -406,7 +413,7 @@ export class SurveyViewport {
             vertices: list of ints corresponding to faces
                 The vertices whose colors are to be changed
     */ 
-    populateColorOnFaces(color, vertices) {
+    populateColorOnVertices(color, vertices) {
         const geometry = this.mesh.geometry;
         const colors = geometry.attributes.color;
     

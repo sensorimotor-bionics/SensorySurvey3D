@@ -231,9 +231,10 @@ function savePerceptFromEditor() {
 	websocket for a new survey. Also opens the waitingTab
 */
 function startWaiting() {
-	console.log("startWaiting");
 	waitingInterval = setInterval(function() {
-		socket.send(JSON.stringify({type: "waiting"}));
+		if (socket.readyState == WebSocket.OPEN) {
+			socket.send(JSON.stringify({type: "waiting"}));
+		}
 	}, 1000);
 	COM.openSidebarTab("waitingTab");
 }

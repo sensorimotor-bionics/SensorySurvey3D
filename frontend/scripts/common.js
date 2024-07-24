@@ -1,3 +1,5 @@
+import { Vector2 } from "three";
+
 export const socketURL = "ws://127.0.0.1:8000/";
 
 export const uiPositions = Object.freeze({
@@ -99,4 +101,83 @@ export function activatePaletteButton(buttonID) {
         imageButtons[i].classList.remove("active")
     }
 	document.getElementById(buttonID).classList.add("active");
+}
+
+/*  horizontalLine
+    Returns a set of points representing a horizontal line starting at given
+    start position startX and ending at endX at a given y position
+
+    Inputs:
+        xStart: int
+            The x coordinate to start at
+        xEnd: int
+            The x coordinate to end at
+        y: int
+            The y coordinate of the line
+
+    Outputs:
+        line: list of Vector2
+*/
+export function horizontalLine(xStart, xEnd, y) {
+    var line = [];
+
+    for (var i = xStart; i <= xEnd; i++) {
+        line.push(new Vector2(i, y));
+    }
+
+    return line;
+}
+
+/*  midpointCircle
+    Performs the midpoint circle algorithm on a given x,y midpoint, generating
+    a set of points representing a circle of a given radius
+
+    Adapted from: 
+    https://stackoverflow.com/questions/10878209/
+
+    Inputs:
+        xCenter: int
+            The x coordinate of the midpoint
+        yCenter: int
+            The y coordinate of the midpoint
+        radius: int
+            The radius of the desired circle
+
+    Outputs:
+        points_set: list of Vector2
+            The points which represent the circle matching given parameters
+*/
+export function midpointCircle(centerX, centerY, radius) {
+    var x = radius, y = 0, err = 1 - x;
+
+    var circle = [];
+
+    while (x >= y) {
+        var startX = -x + centerX;
+        var endX = x + centerX;
+
+        circle = circle.concat(horizontalLine(startX, endX, y + centerX));
+
+        if (y != 0) {
+            circle = circle.concat(horizontalLine(startX, endX, -y + centerY));
+        }
+
+        y++;
+
+        if (err < 0) {
+            err += 2 * y + 1;
+        }
+        else {
+            if (x >= y) {
+                startX = -y + 1 + centerX;
+                endX = y - 1 + centerX;
+                circle = circle.concat(horizontalLine(startX, endX, x + centerY));
+                circle = circle.concat(horizontalLine(startX, endX, -x + centerY));
+            }
+            x--;
+            err += 2 * (y - x + 1);
+        }
+    }
+
+    return circle;
 }

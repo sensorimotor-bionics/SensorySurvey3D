@@ -303,9 +303,6 @@ export class SurveyTable {
         this._viewCallbackExternal = viewCallbackExternal;
         this._editCallbackExternal = editCallbackExternal;
 
-        console.log(typeof(this._viewCallbackExternal))
-        console.log(typeof(this._editCallbackExternal))
-
         // Set up the table, with edit column if partitipant
         var thead = document.createElement("thead");
         parentTable.appendChild(thead);
