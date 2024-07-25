@@ -85,16 +85,35 @@ export class ZoomController {
         Inputs:
             camera: THREE.PerspectiveCamera OR THREE.OrthographicCamera
                 The camera object to be manipulated by the zoom controller
+            rendererElement:
+                The renderer element of the SurveyViewport object
             minZoom: int
                 The minimum zoom level
             maxZoom: int
                 The maximum zoom level
     */
-    constructor(camera, minZoom, maxZoom) {
+    constructor(camera, rendererElement, minZoom, maxZoom) {
         this.camera = camera;
+        this.rendererElement = rendererElement;
         this.minZoom = minZoom;
         this.maxZoom = maxZoom;
+        this.sliderElement = null;
         this.reset();
+
+        const that = this;
+
+        this.rendererElement.onwheel = function(event) {
+            if (event.deltaY > 0) {
+                this.decrementZoom();
+            }
+            else if (event.deltaY < 0) {
+                this.incrementZoom()
+            }
+
+            if (this.sliderElement) {
+                this.sliderElement.value = this.camera.zoom;
+            }
+        }.bind(that);
     }
 
     /*  capZoom
@@ -165,6 +184,43 @@ export class ZoomController {
         this.camera.updateProjectionMatrix();
         return this.camera.zoom;
     }
+
+    createZoomSlider(parentElement) {
+        const zoomOut = document.createElement("button");
+        zoomOut.id = "zoomOut";
+        zoomOut.innerHTML = "-";
+        zoomOut.onpointerup = function() {
+            var value = this.decrementZoom();
+            document.getElementById("zoomSlider").value = value;
+        }.bind(this);
+
+        const zoomIn = document.createElement("button");
+        zoomIn.id = "zoomIn";
+        zoomIn.innerHTML = "+";
+        zoomIn.onpointerup = function() {
+            var value = this.incrementZoom();
+            document.getElementById("zoomSlider").value = value;
+        }.bind(this);
+
+        const zoomSlider = document.createElement("input");
+        zoomSlider.type = "range";
+        zoomSlider.value = this.camera.zoom;
+        zoomSlider.min = this.minZoom.toString();
+        zoomSlider.max = this.maxZoom.toString();
+        zoomSlider.step = "1";
+        zoomSlider.id = "zoomSlider";
+        zoomSlider.style.width = "192px";
+        zoomSlider.oninput = function() {
+                var value = document.getElementById("zoomSlider").value;
+                this.setZoom(value);
+        }.bind(this);
+
+        parentElement.appendChild(zoomOut);
+        parentElement.appendChild(zoomSlider);
+        parentElement.appendChild(zoomIn); 
+
+        this.sliderElement = zoomSlider;
+    }
 }
 
 export class SurveyViewport {
@@ -203,6 +259,7 @@ export class SurveyViewport {
 
         // Set up controls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableZoom = false;
         this.controlState = controlStates.ORBIT;
         this.toOrbit();
         
