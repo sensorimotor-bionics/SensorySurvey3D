@@ -21,6 +21,83 @@ const meshMaterial = new THREE.MeshPhongMaterial({
     shininess: 0
 });
 
+/*  horizontalLine
+    Returns a set of points representing a horizontal line starting at given
+    start position startX and ending at endX at a given y position
+
+    Inputs:
+        xStart: int
+            The x coordinate to start at
+        xEnd: int
+            The x coordinate to end at
+        y: int
+            The y coordinate of the line
+
+    Outputs:
+        line: list of Vector2
+*/
+export function horizontalLine(xStart, xEnd, y) {
+    var line = [];
+
+    for (var i = xStart; i <= xEnd; i++) {
+        line.push(new THREE.Vector2(i, y));
+    }
+
+    return line;
+}
+
+/*  midpointCircle
+    Performs the midpoint circle algorithm on a given x,y midpoint, generating
+    a set of points representing a circle of a given radius
+
+    Adapted from: 
+    https://stackoverflow.com/questions/10878209/
+
+    Inputs:
+        center: Vector2
+            The center of the circle
+        radius: int
+            The radius of the desired circle
+
+    Outputs:
+        points_set: list of Vector2
+            The points which represent the circle matching given parameters
+*/
+export function midpointCircle(center, radius) {
+    var x = radius, y = 0, err = 1 - x;
+
+    var circle = [];
+
+    while (x >= y) {
+        var startX = -x + center.x;
+        var endX = x + center.x;
+
+        circle = circle.concat(horizontalLine(startX, endX, y + center.x));
+
+        if (y != 0) {
+            circle = circle.concat(horizontalLine(startX, endX, -y + center.y));
+        }
+
+        y++;
+
+        if (err < 0) {
+            err += 2 * y + 1;
+        }
+        else {
+            if (x >= y) {
+                startX = -y + 1 + center.x;
+                endX = y - 1 + center.x;
+                circle = circle.concat(horizontalLine(startX, endX, x + center.y));
+                circle = circle.concat(horizontalLine(startX, endX, -x + center.y));
+            }
+            x--;
+            err += 2 * (y - x + 1);
+        }
+    }
+
+    return circle;
+}
+
 class EventQueue {
     /*  constructor
         Sets up the objects needed to operate the queue
@@ -98,7 +175,6 @@ export class ZoomController {
         this.minZoom = minZoom;
         this.maxZoom = maxZoom;
         this.sliderElement = null;
-        this.reset();
 
         const that = this;
 
@@ -114,6 +190,8 @@ export class ZoomController {
                 this.sliderElement.value = this.camera.zoom;
             }
         }.bind(that);
+
+        this.reset();
     }
 
     /*  capZoom
@@ -180,11 +258,19 @@ export class ZoomController {
                 The current zoom value
     */
     reset() {
-        this.camera.zoom = this.minZoom;
-        this.camera.updateProjectionMatrix();
+        this.setZoom(this.minZoom);
         return this.camera.zoom;
     }
 
+    /*  createZoomSlider
+        Appends two buttons and a slider as children to a given parentElement
+        and assigns them behvior allowing the user to increment and
+        decrement the zoom
+
+        Inputs:
+            parentElement: element
+                The element to which the children will be appended
+    */
     createZoomSlider(parentElement) {
         const zoomOut = document.createElement("button");
         zoomOut.id = "zoomOut";
@@ -285,15 +371,21 @@ export class SurveyViewport {
 		this.controls.update();
         this.controls.saveState();
 
-        // Set event listeners
-        window.onresize = this.onWindowResize.bind(this);
-        document.onpointermove = this.onPointerMove.bind(this);
-
+        // Set up other important objects
         this.mesh = null;
         this.currentModel = null;
         this.defaultColor = defaultColor;
 
         this.eventQueue = new EventQueue(eventQueueLength);
+
+        this.pointerDownViewport = true;
+
+        // Set event listeners
+        window.onresize = this.onWindowResize.bind(this);
+        document.onpointermove = this.onPointerMove.bind(this);
+        document.onpointerup = this.onPointerUp.bind(this);
+        this.renderer.domElement.onpointerdown = 
+            this.onPointerDownViewport.bind(this);
     }
 
     /*  animate
@@ -306,6 +398,24 @@ export class SurveyViewport {
         
         // Update the controls
         this.controls.update();
+
+        // Change update behavior depending on current controlState
+        switch(this.controlState) {
+            case controlStates.ORBIT:
+                break;
+            case controlStates.PAN:
+                break;
+            case controlStates.PAINT:
+                if (this.pointerDownViewport) {
+                    const faces = this.getFacesFromRaycast(0);
+                    const vertices = this.getVerticesFromFaces(faces);
+                    this.populateColorOnVertices(new THREE.Color("#ffffff"),
+                                                    vertices);
+                }
+                break;
+            case controlStates.ERASE:
+                break;
+        }
 
         // Render the scene as seen from the camera
         this.renderer.render(this.scene, this.camera);
@@ -382,6 +492,48 @@ export class SurveyViewport {
 	    this.pointer.y = -(event.clientY / height)* 2 + 1;
     }
 
+    /*  onPointerDownViewport
+        Behavior for when the user's pointer goes down on the viewport
+    */
+    onPointerDownViewport() {
+        this.pointerDownViewport = true;
+    }
+
+    /*  onPointerUp
+        Behavior for when the user's pointer goes up anywhere on the document
+    */
+    onPointerUp() { 
+        this.pointerDownViewport = false;
+    }
+
+    /*  getFacesFromRaycast
+        Use the raycaster to send a circle of raycasts (of the given radius),
+        then return all faces hit by these raycasts
+
+        Inputs:
+            radius: int
+                The radius of the circle of raycasts (if 0, sends only one
+                raycast)
+        
+        Outputs:
+            faces: list of faces
+
+    */
+    getFacesFromRaycast(radius) {
+        var circle = midpointCircle(this.pointer, radius);
+        console.log(circle);
+        var faces = [];
+        for (var i = 0; i < circle.length; i++) {
+            this.raycaster.setFromCamera(circle[i], this.camera);
+            const result = this.raycaster.intersectObject(this.mesh, true);
+            this.scene.add(new THREE.ArrowHelper(this.raycaster.ray.direction, this.raycaster.ray.origin, 300, 0xff0000) );
+            if (result[0]) {
+                faces.push(result[0].face);
+            }
+        }
+        return faces;
+    }
+
     /* 3D SPACE */
 
     /*  onWindowResize
@@ -443,7 +595,6 @@ export class SurveyViewport {
                     that.scene.add(that.mesh);
                     that.currentModel = filename;
                     that.populateColor(that.defaultColor);
-                    that.controls.reset();
                     resolve();
                 }, undefined, function() {
                     alert("Could not load model " + filename 
@@ -459,6 +610,26 @@ export class SurveyViewport {
     }
 
     /* MESH MANIPULATION */
+
+    /*  getVerticesFromFaces
+        Iterates through a list of faces received from a raycast and returns
+        all vertices which make up those faces
+
+        Inputs:
+            faces: list of faces
+                The faces from which the vertices will be extracted
+
+        Outputs:
+            vertices: list of int
+                A list of the vertex numbers which make up the faces
+    */
+    getVerticesFromFaces(faces) {
+        var vertices = [];
+        for (var i = 0; i < faces.length; i++) {
+            vertices.push(faces[i].a, faces[i].b, faces[i].c);
+        }
+        return vertices;
+    }
     
     /*  populateColorOnFaces
         Takes a color and a list of vertices, then makes those vertices the 
@@ -467,7 +638,7 @@ export class SurveyViewport {
         Inputs:
             color: THREE.Color
                 The color to be put onto the faces
-            vertices: list of ints corresponding to faces
+            vertices: list of ints corresponding to vertices
                 The vertices whose colors are to be changed
     */ 
     populateColorOnVertices(color, vertices) {

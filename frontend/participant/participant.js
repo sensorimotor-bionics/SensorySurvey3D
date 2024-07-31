@@ -50,6 +50,7 @@ function socketConnect() {
 									msg.survey.config.typeList);
 					viewport.loadModel(surveyManager.survey.config.
 										models[modelSelect.value]);
+					zoomController.reset();
 					endWaiting();
 				}
 				break;
@@ -192,6 +193,7 @@ function populateEditorWithPercept(percept) {
 		modelSelect.value = percept.model;
 		viewport.loadModel(
 			surveyManager.survey.config.models[modelSelect.value]);
+		zoomController.reset();
 	}
 
 	const typeSelect = document.getElementById("typeSelect");
@@ -375,6 +377,7 @@ function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
 	viewport.loadModel(surveyManager.survey.config.models[modelSelect.value])
 		.catch((err) => { console.error("loadModel Promise rejected: " + err) });
+	zoomController.reset();
 }
 
 /*  typeSelectChangeCallback

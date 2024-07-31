@@ -81,6 +81,7 @@ html {
     z-index: 1;
     left: 25%;
     overflow-x: hidden;
+    cursor: crosshair;
 }
 
 .paletteButton {
