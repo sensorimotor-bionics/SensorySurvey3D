@@ -450,6 +450,14 @@ window.onload = function() {
 		COM.activatePaletteButton("eraseButton");
 	}
 
+	const brushSizeSlider = document.getElementById("brushSizeSlider");
+	brushSizeSlider.oninput = function() {
+		document.getElementById("brushSizeValue").innerHTML = 
+			brushSizeSlider.value;
+		viewport.brushSize = brushSizeSlider.value - 1;
+	}
+	brushSizeSlider.dispatchEvent(new Event("input"));
+
 	const drawTabButton = document.getElementById("drawTabButton");
 	const qualifyTabButton = document.getElementById("qualifyTabButton");
 	drawTabButton.onpointerup = function() {

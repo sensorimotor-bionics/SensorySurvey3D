@@ -379,6 +379,7 @@ export class SurveyViewport {
         this.mesh = null;
         this.currentModel = null;
         this.defaultColor = defaultColor;
+        this.brushSize = 0;
 
         this.eventQueue = new EventQueue(eventQueueLength);
 
@@ -411,7 +412,7 @@ export class SurveyViewport {
                 break;
             case controlStates.PAINT:
                 if (this.pointerDownViewport) {
-                    const faces = this.getFacesFromRaycast(0);
+                    const faces = this.getFacesFromRaycast(this.brushSize);
                     const vertices = this.getVerticesFromFaces(faces);
                     this.populateColorOnVertices(new THREE.Color("#ffffff"),
                                                     vertices);
@@ -531,7 +532,7 @@ export class SurveyViewport {
         for (var i = 0; i < circle.length; i++) {
             this.raycaster.setFromCamera(circle[i], this.camera);
             const result = this.raycaster.intersectObject(this.mesh, true);
-            // this.scene.add(new THREE.ArrowHelper(this.raycaster.ray.direction, this.raycaster.ray.origin, 300, 0xff0000) );
+            this.scene.add(new THREE.ArrowHelper(this.raycaster.ray.direction, this.raycaster.ray.origin, 300, 0xff0000) );
             if (result[0]) {
                 faces.push(result[0].face);
             }
