@@ -48,6 +48,7 @@ html {
 .tabSelector {
     overflow: hidden;
     background-color: var(--buttonColor);
+    height: var(--widthbarHeight);
 }
 
 .tabSelector button {
@@ -56,10 +57,10 @@ html {
     border: none;
     outline: none;
     cursor: pointer;
-    padding: 14px 16px;
     border-radius: 0px;
     margin: 0px 0px;
     width: 50%;
+    height: var(--widthbarHeight);
 }
 
 .tabSelector button.active {

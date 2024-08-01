@@ -176,6 +176,7 @@ function populateSelect(selectElement, optionList) {
 			The percept whose data should be displayed
 */
 function populateEditorWithPercept(percept) {
+
 	const intensitySlider = document.getElementById("intensitySlider");
 	intensitySlider.value = percept.intensity;
 	intensitySlider.dispatchEvent(new Event("input"));
@@ -191,9 +192,10 @@ function populateEditorWithPercept(percept) {
 	const modelSelect = document.getElementById("modelSelect");
 	if (percept.model) {
 		modelSelect.value = percept.model;
-		viewport.loadModel(
-			surveyManager.survey.config.models[modelSelect.value]);
-		zoomController.reset();
+		if (viewport.loadModel(
+			surveyManager.survey.config.models[modelSelect.value])) {
+			zoomController.reset();
+		}
 	}
 
 	const typeSelect = document.getElementById("typeSelect");
@@ -201,7 +203,9 @@ function populateEditorWithPercept(percept) {
 		typeSelect.value = percept.type;
 	}
 
-	// TODO - Needs some way to load the model then load the drawing onto the model
+	surveyManager.currentPercept = percept;
+
+	// TODO - Needs some way to load the drawing onto the model
 }
 
 /*  savePerceptFromEditor
@@ -310,8 +314,7 @@ function submitCallback() {
 			The percept that will be edited
 */
 function editPerceptCallback(percept) {
-	surveyManager.currentPercept = percept;
-	populateEditorWithPercept(surveyManager.currentPercept);
+	populateEditorWithPercept(percept);
 	openEditor();
 }
 
@@ -397,7 +400,7 @@ window.onload = function() {
 										new THREE.Color(0x535353),
 										20);
 
-	zoomController = new VP.ZoomController(viewport.camera, 
+	zoomController = new VP.CameraController(viewport.controls, 
 											viewport.renderer.domElement, 2, 20);
 	zoomController.createZoomSlider(document.getElementById(
 										"zoomSliderContainer"));

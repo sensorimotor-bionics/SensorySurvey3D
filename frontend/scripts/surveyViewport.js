@@ -72,7 +72,8 @@ export function midpointCircle(center, radius) {
         var startX = -x + center.x;
         var endX = x + center.x;
 
-        circle = circle.concat(horizontalLine(startX, endX, y + center.x));
+        circle = circle.concat(horizontalLine(startX, endX, y + center.y));
+        console.log("a: ", circle)
 
         if (y != 0) {
             circle = circle.concat(horizontalLine(startX, endX, -y + center.y));
@@ -89,6 +90,7 @@ export function midpointCircle(center, radius) {
                 endX = y - 1 + center.x;
                 circle = circle.concat(horizontalLine(startX, endX, x + center.y));
                 circle = circle.concat(horizontalLine(startX, endX, -x + center.y));
+                console.log("b: ", circle);
             }
             x--;
             err += 2 * (y - x + 1);
@@ -155,13 +157,13 @@ class EventQueue {
     }
 }
 
-export class ZoomController {
+export class CameraController {
     /*  constructor
-        Takes a camera object to allow the zoom controller to manipulate it
+        Takes a controls object to allow the camera controller to manipulate it
 
         Inputs:
-            camera: THREE.PerspectiveCamera OR THREE.OrthographicCamera
-                The camera object to be manipulated by the zoom controller
+            controls: THREE.OrbitControls
+                The controller object to be manipulated by the controller
             rendererElement:
                 The renderer element of the SurveyViewport object
             minZoom: int
@@ -169,8 +171,9 @@ export class ZoomController {
             maxZoom: int
                 The maximum zoom level
     */
-    constructor(camera, rendererElement, minZoom, maxZoom) {
-        this.camera = camera;
+    constructor(controls, rendererElement, minZoom, maxZoom) {
+        this.controls = controls;
+        this.camera = controls.object;
         this.rendererElement = rendererElement;
         this.minZoom = minZoom;
         this.maxZoom = maxZoom;
@@ -258,6 +261,7 @@ export class ZoomController {
                 The current zoom value
     */
     reset() {
+        this.controls.reset();
         this.setZoom(this.minZoom);
         return this.camera.zoom;
     }
@@ -485,11 +489,13 @@ export class SurveyViewport {
     */
     onPointerMove(event) {
         var style = window.getComputedStyle(this.parentElement, null);
+        var rect = this.parentElement.getBoundingClientRect();
         var width = parseInt(style.getPropertyValue("width"));
         var height = parseInt(style.getPropertyValue("height"));
-        this.pointer.x = (((event.clientX - (0.25 * window.innerWidth)) / width)
+        this.pointer.x = (((event.clientX - rect.left) / width)
                             * 2 - 1);
-	    this.pointer.y = -(event.clientY / height)* 2 + 1;
+	    this.pointer.y = -((event.clientY - rect.top) / height) 
+                            * 2 + 1;
     }
 
     /*  onPointerDownViewport
@@ -521,12 +527,11 @@ export class SurveyViewport {
     */
     getFacesFromRaycast(radius) {
         var circle = midpointCircle(this.pointer, radius);
-        console.log(circle);
         var faces = [];
         for (var i = 0; i < circle.length; i++) {
             this.raycaster.setFromCamera(circle[i], this.camera);
             const result = this.raycaster.intersectObject(this.mesh, true);
-            this.scene.add(new THREE.ArrowHelper(this.raycaster.ray.direction, this.raycaster.ray.origin, 300, 0xff0000) );
+            // this.scene.add(new THREE.ArrowHelper(this.raycaster.ray.direction, this.raycaster.ray.origin, 300, 0xff0000) );
             if (result[0]) {
                 faces.push(result[0].face);
             }
