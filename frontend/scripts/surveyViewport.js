@@ -21,84 +21,16 @@ const meshMaterial = new THREE.MeshPhongMaterial({
     shininess: 0
 });
 
-/*  horizontalLine
-    Returns a set of points representing a horizontal line starting at given
-    start position startX and ending at endX at a given y position
-
-    Inputs:
-        xStart: int
-            The x coordinate to start at
-        xEnd: int
-            The x coordinate to end at
-        y: int
-            The y coordinate of the line
-
-    Outputs:
-        line: list of Vector2
-*/
-export function horizontalLine(xStart, xEnd, y) {
-    var line = [];
-
-    for (var i = xStart; i <= xEnd; i++) {
-        line.push(new THREE.Vector2(i, y));
-    }
-
-    return line;
-}
-
-/*  midpointCircle
-    Performs the midpoint circle algorithm on a given x,y midpoint, generating
-    a set of points representing a circle of a given radius
-
-    Adapted from: 
-    https://stackoverflow.com/questions/10878209/
-
-    Inputs:
-        center: Vector2
-            The center of the circle
-        radius: int
-            The radius of the desired circle
-
-    Outputs:
-        points_set: list of Vector2
-            The points which represent the circle matching given parameters
-*/
-export function midpointCircle(center, radius) {
-    var x = radius, y = 0, err = 1 - x;
-
-    var circle = [];
-
-    while (x >= y) {
-        var startX = -x + center.x;
-        var endX = x + center.x;
-
-        circle = circle.concat(horizontalLine(startX, endX, y + center.y));
-        console.log("a: ", circle)
-
-        if (y != 0) {
-            circle = circle.concat(horizontalLine(startX, endX, -y + center.y));
-        }
-
-        y++;
-
-        if (err < 0) {
-            err += 2 * y + 1;
-        }
-        else {
-            if (x >= y) {
-                startX = -y + 1 + center.x;
-                endX = y - 1 + center.x;
-                circle = circle.concat(horizontalLine(startX, endX, x + center.y));
-                circle = circle.concat(horizontalLine(startX, endX, -x + center.y));
-                console.log("b: ", circle);
-            }
-            x--;
-            err += 2 * (y - x + 1);
-        }
-    }
-
-    return circle;
-}
+const brushMaterial = new THREE.MeshStandardMaterial( {
+    color: 0xEC407A,
+    roughness: 0.75,
+    metalness: 0,
+    transparent: true,
+    opacity: 0.5,
+    premultipliedAlpha: true,
+    emissive: 0xEC407A,
+    emissiveIntensity: 0.5,
+} );
 
 class EventQueue {
     /*  constructor
@@ -377,9 +309,13 @@ export class SurveyViewport {
 
         // Set up other important objects
         this.mesh = null;
-        this.currentModel = null;
+        this.currentModelFile = null;
         this.defaultColor = defaultColor;
+
         this.brushSize = 0;
+        this.brushMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 40),
+                                        brushMaterial);
+        this.scene.add(this.brushMesh);
 
         this.eventQueue = new EventQueue(eventQueueLength);
 
@@ -412,8 +348,7 @@ export class SurveyViewport {
                 break;
             case controlStates.PAINT:
                 if (this.pointerDownViewport) {
-                    const faces = this.getFacesFromRaycast(this.brushSize);
-                    const vertices = this.getVerticesFromFaces(faces);
+                    
                     this.populateColorOnVertices(new THREE.Color("#ffffff"),
                                                     vertices);
                 }
@@ -513,33 +448,6 @@ export class SurveyViewport {
         this.pointerDownViewport = false;
     }
 
-    /*  getFacesFromRaycast
-        Use the raycaster to send a circle of raycasts (of the given radius),
-        then return all faces hit by these raycasts
-
-        Inputs:
-            radius: int
-                The radius of the circle of raycasts (if 0, sends only one
-                raycast)
-        
-        Outputs:
-            faces: list of faces
-
-    */
-    getFacesFromRaycast(radius) {
-        var circle = midpointCircle(this.pointer, radius);
-        var faces = [];
-        for (var i = 0; i < circle.length; i++) {
-            this.raycaster.setFromCamera(circle[i], this.camera);
-            const result = this.raycaster.intersectObject(this.mesh, true);
-            this.scene.add(new THREE.ArrowHelper(this.raycaster.ray.direction, this.raycaster.ray.origin, 300, 0xff0000) );
-            if (result[0]) {
-                faces.push(result[0].face);
-            }
-        }
-        return faces;
-    }
-
     /* 3D SPACE */
 
     /*  onWindowResize
@@ -567,7 +475,15 @@ export class SurveyViewport {
             this.scene.remove(meshes[i]);
         }
 
-        this.currentModel = null;
+        this.currentModelFile = null;
+    }
+
+    /*  unloadCurrentMesh
+        Unloads the current mesh
+    */
+    unloadCurrentMesh() {
+        this.scene.remove(this.mesh);
+        this.currentModelFile = null;
     }
 
     /*  loadModel
@@ -582,8 +498,7 @@ export class SurveyViewport {
     */
     loadModel(filename) {
         const that = this;
-        if (filename != this.currentModel) {
-            this.unloadModels();
+        if (filename != this.currentModelFile) {
             return new Promise(function(resolve, reject) {
                 var modelPath = "/3dmodels/" + filename;
         
@@ -597,9 +512,9 @@ export class SurveyViewport {
                     geometry.setAttribute('color', new THREE.BufferAttribute(
                                             new Float32Array(count * 3), 3));
                     that.mesh = new THREE.Mesh(geometry, meshMaterial);
-                    geometry.computeBoundsTree();
+                    that.mesh.geometry.computeBoundsTree();
                     that.scene.add(that.mesh);
-                    that.currentModel = filename;
+                    that.currentModelFile = filename;
                     that.populateColor(that.defaultColor);
                     resolve();
                 }, undefined, function() {
@@ -613,6 +528,14 @@ export class SurveyViewport {
             this.populateColor(this.defaultColor);
             return null;
         }
+    }
+
+    /*  replaceCurrentMesh
+        Replaces the current mesh object with a new mesh
+    */
+    replaceCurrentMesh(filename) {
+        return;
+        //TODO - implement replaceCurrentMesh
     }
 
     /* MESH MANIPULATION */
