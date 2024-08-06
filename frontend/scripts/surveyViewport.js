@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast,
+         CONTAINED, INTERSECTED, NOT_INTERSECTED } from 'three-mesh-bvh';
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
@@ -308,11 +309,12 @@ export class SurveyViewport {
         this.controls.saveState();
 
         // Set up other important objects
-        this.mesh = null;
+        this.currentMesh = null;
         this.currentModelFile = null;
         this.defaultColor = defaultColor;
 
         this.brushSize = 0;
+        this.brushActive = false;
         this.brushMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 40),
                                         brushMaterial);
         this.scene.add(this.brushMesh);
@@ -340,22 +342,85 @@ export class SurveyViewport {
         // Update the controls
         this.controls.update();
 
-        // Change update behavior depending on current controlState
-        switch(this.controlState) {
-            case controlStates.ORBIT:
-                break;
-            case controlStates.PAN:
-                break;
-            case controlStates.PAINT:
-                if (this.pointerDownViewport) {
-                    
-                    this.populateColorOnVertices(new THREE.Color("#ffffff"),
-                                                    vertices);
-                }
-                break;
-            case controlStates.ERASE:
-                break;
+        if (this.currentMesh) {
+            // Get information from currentMesh
+            const geometry = this.currentMesh.geometry;
+            const bvh = geometry.boundsTree;
+            const indexAttr = geometry.index;
+
+            // Change update behavior depending on current controlState
+            switch(this.controlState) {
+                case controlStates.ORBIT:
+                    this.brushMesh.visible = false;
+                    break;
+                case controlStates.PAN:
+                    this.brushMesh.visible = false;
+                    break;
+                case controlStates.PAINT:
+                    if (this.brushActive) {
+                        this.brushMesh.scale.setScalar(this.brushSize);
+                        
+                        this.raycaster.setFromCamera(this.pointer, this.camera);
+                        const res = this.raycaster.intersectObject(
+                            this.currentMesh, true);
+                        
+                        // If the raycaster hits anything
+                        if (res.length) {
+                            this.brushMesh.position.copy(res[0].point);
+                            this.brushMesh.visible = true;
+
+                            const indices = this.getMeshIndicesFromSphere( 
+                                this.brushMesh.position, this.brushSize,
+                                this.currentMesh);
+
+                            // If the pointer is down, draw
+                            if (this.pointerDownViewport) {
+                                for (var i = 0; i < indices.length; i++) {
+                                    const vertex = indexAttr.getX(indices[i]);
+                                    this.populateColorOnVertex(new THREE.Color(
+                                        "#abcabc"), this.currentMesh, vertex);
+                                }
+                            }
+                        }
+                        else {
+                            this.brushMesh.visible = false;
+                        }
+                    }
+                    break;
+                case controlStates.ERASE:
+                    if (this.brushActive) {
+                        this.brushMesh.scale.setScalar(this.brushSize);
+                        
+                        this.raycaster.setFromCamera(this.pointer, this.camera);
+                        const res = this.raycaster.intersectObject(
+                            this.currentMesh, true);
+                        
+                        // If the raycaster hits anything
+                        if (res.length) {
+                            this.brushMesh.position.copy(res[0].point);
+                            this.brushMesh.visible = true;
+
+                            const indices = this.getMeshIndicesFromSphere( 
+                                this.brushMesh.position, this.brushSize,
+                                this.currentMesh);
+
+                            // If the pointer is down, draw
+                            if (this.pointerDownViewport) {
+                                for (var i = 0; i < indices.length; i++) {
+                                    const vertex = indexAttr.getX(indices[i]);
+                                    this.populateColorOnVertex(this.defaultColor, 
+                                        this.currentMesh, vertex);
+                                }
+                            }
+                        }
+                        else {
+                            this.brushMesh.visible = false;
+                        }
+                    }
+                    break;
+            }
         }
+        
 
         // Render the scene as seen from the camera
         this.renderer.render(this.scene, this.camera);
@@ -432,6 +497,8 @@ export class SurveyViewport {
                             * 2 - 1);
 	    this.pointer.y = -((event.clientY - rect.top) / height) 
                             * 2 + 1;
+
+        this.brushActive = true;
     }
 
     /*  onPointerDownViewport
@@ -439,13 +506,18 @@ export class SurveyViewport {
     */
     onPointerDownViewport() {
         this.pointerDownViewport = true;
+        this.brushActive = true;
     }
 
     /*  onPointerUp
         Behavior for when the user's pointer goes up anywhere on the document
     */
-    onPointerUp() { 
+    onPointerUp(e) { 
         this.pointerDownViewport = false;
+
+        if (e.pointerType === "touch") {
+            this.brushActive = false;
+        }
     }
 
     /* 3D SPACE */
@@ -466,7 +538,7 @@ export class SurveyViewport {
     }
 
     /*  unloadModels
-        Unloads all "mesh" objects in the scene
+        Unloads all THREE.Mesh objects in the scene
     */
     unloadModels() {
         var meshes = this.scene.getObjectsByProperty("isMesh", true);
@@ -482,60 +554,145 @@ export class SurveyViewport {
         Unloads the current mesh
     */
     unloadCurrentMesh() {
-        this.scene.remove(this.mesh);
+        this.scene.remove(this.currentMesh);
         this.currentModelFile = null;
     }
 
     /*  loadModel
-        Loads a given model from a given .gltf file in /public/3dmodels. If 
-        successful, extracts that model's geometry and places the geometry into 
-        the scene as a new mesh.
+        Loads a given model from a given .gltf file in /public/3dmodels, and
+        returns a mesh with the given model's geometry
 
         Inputs:
             filename: str
                 The name of the .gltf file you want to load in (should include 
-                ".gltf" at the end)
+                ".gltf" or ".glb" at the end)
     */
     loadModel(filename) {
-        const that = this;
-        if (filename != this.currentModelFile) {
-            return new Promise(function(resolve, reject) {
-                var modelPath = "/3dmodels/" + filename;
-        
-                // Load the model, and pull the geometry out and create a mesh 
-                // from that. This step is necessary because vertex colors 
-                // only work with three.js geometry
-                var loader = new GLTFLoader();
-                loader.load(modelPath, function(gltf) {
-                    var geometry = gltf.scene.children[0].geometry.toNonIndexed();
-                    const count = geometry.attributes.position.count;
-                    geometry.setAttribute('color', new THREE.BufferAttribute(
-                                            new Float32Array(count * 3), 3));
-                    that.mesh = new THREE.Mesh(geometry, meshMaterial);
-                    that.mesh.geometry.computeBoundsTree();
-                    that.scene.add(that.mesh);
-                    that.currentModelFile = filename;
-                    that.populateColor(that.defaultColor);
-                    resolve();
-                }, undefined, function() {
-                    alert("Could not load model " + filename 
-                            + ", please notify experiment team.")
-                    reject();
-                });
-            }.bind(that))
-        }
-        else {
-            this.populateColor(this.defaultColor);
-            return null;
-        }
+        return new Promise(function(resolve, reject) {
+            var modelPath = "/3dmodels/" + filename;
+    
+            // Load the model, and pull the geometry out and create a mesh 
+            // from that. This step is necessary because vertex colors 
+            // only work with three.js geometry
+            var loader = new GLTFLoader();
+            loader.load(modelPath, function(gltf) {
+                var geometry = gltf.scene.children[0].geometry.toNonIndexed();
+                const count = geometry.attributes.position.count;
+                geometry.setAttribute('color', new THREE.BufferAttribute(
+                                        new Float32Array(count * 3), 3));
+                var mesh = new THREE.Mesh(geometry, meshMaterial);
+                mesh.geometry.computeBoundsTree();
+                resolve(mesh);
+            }, undefined, function() {
+                alert("Could not load model " + filename 
+                        + ", please notify experiment team.")
+                reject(null);
+            });
+        });
     }
 
     /*  replaceCurrentMesh
         Replaces the current mesh object with a new mesh
+
+        Inputs:
+            filename: str
+                The name of the .gltf file you want to load in (should include 
+                ".gltf" or ".glb" at the end) 
+        
+        Outputs:
+            bool
+                True if a new mesh needed to be loaded, false if not
     */
     replaceCurrentMesh(filename) {
-        return;
-        //TODO - implement replaceCurrentMesh
+        if (filename != this.currentModelFile) {
+            const loadResult = this.loadModel(filename).then(function(value) {
+                if (value) {
+                    if (this.currentMesh) {
+                        this.unloadCurrentMesh();
+                    }
+                    this.currentMesh = value;
+                    this.currentModelFile = filename;
+                    this.scene.add(this.currentMesh);
+                    this.populateColor(this.defaultColor, this.currentMesh);
+                }
+            }.bind(this));
+            return true;
+        }
+        else {
+            this.populateColor(this.defaultColor, this.currentMesh);
+            return false;
+        }
+    }
+
+    /*  getMeshIndicesFromSphere
+        Draws a sphere with the given parameter then uses the given mesh's
+        bounds tree to quickly find what vertex indices exist within the
+        generated sphere
+
+        Adapted from https://github.com/gkjohnson/three-mesh-bvh/blob/master/example/collectTriangles.js
+
+        Inptus:
+            sphereCenter: THREE.Vector3
+                The center of the desired sphere
+            sphereSize: float
+                The size of the sphere
+            mesh: THREE.Mesh
+                The mesh against with the sphere should be checked
+
+        Outputs:
+            indices: list of int
+                The indices of the vertices hit by the sphere
+    */
+    getMeshIndicesFromSphere(sphereCenter, sphereSize, mesh) {
+        const inverseMatrix = new THREE.Matrix4();
+        inverseMatrix.copy(
+            mesh.matrixWorld).invert();
+
+        const bvh = mesh.geometry.boundsTree;
+    
+        const sphere = new THREE.Sphere();
+        sphere.center.copy(
+            sphereCenter).applyMatrix4(inverseMatrix);
+        sphere.radius = sphereSize;
+
+        const indices = [];
+        const tempVec = new THREE.Vector3();
+
+        bvh.shapecast({
+            intersectsBounds(box) {
+                const intersects = sphere.intersectsBox(box);
+                const {min, max} = box;
+                if (intersects) {
+                    for (let x = 0; x <= 1; x++) {
+                        for (let y = 0; y <= 1; y++) {
+                            for (let z = 0; z <= 1; z++) {
+                                tempVec.set(
+                                    x === 0 ? min.x : max.x,
+                                    y === 0 ? min.y : max.y,
+                                    z === 0 ? min.z : max.z
+                                );
+                                if (!sphere.containsPoint(
+                                    tempVec)) {
+                                        return INTERSECTED;
+                                }
+                            }
+                        }
+                    }
+                    return CONTAINED;
+                }
+                return intersects ? INTERSECTED : NOT_INTERSECTED;
+            },
+            intersectsTriangle(tri, i, contained) {
+                if (contained 
+                    || tri.intersectsSphere(sphere)) {
+                    const i3 = 3 * i;
+                    indices.push(i3, i3+1, i3+2);
+                }
+                return false;
+            }
+        });
+
+        return indices
     }
 
     /* MESH MANIPULATION */
@@ -559,26 +716,44 @@ export class SurveyViewport {
         }
         return vertices;
     }
+
+    /*  populateColorOnVertex
+        Takes a color, mesh, and vertex, and gives that vertex on that mesh
+        the given color
+        
+        Inputs:
+            color: THREE.Color
+                The color to be put onto the faces
+            mesh: THREE.Mesh
+                The mesh onto which the color should be populated
+            vertex: int corresponding to vertex
+                The vertices whose colors are to be changed
+    */
+    populateColorOnVertex(color, mesh, vertex) {
+        const geometry = mesh.geometry;
+        const colors = geometry.attributes.color;
+
+        colors.setXYZ(vertex, color.r, color.g, color.b);
+
+        colors.needsUpdate = true;
+    }
     
-    /*  populateColorOnFaces
+    /*  populateColorOnVertices
         Takes a color and a list of vertices, then makes those vertices the 
         chosen color
 
         Inputs:
             color: THREE.Color
                 The color to be put onto the faces
+            mesh: THREE.Mesh
+                The mesh onto which the color should be populated
             vertices: list of ints corresponding to vertices
                 The vertices whose colors are to be changed
     */ 
-    populateColorOnVertices(color, vertices) {
-        const geometry = this.mesh.geometry;
-        const colors = geometry.attributes.color;
-    
+    populateColorOnVertices(color, mesh, vertices) {
         for (let i = 0; i < vertices.length; i++) {
-            colors.setXYZ(vertices[i], color.r, color.g, color.b);
+            this.populateColorOnVertex(color, mesh, vertices[i]);
         }
-    
-        colors.needsUpdate = true;
     }
 
     /*  populateColor
@@ -587,9 +762,11 @@ export class SurveyViewport {
         Inputs:
             color: THREE.Color
                 The color to be put onto the faces
+            mesh: THREE.Mesh
+                The mesh onto which the color should be populated
     */
-    populateColor(color) {
-        const geometry = this.mesh.geometry;
+    populateColor(color, mesh) {
+        const geometry = mesh.geometry;
         const positions = geometry.attributes.position;
         const colors = geometry.attributes.color;
     

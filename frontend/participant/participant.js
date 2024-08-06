@@ -8,7 +8,7 @@ document.title = "Participant - SensorySurvey3D"
 var viewport;
 var surveyManager;
 var surveyTable;
-var zoomController;
+var cameraController;
 
 var waitingInterval;
 var submissionTimeoutInterval;
@@ -48,9 +48,9 @@ function socketConnect() {
 									Object.keys(msg.survey.config.models));
 					populateSelect(document.getElementById("typeSelect"), 
 									msg.survey.config.typeList);
-					viewport.loadModel(surveyManager.survey.config.
+					viewport.replaceCurrentMesh(surveyManager.survey.config.
 										models[modelSelect.value]);
-					zoomController.reset();
+					cameraController.reset();
 					endWaiting();
 				}
 				break;
@@ -192,9 +192,9 @@ function populateEditorWithPercept(percept) {
 	const modelSelect = document.getElementById("modelSelect");
 	if (percept.model) {
 		modelSelect.value = percept.model;
-		if (viewport.loadModel(
+		if (viewport.replaceCurrentMesh(
 			surveyManager.survey.config.models[modelSelect.value])) {
-			zoomController.reset();
+			cameraController.reset();
 		}
 	}
 
@@ -378,9 +378,9 @@ function perceptDeleteCallback() {
 */
 function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
-	viewport.loadModel(surveyManager.survey.config.models[modelSelect.value])
-		.catch((err) => { console.error("loadModel Promise rejected: " + err) });
-	zoomController.reset();
+	viewport.replaceCurrentMesh(
+		surveyManager.survey.config.models[modelSelect.value]);
+	cameraController.reset();
 }
 
 /*  typeSelectChangeCallback
@@ -400,9 +400,9 @@ window.onload = function() {
 										new THREE.Color(0x535353),
 										20);
 
-	zoomController = new VP.CameraController(viewport.controls, 
+	cameraController = new VP.CameraController(viewport.controls, 
 											viewport.renderer.domElement, 2, 20);
-	zoomController.createZoomSlider(document.getElementById(
+	cameraController.createZoomSlider(document.getElementById(
 										"zoomSliderContainer"));
 
     surveyManager = new SVY.SurveyManager(); 
@@ -454,7 +454,7 @@ window.onload = function() {
 	brushSizeSlider.oninput = function() {
 		document.getElementById("brushSizeValue").innerHTML = 
 			brushSizeSlider.value;
-		viewport.brushSize = brushSizeSlider.value - 1;
+		viewport.brushSize = brushSizeSlider.value;
 	}
 	brushSizeSlider.dispatchEvent(new Event("input"));
 
