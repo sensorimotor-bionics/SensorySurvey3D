@@ -33,7 +33,24 @@ const brushMaterial = new THREE.MeshStandardMaterial( {
     emissiveIntensity: 0.5,
 } );
 
-class EventQueue {
+class ViewportEvent {
+    /*  constructor
+        A ViewportEvent is a structure which keeps track of what controlState
+        affected what set of vertices
+
+        Inputs:
+            controlState: int from controlStates
+                The control state which affected the vertices
+            vertices: Set of int
+                The vertices affected
+    */
+    constructor(controlState, vertices) {
+        this.controlState = controlState;
+        this.vertices = vertices;
+    }
+}
+
+class ViewportEventQueue {
     /*  constructor
         Sets up the objects needed to operate the queue
 
@@ -53,14 +70,13 @@ class EventQueue {
         if the length of the queue exceeds the queueLength
 
         Inputs:
-            eventType: str
-                The type of event to be added to the queue
-            vertices: list of int
-                The vertices affected by the event
+            event: ViewportEvent
+                The event to be added to the queue
     */
-    push(eventType, vertices) {
+    push(event) {
         this.queue.splice(this.queue.length - this.queuePosition);
-        this.queue.push([eventType, vertices]);
+        this.queue.push(event);
+        this.queuePosition = this.queue.length - 1;
 
         if (this.queue.length > this.queueLength) {
             this.queue.slice(this.queue.length - this.queueLength, 
@@ -68,17 +84,39 @@ class EventQueue {
         }
     }
 
-    /*  next
-        Gives the user the next event in the queue starting from the
+    /*  previous
+        Gives the user the previous event in the queue starting from the
         end, according to the current queuePosition
 
         Outputs:
-            output: list[2] of str and list of int
+            output: ViewportEvent
+    */
+    previous() {
+        const output = this.queue.slice(
+            this.queue.length - this.queuePosition).pop();
+        
+        if (this.queuePosition - 1 >= 0) {
+            this.queuePosition -= 1;
+        }
+        
+        return output
+    }
+
+    /*  next
+        Moves the queuePosition forward one if possible
+
+        Outputs:
+            output: ViewportEvent
     */
     next() {
-        return this.queue.slice(
-            this.queue.length - this.queuePosition
-            ).pop();
+        if (queuePosition + 1 < this.queueLength) {
+            this.queuePosition += 1;
+
+            const output = this.queue.slice(
+                this.queue.length - this.queuePosition).pop();
+
+            return output;
+        }
     }
 
     /*  reset
@@ -313,13 +351,15 @@ export class SurveyViewport {
         this.currentModelFile = null;
         this.defaultColor = defaultColor;
 
+        this.currentEvent = null;
+
         this.brushSize = 0;
         this.brushActive = false;
         this.brushMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 40),
                                         brushMaterial);
         this.scene.add(this.brushMesh);
 
-        this.eventQueue = new EventQueue(eventQueueLength);
+        this.eventQueue = new ViewportEventQueue(eventQueueLength);
 
         this.pointerDownViewport = true;
 
@@ -386,6 +426,9 @@ export class SurveyViewport {
                             this.brushMesh.visible = false;
                         }
                     }
+                    else {
+                        this.brushMesh.visible = false;
+                    }
                     break;
                 case controlStates.ERASE:
                     if (this.brushActive) {
@@ -406,16 +449,22 @@ export class SurveyViewport {
 
                             // If the pointer is down, draw
                             if (this.pointerDownViewport) {
+                                var vertexSet = new Set([]);
                                 for (var i = 0; i < indices.length; i++) {
                                     const vertex = indexAttr.getX(indices[i]);
                                     this.populateColorOnVertex(this.defaultColor, 
                                         this.currentMesh, vertex);
+                                    vertexSet.add(vertex);
                                 }
+                                this.currentEvent.vertices.union(vertexSet)
                             }
                         }
                         else {
                             this.brushMesh.visible = false;
                         }
+                    }
+                    else {
+                        this.brushMesh.visible = false;
                     }
                     break;
             }
@@ -493,8 +542,8 @@ export class SurveyViewport {
         var rect = this.parentElement.getBoundingClientRect();
         var width = parseInt(style.getPropertyValue("width"));
         var height = parseInt(style.getPropertyValue("height"));
-        this.pointer.x = (((event.clientX - rect.left) / width)
-                            * 2 - 1);
+        this.pointer.x = ((event.clientX - rect.left) / width)
+                            * 2 - 1;
 	    this.pointer.y = -((event.clientY - rect.top) / height) 
                             * 2 + 1;
 
@@ -507,6 +556,12 @@ export class SurveyViewport {
     onPointerDownViewport() {
         this.pointerDownViewport = true;
         this.brushActive = true;
+
+        if (this.controlState == controlStates.PAINT 
+            || this.controlState == controlStates.ERASE) {
+                this.currentEvent = new ViewportEvent(this.controlState, 
+                                                        new Set([]));
+        }
     }
 
     /*  onPointerUp
@@ -515,8 +570,13 @@ export class SurveyViewport {
     onPointerUp(e) { 
         this.pointerDownViewport = false;
 
-        if (e.pointerType === "touch") {
+        if (e.pointerType === "touch" || e.pointerType === "pen") {
             this.brushActive = false;
+        }
+
+        if (this.currentEvent && this.currentEvent.vertices != []) {
+            this.eventQueue.push(this.currentEvent);
+            this.currentEvent = null;
         }
     }
 

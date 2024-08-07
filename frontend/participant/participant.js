@@ -391,6 +391,20 @@ function typeSelectChangeCallback() {
 	// TODO - take the value of typeSelect and use it to change the color on the mesh
 }
 
+/*  undoCallback
+	Calls for the viewport to "undo" the last action
+*/
+function undoCallback() {
+
+}
+
+/*  redoCallback
+	Calls for the viewport to "redo" the next action
+*/
+function redoCallback() {
+
+}
+
 /* STARTUP CODE */
 
 window.onload = function() {
@@ -485,6 +499,12 @@ window.onload = function() {
 
 	const typeSelect = document.getElementById("typeSelect");
 	typeSelect.onchange = typeSelectChangeCallback;
+
+	const undoButton = document.getElementById("undoButton");
+	undoButton.onpointerup = undoCallback;
+
+	const redoButton = document.getElementById("redoButton");
+	redoButton.onpointerup = redoCallback;
 
 	viewport.animate();
 }
