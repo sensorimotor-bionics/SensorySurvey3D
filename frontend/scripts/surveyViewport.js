@@ -60,7 +60,7 @@ class ViewportEventQueue {
     */
     constructor(queueLength) {
         this.queueLength = queueLength;
-        this.queuePosition = 0;
+        this.queuePosition = 1;
         this.queue = [];
     }
 
@@ -74,56 +74,59 @@ class ViewportEventQueue {
                 The event to be added to the queue
     */
     push(event) {
-        this.queue.splice(this.queue.length - this.queuePosition);
+        this.queue.splice(this.queuePosition);
         this.queue.push(event);
-        this.queuePosition = this.queue.length - 1;
+        this.queuePosition = this.queue.length;
 
         if (this.queue.length > this.queueLength) {
-            this.queue.slice(this.queue.length - this.queueLength, 
-                this.queueLength);
+            this.queue = this.queue.slice(1, this.queue.length);
+            this.queuePosition = this.queue.length;
         }
     }
 
     /*  previous
-        Gives the user the previous event in the queue starting from the
-        end, according to the current queuePosition
+        Gives the user the event at the queuePosition, then, if possible,
+        moves the queuePosition back 1
 
         Outputs:
             output: ViewportEvent
     */
     previous() {
-        const output = this.queue.slice(
-            this.queue.length - this.queuePosition).pop();
-        
-        if (this.queuePosition - 1 >= 0) {
-            this.queuePosition -= 1;
+        if (this.queue.length >= 0 
+            && this.queuePosition - 1 >= 0) {
+            const output = this.queue[this.queuePosition - 1];
+            
+            if (this.queuePosition - 1 >= 0) {
+                this.queuePosition -= 1;
+            }
+            return output;
         }
-        
-        return output
+        return null;
     }
 
     /*  next
-        Moves the queuePosition forward one if possible
+        Moves the queuePosition forward one if possible, returning the event
+        at that new position
 
         Outputs:
             output: ViewportEvent
     */
     next() {
-        if (queuePosition + 1 < this.queueLength) {
+        if (this.queue.length > 0 
+            && this.queuePosition + 1 <= this.queueLength
+            && this.queue[this.queuePosition]) {
             this.queuePosition += 1;
-
-            const output = this.queue.slice(
-                this.queue.length - this.queuePosition).pop();
-
+            const output = this.queue[this.queuePosition - 1];
             return output;
         }
+        return null;
     }
 
     /*  reset
         Resets the queuePosition and queue
     */
     reset() {
-        this.queuePosition = 0;
+        this.queuePosition = 1;
         this.queue = [];
     }
 }
@@ -385,7 +388,6 @@ export class SurveyViewport {
         if (this.currentMesh) {
             // Get information from currentMesh
             const geometry = this.currentMesh.geometry;
-            const bvh = geometry.boundsTree;
             const indexAttr = geometry.index;
 
             // Change update behavior depending on current controlState
@@ -415,11 +417,15 @@ export class SurveyViewport {
 
                             // If the pointer is down, draw
                             if (this.pointerDownViewport) {
+                                var vertexSet = new Set([]);
                                 for (var i = 0; i < indices.length; i++) {
                                     const vertex = indexAttr.getX(indices[i]);
                                     this.populateColorOnVertex(new THREE.Color(
                                         "#abcabc"), this.currentMesh, vertex);
+                                        vertexSet.add(vertex);
                                 }
+                                this.currentEvent.vertices 
+                                    = this.currentEvent.vertices.union(vertexSet);
                             }
                         }
                         else {
@@ -456,7 +462,8 @@ export class SurveyViewport {
                                         this.currentMesh, vertex);
                                     vertexSet.add(vertex);
                                 }
-                                this.currentEvent.vertices.union(vertexSet)
+                                this.currentEvent.vertices
+                                 = this.currentEvent.vertices.union(vertexSet);
                             }
                         }
                         else {
@@ -811,6 +818,7 @@ export class SurveyViewport {
                 The vertices whose colors are to be changed
     */ 
     populateColorOnVertices(color, mesh, vertices) {
+        vertices = Array.from(vertices);
         for (let i = 0; i < vertices.length; i++) {
             this.populateColorOnVertex(color, mesh, vertices[i]);
         }
@@ -835,5 +843,53 @@ export class SurveyViewport {
         }
     
         colors.needsUpdate = true;
+    }
+
+    /* VIEWPORT EVENTS */
+
+    /*  undo
+
+    */
+    undo() {
+        const undoEvent = this.eventQueue.previous();
+        if (undoEvent) {
+            switch(undoEvent.controlState) {
+                case controlStates.PAINT:
+                    this.populateColorOnVertices(this.defaultColor, 
+                        this.currentMesh, undoEvent.vertices);
+                    break;
+                case controlStates.ERASE:
+                    this.populateColorOnVertices(new THREE.Color("#abcabc"), 
+                        this.currentMesh, undoEvent.vertices);
+                    break;
+                default:
+                    console.error(
+                        "Unrecognized controlState while redoing event");
+                    break;
+            }
+        }
+    }
+
+    /*  redo
+
+    */
+    redo() {
+        const redoEvent = this.eventQueue.next();
+        if (redoEvent) {
+            switch(redoEvent.controlState) {
+                case controlStates.PAINT:
+                    this.populateColorOnVertices(new THREE.Color("#abcabc"), 
+                        this.currentMesh, redoEvent.vertices);
+                    break;
+                case controlStates.ERASE:
+                    this.populateColorOnVertices(this.defaultColor, 
+                        this.currentMesh, redoEvent.vertices);
+                    break;
+                default:
+                    console.error(
+                        "Unrecognized controlState while redoing event");
+                    break;
+            }
+        }
     }
 }

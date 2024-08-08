@@ -395,14 +395,14 @@ function typeSelectChangeCallback() {
 	Calls for the viewport to "undo" the last action
 */
 function undoCallback() {
-
+	viewport.undo();
 }
 
 /*  redoCallback
 	Calls for the viewport to "redo" the next action
 */
 function redoCallback() {
-
+	viewport.redo();
 }
 
 /* STARTUP CODE */
