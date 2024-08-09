@@ -36,17 +36,30 @@ const brushMaterial = new THREE.MeshStandardMaterial( {
 class ViewportEvent {
     /*  constructor
         A ViewportEvent is a structure which keeps track of what controlState
-        affected what set of vertices
+        restulted in a particular colorState of a mesh
 
         Inputs:
             controlState: int from controlStates
                 The control state which affected the vertices
-            vertices: Set of int
-                The vertices affected
     */
-    constructor(controlState, vertices) {
+    constructor(controlState) {
         this.controlState = controlState;
-        this.vertices = vertices;
+        this.mesh = null;
+        this.colorState = null;
+    }
+
+    /*  updateColorStateFromMesh
+        Takes a mesh and pulls the color attribute from its BufferGeometry,
+        saving 
+
+        Inputs:
+            mesh: THREE.Mesh
+                The mesh from which the color state should be pulled
+    */
+    updateColorStateFromMesh(mesh) {
+        const colorAttr = mesh.geometry.attributes.color;
+        this.mesh = mesh;
+        this.colorState = colorAttr.clone();
     }
 }
 
@@ -92,13 +105,14 @@ class ViewportEventQueue {
             output: ViewportEvent
     */
     previous() {
-        if (this.queue.length >= 0 
-            && this.queuePosition - 1 >= 0) {
+        console.log("pre: ", this.queuePosition);
+        if (this.queue.length > 0 
+            && this.queuePosition - 1 > 0
+            && this.queue[this.queuePosition - 1]) {
+            this.queuePosition -= 1;
             const output = this.queue[this.queuePosition - 1];
-            
-            if (this.queuePosition - 1 >= 0) {
-                this.queuePosition -= 1;
-            }
+            console.log("post: ", this.queuePosition);
+            console.log("output: ", output);
             return output;
         }
         return null;
@@ -112,11 +126,14 @@ class ViewportEventQueue {
             output: ViewportEvent
     */
     next() {
+        console.log("pre: ", this.queuePosition);
         if (this.queue.length > 0 
             && this.queuePosition + 1 <= this.queueLength
             && this.queue[this.queuePosition]) {
             this.queuePosition += 1;
             const output = this.queue[this.queuePosition - 1];
+            console.log("post: ", this.queuePosition);
+            console.log("output: ", output);
             return output;
         }
         return null;
@@ -417,15 +434,16 @@ export class SurveyViewport {
 
                             // If the pointer is down, draw
                             if (this.pointerDownViewport) {
-                                var vertexSet = new Set([]);
                                 for (var i = 0; i < indices.length; i++) {
                                     const vertex = indexAttr.getX(indices[i]);
                                     this.populateColorOnVertex(new THREE.Color(
                                         "#abcabc"), this.currentMesh, vertex);
-                                        vertexSet.add(vertex);
                                 }
-                                this.currentEvent.vertices 
-                                    = this.currentEvent.vertices.union(vertexSet);
+
+                                if (!this.currentEvent) {
+                                    this.currentEvent = new ViewportEvent(
+                                        this.controlState);
+                                }
                             }
                         }
                         else {
@@ -455,15 +473,16 @@ export class SurveyViewport {
 
                             // If the pointer is down, draw
                             if (this.pointerDownViewport) {
-                                var vertexSet = new Set([]);
                                 for (var i = 0; i < indices.length; i++) {
                                     const vertex = indexAttr.getX(indices[i]);
                                     this.populateColorOnVertex(this.defaultColor, 
                                         this.currentMesh, vertex);
-                                    vertexSet.add(vertex);
                                 }
-                                this.currentEvent.vertices
-                                 = this.currentEvent.vertices.union(vertexSet);
+
+                                if (!this.currentEvent) {
+                                    this.currentEvent = new ViewportEvent(
+                                        this.controlState);
+                                }
                             }
                         }
                         else {
@@ -563,12 +582,6 @@ export class SurveyViewport {
     onPointerDownViewport() {
         this.pointerDownViewport = true;
         this.brushActive = true;
-
-        if (this.controlState == controlStates.PAINT 
-            || this.controlState == controlStates.ERASE) {
-                this.currentEvent = new ViewportEvent(this.controlState, 
-                                                        new Set([]));
-        }
     }
 
     /*  onPointerUp
@@ -581,8 +594,10 @@ export class SurveyViewport {
             this.brushActive = false;
         }
 
-        if (this.currentEvent && this.currentEvent.vertices != []) {
+        if (this.currentEvent) {
+            this.currentEvent.updateColorStateFromMesh(this.currentMesh);
             this.eventQueue.push(this.currentEvent);
+            console.log(this.eventQueue.queue);
             this.currentEvent = null;
         }
     }
@@ -665,12 +680,15 @@ export class SurveyViewport {
             filename: str
                 The name of the .gltf file you want to load in (should include 
                 ".gltf" or ".glb" at the end) 
+            colorVertices: list of int 
+            color: THREE.Color
+                The color to be populated on the given vertices
         
         Outputs:
             bool
                 True if a new mesh needed to be loaded, false if not
     */
-    replaceCurrentMesh(filename) {
+    replaceCurrentMesh(filename, colorVertices = null, color = null) {
         if (filename != this.currentModelFile) {
             const loadResult = this.loadModel(filename).then(function(value) {
                 if (value) {
@@ -681,6 +699,14 @@ export class SurveyViewport {
                     this.currentModelFile = filename;
                     this.scene.add(this.currentMesh);
                     this.populateColor(this.defaultColor, this.currentMesh);
+                    if (colorVertices && color) {
+                        this.populateColorOnVertices(color, this.currentMesh, 
+                            colorVertices)
+                    }
+                    this.eventQueue.reset();
+                    var defaultEvent = new ViewportEvent(controlStates.PAINT);
+                    defaultEvent.updateColorStateFromMesh(this.currentMesh);
+                    this.eventQueue.push(defaultEvent);
                 }
             }.bind(this));
             return true;
@@ -845,6 +871,39 @@ export class SurveyViewport {
         colors.needsUpdate = true;
     }
 
+    /*  getNonDefaultVertices
+        Returns a list of all non-default color vertices on the given mesh
+
+        Inputs:
+            mesh: THREE.Mesh
+                The mesh to check against
+    */
+    getNonDefaultVertices(mesh) {
+        const geometry = mesh.geometry;
+        const indexAttr = geometry.index;
+        const colorAttr = geometry.attributes.color;
+
+        var vertices = new Set([]);
+
+        for (let i = 0; i < indexAttr.array.length; i++) {
+            const colorX = colorAttr.getX(indexAttr.array[i]);
+            const colorY = colorAttr.getY(indexAttr.array[i]);
+            const colorZ = colorAttr.getZ(indexAttr.array[i]);
+
+            const color = new THREE.Color(colorX, colorY, colorZ);
+
+            console.log(color);
+            console.log(this.defaultColor);
+
+            if (color != this.defaultColor) {
+                const vertex = indexAttr.getX(indexAttr.array[i]);
+                vertices.add(vertex);
+            }
+        }
+        console.log(vertices);
+        return vertices;
+    }
+
     /* VIEWPORT EVENTS */
 
     /*  undo
@@ -853,20 +912,9 @@ export class SurveyViewport {
     undo() {
         const undoEvent = this.eventQueue.previous();
         if (undoEvent) {
-            switch(undoEvent.controlState) {
-                case controlStates.PAINT:
-                    this.populateColorOnVertices(this.defaultColor, 
-                        this.currentMesh, undoEvent.vertices);
-                    break;
-                case controlStates.ERASE:
-                    this.populateColorOnVertices(new THREE.Color("#abcabc"), 
-                        this.currentMesh, undoEvent.vertices);
-                    break;
-                default:
-                    console.error(
-                        "Unrecognized controlState while redoing event");
-                    break;
-            }
+            const colorAttr = undoEvent.mesh.geometry.attributes.color;
+            colorAttr.copy(undoEvent.colorState);
+            colorAttr.needsUpdate = true;
         }
     }
 
@@ -876,20 +924,9 @@ export class SurveyViewport {
     redo() {
         const redoEvent = this.eventQueue.next();
         if (redoEvent) {
-            switch(redoEvent.controlState) {
-                case controlStates.PAINT:
-                    this.populateColorOnVertices(new THREE.Color("#abcabc"), 
-                        this.currentMesh, redoEvent.vertices);
-                    break;
-                case controlStates.ERASE:
-                    this.populateColorOnVertices(this.defaultColor, 
-                        this.currentMesh, redoEvent.vertices);
-                    break;
-                default:
-                    console.error(
-                        "Unrecognized controlState while redoing event");
-                    break;
-            }
+            const colorAttr = redoEvent.mesh.geometry.attributes.color;
+            colorAttr.copy(redoEvent.colorState);
+            colorAttr.needsUpdate = true;
         }
     }
 }

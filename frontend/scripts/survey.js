@@ -200,7 +200,7 @@ export class Percept {
         Creates the objects necessary for operating the survey
     */
     constructor() {
-        this._faces = [];
+        this._vertices = new Set([]);
         this._model = null;
         this._intensity = 5;
         this._naturalness = 5;
@@ -218,7 +218,7 @@ export class Percept {
     */
     toJSON() {
         var output = {
-            faces      : this._faces,
+            vertices      : this._vertices,
             model      : this._model,
             intensity  : this._intensity,
             naturalness: this._naturalness,
@@ -229,8 +229,12 @@ export class Percept {
         return output;
     }
 
-    get faces() {
-        return this._faces;
+    set vertices(value) {
+        this._vertices = value;
+    }
+
+    get vertices() {
+        return this._vertices;
     }
 
     set model(value) {

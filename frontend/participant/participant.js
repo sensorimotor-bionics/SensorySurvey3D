@@ -193,7 +193,8 @@ function populateEditorWithPercept(percept) {
 	if (percept.model) {
 		modelSelect.value = percept.model;
 		if (viewport.replaceCurrentMesh(
-			surveyManager.survey.config.models[modelSelect.value])) {
+			surveyManager.survey.config.models[modelSelect.value]),
+			percept.vertices, new THREE.Color("#abcabc")) {
 			cameraController.reset();
 		}
 	}
@@ -204,8 +205,6 @@ function populateEditorWithPercept(percept) {
 	}
 
 	surveyManager.currentPercept = percept;
-
-	// TODO - Needs some way to load the drawing onto the model
 }
 
 /*  savePerceptFromEditor
@@ -229,7 +228,8 @@ function savePerceptFromEditor() {
 	const typeSelect = document.getElementById("typeSelect");
 	surveyManager.currentPercept.type = typeSelect.value;
 
-	// TODO - get vertices off of current model and save them
+	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
+	surveyManager.currentPercept.vertices = vertices;
 }
 
 /*  startWaiting
