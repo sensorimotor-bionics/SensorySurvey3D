@@ -218,7 +218,7 @@ export class Percept {
     */
     toJSON() {
         var output = {
-            vertices      : this._vertices,
+            vertices   : Array.from(this._vertices),
             model      : this._model,
             intensity  : this._intensity,
             naturalness: this._naturalness,
@@ -336,7 +336,7 @@ export class SurveyTable {
                 The eyeButton element that should be set to eye.png
     */
     viewCallback(percept, target) {
-        this._viewCallbackExternal.call(percept);
+        this._viewCallbackExternal(percept);
 
         var eyeButtons = document.getElementsByClassName("eyeButton");
         for (var i = 0; i < eyeButtons.length; i++) {

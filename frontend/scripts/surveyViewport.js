@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -105,14 +106,11 @@ class ViewportEventQueue {
             output: ViewportEvent
     */
     previous() {
-        console.log("pre: ", this.queuePosition);
         if (this.queue.length > 0 
             && this.queuePosition - 1 > 0
             && this.queue[this.queuePosition - 1]) {
             this.queuePosition -= 1;
             const output = this.queue[this.queuePosition - 1];
-            console.log("post: ", this.queuePosition);
-            console.log("output: ", output);
             return output;
         }
         return null;
@@ -126,14 +124,11 @@ class ViewportEventQueue {
             output: ViewportEvent
     */
     next() {
-        console.log("pre: ", this.queuePosition);
         if (this.queue.length > 0 
             && this.queuePosition + 1 <= this.queueLength
             && this.queue[this.queuePosition]) {
             this.queuePosition += 1;
             const output = this.queue[this.queuePosition - 1];
-            console.log("post: ", this.queuePosition);
-            console.log("output: ", output);
             return output;
         }
         return null;
@@ -177,7 +172,7 @@ export class CameraController {
                 this.decrementZoom();
             }
             else if (event.deltaY < 0) {
-                this.incrementZoom()
+                this.incrementZoom();
             }
 
             if (this.sliderElement) {
@@ -206,7 +201,7 @@ export class CameraController {
                 The current zoom value
     */
     incrementZoom() {
-        this.camera.zoom += 1
+        this.camera.zoom += 1;
         this.capZoom();
         this.camera.updateProjectionMatrix();
         return this.camera.zoom;
@@ -597,7 +592,6 @@ export class SurveyViewport {
         if (this.currentEvent) {
             this.currentEvent.updateColorStateFromMesh(this.currentMesh);
             this.eventQueue.push(this.currentEvent);
-            console.log(this.eventQueue.queue);
             this.currentEvent = null;
         }
     }
@@ -701,7 +695,7 @@ export class SurveyViewport {
                     this.populateColor(this.defaultColor, this.currentMesh);
                     if (colorVertices && color) {
                         this.populateColorOnVertices(color, this.currentMesh, 
-                            colorVertices)
+                            colorVertices);
                     }
                     this.eventQueue.reset();
                     var defaultEvent = new ViewportEvent(controlStates.PAINT);
@@ -713,6 +707,10 @@ export class SurveyViewport {
         }
         else {
             this.populateColor(this.defaultColor, this.currentMesh);
+            if (colorVertices && color) {
+                this.populateColorOnVertices(color, this.currentMesh, 
+                    colorVertices);
+            }
             return false;
         }
     }
@@ -892,15 +890,10 @@ export class SurveyViewport {
 
             const color = new THREE.Color(colorX, colorY, colorZ);
 
-            console.log(color);
-            console.log(this.defaultColor);
-
-            if (color != this.defaultColor) {
-                const vertex = indexAttr.getX(indexAttr.array[i]);
-                vertices.add(vertex);
+            if (color.getHex() != this.defaultColor.getHex()) {
+                vertices.add(indexAttr.array[i]);
             }
         }
-        console.log(vertices);
         return vertices;
     }
 

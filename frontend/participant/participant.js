@@ -61,7 +61,7 @@ function socketConnect() {
 					endSubmissionTimeout(msg.success);
 				}
 				else if (submissionTimeoutInterval) {
-					alert("Submission unsuccessful: server could not save");
+					endSubmissionTimeout(msg.success);
 				}
 				else {
 					alert("Received submitSuccess without making a submission!");
@@ -125,11 +125,24 @@ function toggleButtons(truefalse) {
 	}
 }
 
+/*  toggleUndoRedo
+	Enables or disables the undo and redo buttons depending on input
+
+	Inputs:
+		truefalse: bool
+			If true disable buttons, if false enable them
+*/
+function toggleUndoRedo(truefalse) {
+	document.getElementById("undoButton").disabled = truefalse;
+	document.getElementById("redoButton").disabled = truefalse;
+}
+
 /*  openEditor
 	Displays the editor menu
 */
 function openEditor() {
 	toggleEditorTabs(true);
+	toggleUndoRedo(false);
 	document.getElementById("drawTabButton").dispatchEvent(
 		new Event("pointerup"));
 }
@@ -138,9 +151,11 @@ function openEditor() {
 	Displays the percept menu
 */
 function openPerceptList() {
+	document.getElementById("orbitButton").dispatchEvent(new Event("pointerup"));
 	surveyManager.survey.renamePercepts();
 	surveyTable.update(surveyManager.survey);
 	toggleEditorTabs(false);
+	toggleUndoRedo(true);
 	COM.openSidebarTab("perceptTab");
 }
 
@@ -193,8 +208,8 @@ function populateEditorWithPercept(percept) {
 	if (percept.model) {
 		modelSelect.value = percept.model;
 		if (viewport.replaceCurrentMesh(
-			surveyManager.survey.config.models[modelSelect.value]),
-			percept.vertices, new THREE.Color("#abcabc")) {
+			surveyManager.survey.config.models[modelSelect.value],
+			percept.vertices, new THREE.Color("#abcabc"))) {
 			cameraController.reset();
 		}
 	}
@@ -280,10 +295,11 @@ function endSubmissionTimeout(success) {
 	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
 
 	if (success) {
+		surveyTable.clear();
 		alert("Submission was successful!")
 	}
 	else {
-		alert("Submission was unsuccessful: timeout reached");
+		alert("Submission failed!");
 	}
 
 	toggleButtons(false);
@@ -326,7 +342,7 @@ function editPerceptCallback(percept) {
 			The percept that will be viewed
 */
 function viewPerceptCallback(percept) {
-	// TODO
+	populateEditorWithPercept(percept);
 }
 
 /*  newPercept
