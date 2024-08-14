@@ -20,7 +20,8 @@ const meshMaterial = new THREE.MeshPhongMaterial({
     color: 0xffffff,
     flatShading: true,
     vertexColors: true,
-    shininess: 0
+    shininess: 0,
+    side: THREE.DoubleSide
 });
 
 const brushMaterial = new THREE.MeshStandardMaterial( {
@@ -692,6 +693,7 @@ export class SurveyViewport {
                     this.currentMesh = value;
                     this.currentModelFile = filename;
                     this.scene.add(this.currentMesh);
+                    console.log(this.currentMesh);
                     this.populateColor(this.defaultColor, this.currentMesh);
                     if (colorVertices && color) {
                         this.populateColorOnVertices(color, this.currentMesh, 

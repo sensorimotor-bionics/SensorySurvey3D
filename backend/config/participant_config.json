@@ -3,7 +3,7 @@
         "models" : {
             "Left Hand" : "hand_l.gltf",
             "Right Hand" : "hand_r.gltf",
-            "Forearm" : "Female_Forearms_R_rm_5000.gltf"
+            "Chest" : "chest.glb"
         },
         "typeList" : ["pressure", "poke", "sparkle"]
     },

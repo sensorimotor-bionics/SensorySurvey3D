@@ -44,16 +44,39 @@ export class SurveyManager {
         return true;
     }
 
-    /*  submitSurvey
+    /*  submitSurveyToServer
         Submits the currentSurvey across a given websocket
 
         Inputs:
             socket: WebSocket
                 The socket the survey is to be sent over
     */
-    submitSurvey(socket) {
+    submitSurveyToServer(socket) {
         var msg = {
             type: "submit",
+            survey: this.survey.toJSON()
+        }
+
+        if (socket.readyState == WebSocket.OPEN) {
+            socket.send(JSON.stringify(msg));
+            return true;
+        }
+        else {
+            console.error("Socket is not OPEN, cannot submit survey.")
+            return false;
+        }
+    }
+
+    /*  updateSurveyOnServer
+        Updates the currentSurvey across a given websocket
+
+        Inputs:
+            socket: WebSocket
+                The socket the survey is to be sent over
+    */
+    updateSurveyOnServer(socket) {
+        var msg = {
+            type: "update",
             survey: this.survey.toJSON()
         }
 
@@ -102,13 +125,14 @@ export class Survey {
             endTime: str
                 The time the survey was ended, same format    
     */
-    constructor(participant, config, date, startTime, endTime) {
+    constructor(participant, config, date, startTime, endTime, percepts = null) {
         this._participant = participant;
         this._config = config;
         this._date = date;
         this._startTime = startTime;
         this._endTime = endTime;
-        this._percepts = [];
+        if (percepts) { this._percepts = percepts; }
+        else { this._percepts = []; }
     }
 
     /*  addPercept
@@ -347,14 +371,17 @@ export class SurveyTable {
         target.getElementsByTagName('img')[0].src = "/images/eye.png";
     }
 
-    /*  addRow
-        Creates a row for a given percept and adds it to the table
+    /*  createRow
+        Creates a row for a given percept
 
         Inputs:
             percept: Percept
                 The percept who should be connected to the row
+
+        Outputs:
+            row: Element
     */
-    addRow(percept) {
+    createRow(percept) {
         var row = document.createElement("tr");
         row.id = percept.name;
 
@@ -376,6 +403,7 @@ export class SurveyTable {
         var viewButton = document.createElement("button");
         viewButton.classList.add("eyeButton");
         viewButton.addEventListener("pointerup", function(e) {
+            console.log("view");
             that.viewCallback(percept, e.currentTarget);
         })
         var viewEye = document.createElement("img");
@@ -390,13 +418,14 @@ export class SurveyTable {
             var editButton = document.createElement("button");
             editButton.innerHTML = "Edit";
             editButton.addEventListener("pointerup", function() {
+                console.log("edit");
                 that._editCallbackExternal(percept);
             });
             edit.appendChild(editButton);
             row.appendChild(edit);
         }
         
-        this.tbody.appendChild(row);
+        return row;
     }
 
     /*  clear
@@ -415,9 +444,11 @@ export class SurveyTable {
                 table
     */
     update(survey) {
-        this.clear();
+        var table = document.createElement("tbody");
         for (var i = 0; i < survey.percepts.length; i++) {
-            this.addRow(survey.percepts[i]);
+            var row = this.createRow(survey.percepts[i]);
+            table.appendChild(row);
         }
+        this.tbody.replaceChildren(...table.children);
     }
 }

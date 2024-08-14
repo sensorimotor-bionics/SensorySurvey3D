@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import * as VP from '../scripts/surveyViewport'
 import * as SVY from '../scripts/survey'
 import * as COM from '../scripts/common'
@@ -5,8 +6,13 @@ import * as COM from '../scripts/common'
 document.title = "Experimenter - SensorySurvey3D"
 
 var viewport;
+var cameraController;
 var surveyManager;
 var surveyTable;
+
+var updateSurveyInterval;
+
+var lastClickedView = null;
 
 /* WEBSOCKET */
 
@@ -25,6 +31,10 @@ function socketConnect() {
 	socket.onopen = function() {
         console.log("Socket connected!");
         socket.send(JSON.stringify({"type" : "requestConfig"}));
+		updateSurveyInterval = setInterval(function() {
+			const msg = { type: "requestSurvey" }
+			socket.send(JSON.stringify(msg));
+		}, 1000)
     }
 
 	socket.onmessage = function(event) {
@@ -32,9 +42,32 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "survey":
+				surveyManager.survey = new SVY.Survey(
+					msg.survey.participant,
+					msg.survey.config,
+					msg.survey.date,
+					msg.survey.startTime,
+					msg.survey.endTime,
+					msg.survey.percepts
+				);
+				surveyTable.update(surveyManager.survey);
+				if (lastClickedView) {
+					document.getElementById(lastClickedView)
+						.getElementsByClassName("eyeButton")
+						.dispatchEvent(new Event("pointerup"));
+				}
+				else {
+					const eyeButtons = 
+						document.getElementsByClassName("eyeButton");
+					if (eyeButtons[0]) {
+						eyeButtons[0].dispatchEvent(new Event("pointerup"));
+					}
+				}
+				COM.openSidebarTab("currentSurveyTab");
 				break;
             case "config":
                 const dropdown = document.getElementById("participantSelect");
+				dropdown.innerHTML = "";
 
                 for (var p in msg.config) {
 					const newOption = document.createElement("option");
@@ -51,6 +84,7 @@ function socketConnect() {
 	socket.onclose = function() {
 		console.log("Connection to websocket @ ", socketURL, 
 			" closed. Attempting reconnect in 1 second.");
+		clearInterval(updateSurveyInterval);
 		setTimeout(function() {
 			socketConnect();
 		}, 1000);
@@ -86,14 +120,29 @@ function newSurveyCallback() {
 			The percept that will be viewed
 */
 function viewPerceptCallback(percept) {
+	if (viewport.replaceCurrentMesh(
+		surveyManager.survey.config.models[percept.model],
+		percept.vertices, new THREE.Color("#abcabc"))) {
+		cameraController.reset();
+	}
+	surveyManager.currentPercept = percept;
 
+	lastClickedView = percept.animate;
 }
 
 /* STARTUP CODE */
 
 window.onload = function() {
     // Initialize required classes
-    viewport = new VP.SurveyViewport(document.getElementById("3dContainer"));
+    viewport = new VP.SurveyViewport(document.getElementById("3dContainer"),
+										new THREE.Color(0xffffff),
+										new THREE.Color(0x535353),
+										20);
+
+	cameraController = new VP.CameraController(viewport.controls, 
+		viewport.renderer.domElement, 2, 20);
+	cameraController.createZoomSlider(document.getElementById(
+		"zoomSliderContainer"));
 
     surveyManager = new SVY.SurveyManager();
 
@@ -110,4 +159,6 @@ window.onload = function() {
     /* EVENT LISTENERS */
     const newSurvey = document.getElementById("newSurvey");
     newSurvey.onpointerup = newSurveyCallback;
+
+	viewport.animate();
 }

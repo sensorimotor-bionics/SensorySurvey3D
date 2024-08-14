@@ -29,6 +29,13 @@ async def participant(websocket: WebSocket):
                     }
                     print("Sending survey to participant...")
                     await websocket.send_json(msg)
+                elif manager.survey:
+                    msg = {
+                        "type" : "existingSurvey",
+                        "survey" : manager.survey.toDict()
+                    }
+                    print("Sending survey to participant...")
+                    await websocket.send_json(msg)
             elif data["type"] == "update":
                 manager.survey.percepts = data["survey"]["percepts"]
             elif data["type"] == "submit":

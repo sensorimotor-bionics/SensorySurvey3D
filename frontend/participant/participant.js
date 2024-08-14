@@ -12,6 +12,7 @@ var cameraController;
 
 var waitingInterval;
 var submissionTimeoutInterval;
+var updateServerInterval;
 
 /* WEBSOCKET */
 
@@ -27,22 +28,27 @@ var socket;
 function socketConnect() {
     socket = new WebSocket(socketURL);
 
-	socket.onopen = function() { console.log("Socket connected!") };
+	socket.onopen = function() { 
+		console.log("Socket connected!") 
+		updateServerInterval = setInterval(function() {
+			if (surveyManager.survey) {
+				surveyManager.updateSurveyOnServer(socket);
+			}
+		}, 1000);
+	};
 
 	socket.onmessage = function(event) {
 		const msg = JSON.parse(event.data);
 
 		switch (msg.type) {
 			case "new":
-				if (
-					surveyManager.createNewSurvey(
+				if (surveyManager.createNewSurvey(
 					msg.survey.participant, 
 					msg.survey.config,
 					msg.survey.date, 
 					msg.survey.startTime,
 					msg.survey.endTime, 
-					false)
-				) {
+					false)) {
 					const modelSelect = document.getElementById("modelSelect");
 					populateSelect(modelSelect, 
 									Object.keys(msg.survey.config.models));
@@ -54,6 +60,21 @@ function socketConnect() {
 					endWaiting();
 				}
 				break;
+			case "currentSurvey":
+				surveyManager.survey = new SVY.Survey(
+					msg.survey.participant,
+					msg.survey.config,
+					msg.survey.date,
+					msg.survey.startTime,
+					msg.survey.endTime,
+					msg.survey.percepts
+				);
+				surveyTable.update(surveyManager.survey);
+				const eyeButtons = 
+					document.getElementsByClassName("eyeButton");
+				if (eyeButtons[0]) {
+					eyeButtons[0].dispatchEvent(new Event("pointerup"));
+				}
 			case "submitResponse":
 				if (msg.success) {
 					surveyManager.clearSurvey();
@@ -72,6 +93,7 @@ function socketConnect() {
 	socket.onclose = function() {
 		console.log("Connection to websocket @ ", socketURL, 
 					" closed. Attempting reconnection in 1 second.");
+		clearInterval(updateServerInterval);
 		setTimeout(function() {
 			socketConnect();
 		}, 1000);
@@ -313,7 +335,7 @@ function endSubmissionTimeout(success) {
 	begin.
 */
 function submitCallback() {
-	if (surveyManager.submitSurvey(socket)) {
+	if (surveyManager.submitSurveyToServer(socket)) {
 		toggleButtons(true);
 		startSubmissionTimeout();
 	}
@@ -431,9 +453,9 @@ window.onload = function() {
 										20);
 
 	cameraController = new VP.CameraController(viewport.controls, 
-											viewport.renderer.domElement, 2, 20);
+		viewport.renderer.domElement, 2, 20);
 	cameraController.createZoomSlider(document.getElementById(
-										"zoomSliderContainer"));
+		"zoomSliderContainer"));
 
     surveyManager = new SVY.SurveyManager(); 
 
