@@ -41,14 +41,21 @@ function socketConnect() {
 		const msg = JSON.parse(event.data);
 
 		switch (msg.type) {
-			case "new":
-				if (surveyManager.createNewSurvey(
-					msg.survey.participant, 
+			case "survey":
+				const percepts = []
+				for (let i = 0; i < msg.survey.percepts.length; i++) {
+					const percept = msg.survey.percepts[i];
+					new SVY.Percept()
+				}
+				surveyManager.survey = new SVY.Survey(
+					msg.survey.participant,
 					msg.survey.config,
-					msg.survey.date, 
+					msg.survey.date,
 					msg.survey.startTime,
-					msg.survey.endTime, 
-					false)) {
+					msg.survey.endTime,
+					percepts
+				);
+				if (waitingInterval) {
 					const modelSelect = document.getElementById("modelSelect");
 					populateSelect(modelSelect, 
 									Object.keys(msg.survey.config.models));
@@ -59,22 +66,15 @@ function socketConnect() {
 					cameraController.reset();
 					endWaiting();
 				}
-				break;
-			case "currentSurvey":
-				surveyManager.survey = new SVY.Survey(
-					msg.survey.participant,
-					msg.survey.config,
-					msg.survey.date,
-					msg.survey.startTime,
-					msg.survey.endTime,
-					msg.survey.percepts
-				);
-				surveyTable.update(surveyManager.survey);
-				const eyeButtons = 
-					document.getElementsByClassName("eyeButton");
-				if (eyeButtons[0]) {
-					eyeButtons[0].dispatchEvent(new Event("pointerup"));
+				else {
+					surveyTable.update(surveyManager.survey);
+					const eyeButtons = 
+						document.getElementsByClassName("eyeButton");
+					if (eyeButtons[0]) {
+						eyeButtons[0].dispatchEvent(new Event("pointerup"));
+					}
 				}
+				break;
 			case "submitResponse":
 				if (msg.success) {
 					surveyManager.clearSurvey();
@@ -87,6 +87,7 @@ function socketConnect() {
 				else {
 					alert("Received submitSuccess without making a submission!");
 				}
+				break;
 		}
 	}
 

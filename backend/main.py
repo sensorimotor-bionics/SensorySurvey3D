@@ -22,16 +22,9 @@ async def participant(websocket: WebSocket):
         while True:
             data = await websocket.receive_json()
             if data["type"] == "waiting":
-                if manager.survey != None:
+                if manager.survey:
                     msg = {
-                        "type" : "new",
-                        "survey" : manager.survey.toDict()
-                    }
-                    print("Sending survey to participant...")
-                    await websocket.send_json(msg)
-                elif manager.survey:
-                    msg = {
-                        "type" : "existingSurvey",
+                        "type" : "survey",
                         "survey" : manager.survey.toDict()
                     }
                     print("Sending survey to participant...")
