@@ -53,7 +53,7 @@ function socketConnect() {
 				surveyTable.update(surveyManager.survey);
 				if (lastClickedView) {
 					document.getElementById(lastClickedView)
-						.getElementsByClassName("eyeButton")
+						.getElementsByClassName("eyeButton")[0]
 						.dispatchEvent(new Event("pointerup"));
 				}
 				else {
@@ -76,8 +76,14 @@ function socketConnect() {
 
 					dropdown.appendChild(newOption);
 				}
-
                 break;
+			case "noSurvey":
+				surveyManager.clearSurvey();
+				surveyTable.clear();
+				viewport.unloadCurrentMesh();
+				lastClickedView = null;
+				COM.openSidebarTab("newSurveyTab");
+				break;
 		}
 	}
 
@@ -127,7 +133,7 @@ function viewPerceptCallback(percept) {
 	}
 	surveyManager.currentPercept = percept;
 
-	lastClickedView = percept.animate;
+	lastClickedView = percept.name;
 }
 
 /* STARTUP CODE */

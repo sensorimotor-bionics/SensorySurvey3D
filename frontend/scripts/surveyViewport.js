@@ -693,7 +693,6 @@ export class SurveyViewport {
                     this.currentMesh = value;
                     this.currentModelFile = filename;
                     this.scene.add(this.currentMesh);
-                    console.log(this.currentMesh);
                     this.populateColor(this.defaultColor, this.currentMesh);
                     if (colorVertices && color) {
                         this.populateColorOnVertices(color, this.currentMesh, 

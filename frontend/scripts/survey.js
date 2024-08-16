@@ -223,14 +223,20 @@ export class Percept {
     /*  constructor
         Creates the objects necessary for operating the survey
     */
-    constructor() {
-        this._vertices = new Set([]);
-        this._model = null;
-        this._intensity = 5;
-        this._naturalness = 5;
-        this._pain = 0;
-        this._type = null;
-        this._name = null;
+    constructor(vertices = [], 
+        model = null,
+        intensity = 5, 
+        naturalness = 5, 
+        pain = 0,
+        type = null, 
+        name = null) {
+        this._vertices = new Set(vertices);
+        this._model = model;
+        this._intensity = intensity;
+        this._naturalness = naturalness;
+        this._pain = pain;
+        this._type = type;
+        this._name = name;
     }
 
     /*  toJSON
@@ -403,7 +409,6 @@ export class SurveyTable {
         var viewButton = document.createElement("button");
         viewButton.classList.add("eyeButton");
         viewButton.addEventListener("pointerup", function(e) {
-            console.log("view");
             that.viewCallback(percept, e.currentTarget);
         })
         var viewEye = document.createElement("img");
@@ -418,7 +423,6 @@ export class SurveyTable {
             var editButton = document.createElement("button");
             editButton.innerHTML = "Edit";
             editButton.addEventListener("pointerup", function() {
-                console.log("edit");
                 that._editCallbackExternal(percept);
             });
             edit.appendChild(editButton);

@@ -44,8 +44,11 @@ function socketConnect() {
 			case "survey":
 				const percepts = []
 				for (let i = 0; i < msg.survey.percepts.length; i++) {
-					const percept = msg.survey.percepts[i];
-					new SVY.Percept()
+					var percept = msg.survey.percepts[i];
+					percept = new SVY.Percept(percept.vertices, percept.model,
+						percept.intensity, percept.naturalness,
+						percept.pain, percept.type, percept.name);
+					percepts.push(percept);
 				}
 				surveyManager.survey = new SVY.Survey(
 					msg.survey.participant,
@@ -65,19 +68,21 @@ function socketConnect() {
 										models[modelSelect.value]);
 					cameraController.reset();
 					endWaiting();
-				}
-				else {
-					surveyTable.update(surveyManager.survey);
-					const eyeButtons = 
-						document.getElementsByClassName("eyeButton");
-					if (eyeButtons[0]) {
-						eyeButtons[0].dispatchEvent(new Event("pointerup"));
+					if (percepts) {
+						surveyTable.update(surveyManager.survey);
+						const eyeButtons = 
+							document.getElementsByClassName("eyeButton");
+						if (eyeButtons[0]) {
+							eyeButtons[0].dispatchEvent(new Event("pointerup"));
+						}
 					}
 				}
 				break;
 			case "submitResponse":
 				if (msg.success) {
 					surveyManager.clearSurvey();
+					surveyTable.clear();
+					viewport.unloadCurrentMesh();
 					startWaiting();
 					endSubmissionTimeout(msg.success);
 				}
@@ -318,7 +323,6 @@ function endSubmissionTimeout(success) {
 	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
 
 	if (success) {
-		surveyTable.clear();
 		alert("Submission was successful!")
 	}
 	else {

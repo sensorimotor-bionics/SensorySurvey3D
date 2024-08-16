@@ -35,12 +35,10 @@ async def participant(websocket: WebSocket):
                 print("Saving survey...")
                 manager.survey.percepts = data["survey"]["percepts"]
                 result = manager.saveSurvey()
-                print(result)
                 msg = {
                     "type" : "submitResponse",
                     "success" : result
                 }
-
                 await websocket.send_json(msg)
             else:
                 raise ValueError("Bad type value in participant-ws")
@@ -67,6 +65,11 @@ async def experimenter(websocket: WebSocket):
                     msg = {
                         "type" : "survey",
                         "survey" : manager.survey.toDict()
+                    }
+                    await websocket.send_json(msg)
+                else:
+                    msg = {
+                        "type" : "noSurvey"
                     }
                     await websocket.send_json(msg)
             elif data["type"] == "requestConfig":
