@@ -94,7 +94,7 @@ class SurveyManager():
     config: dict = {}
     data_path: str = ""
 
-    def __init__(self, _config_path: str, _data_path: str):
+    def __init__(self, _config_path: str):
         """
         __init__
         Class initialization function
@@ -107,7 +107,6 @@ class SurveyManager():
         """
         with open(os.path.join(_config_path, "participant_config.json"), 'r') as data:
             self.config = json.load(data)
-        self.data_path = os.path.join(_data_path)
 
     def newSurvey(self, participant: str):
         """
@@ -132,7 +131,7 @@ class SurveyManager():
             else:
                 print("Cannot begin new survey; given participant is not in participant config.")
     
-    def saveSurvey(self):
+    def saveSurvey(self, data_path):
         """
         saveSurvey
         Sets the end time to the current time, then saves the survey to a file in the Manager's
@@ -141,8 +140,12 @@ class SurveyManager():
         Outputs: True if success, False if failure
         """
         self.survey.endTimeNow()
-        if self.survey.saveSurvey(self.data_path):
-            self.survey = None
-            return True
-        else:
+        try:
+            if self.survey.saveSurvey(data_path):
+                self.survey = None
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(e)
             return False

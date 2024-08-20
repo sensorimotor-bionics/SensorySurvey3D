@@ -3,22 +3,11 @@ from survey3d import Survey, SurveyManager
 import threading
 import pyrtma
 import time
+import os
 import climber_message as md
 import climber_core_utilities.load_config as load_config
+import climber_core_utilities.path_tools as path_tools
 from contextlib import asynccontextmanager
-
-# The app we are serving
-app = FastAPI()
-
-# The path we pull our configs from
-CONFIG_PATH = r"./config/"
-DATA_PATH = r"../data/"
-
-# Get system config
-SYS_CONFIG = load_config.system()
-
-# The survey manager
-manager = SurveyManager(CONFIG_PATH, DATA_PATH)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +15,19 @@ async def lifespan(app: FastAPI):
     rtmaThread.start()
     yield
     RTMADisconnect()
+
+# The path we pull our configs from
+CONFIG_PATH = r"./config/"
+data_path = r"./data/"
+
+# Get system config
+SYS_CONFIG = load_config.system()
+
+# The app we are serving
+app = FastAPI(lifespan=lifespan)
+
+# The survey manager
+manager = SurveyManager(CONFIG_PATH)
 
 # Variable which controls the RTMA loop
 rtmaConnected = False
@@ -82,7 +84,7 @@ def RTMAConnect():
                 elif (msgIn.type_id == md.MT_EXIT):
                     mod.disconnect()
                     rtmaConnected = False
-                elif (msgIn.type_id == md.MT_SET_START):
+                elif isinstance(msgIn.data, md.MDF_SET_START):
                     if manager.survey:
                         print("There is already a current survey! Cannot start new survey until current survey is complete.")
                     else:
@@ -90,6 +92,9 @@ def RTMAConnect():
                             print(f"Starting survey for {msgIn.data.subject_id}.")
                         else:
                             print(f"Cannot start survey for {msgIn.data.subject_id}!")
+                    global data_path
+                    data_path = os.path.join(str(path_tools.get_climber_path()), "data", 'OpenLoopStim', 
+                                             msgIn.data.subject_id, f"{msgIn.data.subject_id}.data.{str(msgIn.data.session_num).zfill(5)}")
                 else:
                     print('Message not recognized')
             except Exception as e:
@@ -140,7 +145,9 @@ async def participant(websocket: WebSocket):
             elif data["type"] == "submit":
                 print("Saving survey...")
                 manager.survey.percepts = data["survey"]["percepts"]
-                result = manager.saveSurvey()
+                result = manager.saveSurvey(data_path)
+                if result: print("Saved successfully!")
+                else: print("Failed to save!")
                 msg = {
                     "type" : "submitResponse",
                     "success" : result
