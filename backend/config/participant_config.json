@@ -1,4 +1,14 @@
 {
+    "bci02" : {
+        "models" : {
+            "Right Hand" : "hand_r.gltf"
+        },
+        "typeList" : ["Electrical", "Tickle", "Itch", 
+                      "Tingle", "Vibration", "Buzzing", 
+                      "Sparkle", "Flutter", "Body limb joint", 
+                      "Across skin", "Touch", "Pressure", 
+                      "Sharp", "Tapping", "Poke", "Other"]
+    },
     "test1" : {
         "models" : {
             "Left Hand" : "hand_l.gltf",
