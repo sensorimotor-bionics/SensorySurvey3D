@@ -18,3 +18,23 @@ In the [frontend folder](/frontend/), there is a package-lock.json file. Navigat
 ```
 npm i
 ```
+
+## Running
+
+### Backend
+In the [backend folder](/backend/), run the following command:
+```
+uvicorn main:app --reload
+```
+
+By default, this will open the backend to 127.0.0.1:8000. If you would like to change this, you may use the --host and --port options to set the IP and port for the backend. If you do so: you must change the socketURL variable in [common.json](/frontend/scripts/common.js) to match your settings.
+
+### Frontend
+In the [frontend folder](/frontend/), run the following command:
+```
+npx vite
+```
+
+By default, this will open the frontend to localhost. You may use the --host flag to change the IP.
+
+
