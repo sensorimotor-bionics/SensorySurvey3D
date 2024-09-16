@@ -58,6 +58,11 @@ function socketConnect() {
 					msg.survey.endTime,
 					percepts
 				);
+				if (surveyManager.survey.config.hideScaleValues) {
+					document.getElementById("intensityValue").innerHTML = "";
+					document.getElementById("naturalnessValue").innerHTML = "";
+					document.getElementById("painValue").innerHTML = "";
+				}
 				if (waitingInterval) {
 					const modelSelect = document.getElementById("modelSelect");
 					populateSelect(modelSelect, 
@@ -551,5 +556,36 @@ window.onload = function() {
 	const redoButton = document.getElementById("redoButton");
 	redoButton.onpointerup = redoCallback;
 
+	const intensitySlider = document.getElementById("intensitySlider");
+	intensitySlider.oninput = function() {
+		if (surveyManager.survey 
+			&& !surveyManager.survey.config.hideScaleValues) {
+			document.getElementById("intensityValue").innerHTML = 
+				intensitySlider.value;
+		}
+	}
+	intensitySlider.dispatchEvent(new Event("input"));
+
+	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	naturalnessSlider.oninput = function() {
+		if (surveyManager.survey 
+			&& !surveyManager.survey.config.hideScaleValues) {
+			document.getElementById("naturalnessValue").innerHTML = 
+				naturalnessSlider.value;
+		}
+		
+	}
+	naturalnessSlider.dispatchEvent(new Event("input"));
+
+	const painSlider = document.getElementById("painSlider");
+	painSlider.oninput = function() {
+		if (surveyManager.survey 
+				&& !surveyManager.survey.config.hideScaleValues) {
+			document.getElementById("painValue").innerHTML = painSlider.value;
+		}
+	}
+	painSlider.dispatchEvent(new Event("input"));
+
+	toggleUndoRedo(true);
 	viewport.animate();
 }
