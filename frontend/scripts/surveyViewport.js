@@ -165,6 +165,7 @@ export class CameraController {
         this.minZoom = minZoom;
         this.maxZoom = maxZoom;
         this.sliderElement = null;
+        this.cameraResetElement = null;
 
         const that = this;
 
@@ -297,6 +298,23 @@ export class CameraController {
         parentElement.appendChild(zoomIn); 
 
         this.sliderElement = zoomSlider;
+    }
+
+    /*  createCameraReset
+        Creates a button which can be clicked to reset the camera
+
+        Inputs:
+            parentElement: element
+                The element to which the children will be appended
+    */
+    createCameraReset(parentElement) {
+        const cameraResetButton = document.createElement("button");
+        cameraResetButton.id = "cameraResetButton";
+        cameraResetButton.innerHTML = "Reset Camera";
+        cameraResetButton.onpointerup = function() { this.reset(); }.bind(this);
+
+        parentElement.appendChild(cameraResetButton);
+        this.cameraResetElement = cameraResetButton;
     }
 }
 

@@ -460,7 +460,9 @@ window.onload = function() {
 	cameraController = new VP.CameraController(viewport.controls, 
 		viewport.renderer.domElement, 2, 20);
 	cameraController.createZoomSlider(document.getElementById(
-		"zoomSliderContainer"));
+		"cameraControlContainer"));
+	cameraController.createCameraReset(document.getElementById(
+		"cameraControlContainer"));
 
     surveyManager = new SVY.SurveyManager(); 
 
