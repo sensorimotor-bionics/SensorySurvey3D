@@ -23,11 +23,11 @@ html {
 }
 
 .sidebarTab {
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    width:100%;
-    height:100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
     flex-direction: column;
 }
 
@@ -140,11 +140,23 @@ html {
     left: 0;
 }
 
+.rangeContainer {
+    display:flex; 
+    flex-direction:row; 
+    align-items: center;
+}
+
 html {
     font-family: sans-serif;
 }
 
 p {
+    font-size: 24px;
+    color: white;
+    margin: 8px 8px;
+}
+
+label {
     font-size: 24px;
     color: white;
     margin: 8px 8px;
@@ -213,16 +225,35 @@ input[type="range"]::-moz-range-thumb {
     cursor: pointer;
 }
 
-.rangeContainer {
-    display:flex; 
-    flex-direction:row; 
-    align-items: center;
+input[type="radio"] {
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--uiElementContrast);
+    border-radius: 50%;
+    appearance: none;
+    background-color: var(--uiElementColor);
+}
+
+input[type="radio"]:not(:disabled):checked {
+    background-color: var(--buttonColor);
+    background-clip: content-box;
+    padding: 2px;
+    background-image: radial-gradient(
+        circle,
+        var(--buttonColor) 0%,
+        var(--buttonColor) 50%,
+        transparent 60%,
+        transparent 100%
+    )   
 }
 
 select {
     height: 32px;
     font-size: 16px;
-    width:75%;
+    width:   75%;
     margin-top: 8px;
     margin-bottom: 8px;
 }

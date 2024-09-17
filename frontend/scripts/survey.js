@@ -228,6 +228,7 @@ export class Percept {
         intensity = 5, 
         naturalness = 5, 
         pain = 0,
+        depth = "atSkin",
         type = null, 
         name = null) {
         this._vertices = new Set(vertices);
@@ -235,6 +236,7 @@ export class Percept {
         this._intensity = intensity;
         this._naturalness = naturalness;
         this._pain = pain;
+        this._depth = depth;
         this._type = type;
         this._name = name;
     }
@@ -253,6 +255,7 @@ export class Percept {
             intensity  : this._intensity,
             naturalness: this._naturalness,
             pain       : this._pain,
+            depth      : this._depth,
             type       : this._type,
             name       : this._name
         }
@@ -297,6 +300,14 @@ export class Percept {
 
     get pain() {
         return this._pain;
+    }
+
+    set depth(value) {
+        this._depth = value;
+    }
+
+    get depth() {
+        return this._depth;
     }
 
     set type(value) {

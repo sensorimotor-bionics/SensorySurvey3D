@@ -252,6 +252,18 @@ function populateEditorWithPercept(percept) {
 		typeSelect.value = percept.type;
 	}
 
+	switch(percept.depth) {
+		case "belowSkin":
+			document.getElementById("belowSkinRadio").checked = true;
+			break;
+		case "atSkin":
+			document.getElementById("atSkinRadio").checked = true;
+			break;
+		case "aboveSkin":
+			document.getElementById("aboveSkinRadio").checked = true;
+			break;
+	}
+
 	surveyManager.currentPercept = percept;
 }
 
@@ -269,6 +281,10 @@ function savePerceptFromEditor() {
 
 	const painSlider = document.getElementById("painSlider");
 	surveyManager.currentPercept.pain = parseFloat(painSlider.value);
+
+	const depthSelected = 
+		document.querySelector("input[name=\"skinLevelRadioSet\"]:checked");
+	surveyManager.currentPercept.depth = depthSelected.value;
 
 	const modelSelect = document.getElementById("modelSelect");
 	surveyManager.currentPercept.model = modelSelect.value;
