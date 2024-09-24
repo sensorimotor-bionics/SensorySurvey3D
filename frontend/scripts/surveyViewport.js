@@ -238,6 +238,11 @@ export class CameraController {
         this.camera.zoom = value;
         this.capZoom();
         this.camera.updateProjectionMatrix();
+
+        if (this.sliderElement) {
+            this.sliderElement.value = this.camera.zoom;
+        }
+
         return this.camera.zoom;
     }
 
