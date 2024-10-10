@@ -32,6 +32,7 @@ manager = SurveyManager(CONFIG_PATH)
 # Variable which controls the RTMA loop
 rtmaConnected = False
 rtmaExpectedClose = False
+client = pyrtma.Client(module_id=md.MID_COMMENT_MANAGER)
 
 """
 RTMA
@@ -43,30 +44,26 @@ def RTMAConnect():
         MMM_IP = str(SYS_CONFIG["server"])
     else:
         MMM_IP = "192.168.1.40:7111"  # Final backup
-    
-    mod = pyrtma.Client(module_id=md.MID_COMMENT_MANAGER)
 
+    global client
     global rtmaExpectedClose
 
     while not rtmaExpectedClose:
         print('Connecting to RTMA at ' + MMM_IP)
 
         # Attempt to connect to RTMA
-        while not mod.connected:
+        while not client.connected:
             try:
                 if (rtmaExpectedClose):
                     print("RTMA closed expectedly. Goodbye!")
                     return
-                mod.connect(MMM_IP)
-                mod.subscribe([md.MT_ACKNOWLEDGE, md.MT_EXIT, md.MT_SET_START])
-                msg = mod.read_message(0)
-                while msg is not None:
-                    msg = mod.read_message(0)
-                mod.send_module_ready()
+                client.connect(MMM_IP)
+                client.subscribe([md.MT_ACKNOWLEDGE, md.MT_EXIT, md.MT_SET_START])
+                client.send_module_ready()
                 print('Successfully connected to RTMA, waiting for messages')
             except Exception as e:
                 print("Could not connect to RTMA, trying again in 5 seconds")
-                mod.disconnect()
+                client.disconnect()
                 time.sleep(5)
         
         # Make connected true
@@ -76,13 +73,13 @@ def RTMAConnect():
         # Open RTMA message loop
         while rtmaConnected:
             try:
-                msgIn = mod.read_message(0.1)
+                msgIn = client.read_message(0.1)
                 if msgIn is None:
                     continue
                 elif (msgIn.type_id == md.MT_ACKNOWLEDGE):
                     print("RTMA acknowledged")
                 elif (msgIn.type_id == md.MT_EXIT):
-                    mod.disconnect()
+                    client.disconnect()
                     rtmaConnected = False
                 elif isinstance(msgIn.data, md.MDF_SET_START):
                     if manager.survey:
@@ -100,9 +97,9 @@ def RTMAConnect():
             except Exception as e:
                 print(e)
                 rtmaConnected = False
-                mod.disconnect()
+                client.disconnect()
 
-        mod.disconnect()
+        client.disconnect()
         rtmaConnected = False
 
         if not rtmaExpectedClose:
@@ -148,6 +145,10 @@ async def participant(websocket: WebSocket):
                 result = manager.saveSurvey(data_path)
                 if result: print("Saved successfully!")
                 else: print("Failed to save!")
+                if client.connected:
+                    msgs = manager.getResponseMessages()
+                    for msg in msgs:
+                        client.send_message(msg)
                 msg = {
                     "type" : "submitResponse",
                     "success" : result
