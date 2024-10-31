@@ -9,6 +9,7 @@
 
 html {
     color: white;
+    font-family: sans-serif;
 }
 
 .sidebar {
@@ -87,7 +88,7 @@ html {
 
 .paletteButton {
     border: 2px solid transparent;
-    background: none;
+    background: none; 
 }
 
 .paletteButton:hover {
@@ -144,10 +145,6 @@ html {
     display:flex; 
     flex-direction:row; 
     align-items: center;
-}
-
-html {
-    font-family: sans-serif;
 }
 
 p {
