@@ -1,32 +1,67 @@
 import os
 import json
 from datetime import datetime
+from dataclasses import dataclass
 
+@dataclass
+class Quality():
+    intensity: float
+    naturalness: float
+    pain: float
+    depth: str
+    type: str
+    
+    def toDict(self):
+        """
+        Returns the Quality's properties as a dictionary.
+
+        Returns:
+            A dictionary of the Quality's properties
+        """
+        return {
+            "intensity": self.intensity,
+            "naturalness": self.naturalness,
+            "pain": self.pain,
+            "depth": self.depth,
+            "type": self.type
+        }
+
+@dataclass
+class ProjectedField():
+    model: str
+    name: str
+    vertices: list[int]
+    hotSpot: list[int]
+    qualities: list[Quality]
+
+    def toDict(self):
+        """
+        Returns the ProjectedField's properties as a dictionary.
+
+        Returns:
+            A dictionary of the ProjectedField's properties
+        """
+        qualitiesDict = [quality.toDict() for quality in self.qualities]
+        return {
+            "model": self.model,
+            "name": self.name,
+            "verices": self.vertices,
+            "hotSpot": self.hotSpot,
+            "qualities": qualitiesDict
+        }
+
+@dataclass
 class Survey():
     """
     Survey
     A class which handles saving and maintaining individual survey data
     """
-    participant: str = ""
-    config: dict = {}
+    participant: str
+    config: dict
     date: str = ""
     startTime: str = ""
     endTime: str = ""
-    percepts: list = []
-
-    def __init__(self, _participant: str, _config: dict):
-        """
-        __init__
-        Class initialization function
-
-        Inputs:
-            _participant: str
-                The name of the participant the survey is to be conducted by
-            _config: str
-                The config for that participant as it exists on the day of the survey
-        """
-        self.participant = _participant
-        self.config = _config
+    projectedFields: list[ProjectedField] = []
 
     def toDict(self):
         """
@@ -34,16 +69,16 @@ class Survey():
         Returns a dictionary containing the Survey's properties
 
         Returns:
-            dict
-                A dictionary containing the Survey's properties
+            A dictionary containing the Survey's properties
         """
+        projectedFieldsDict = [field.toDict() for field in self.projectedFields]
         return {
             "participant": self.participant,
             "config": self.config,
             "date": self.date,
             "startTime": self.startTime,
             "endTime" : self.endTime,
-            "percepts": self.percepts
+            "projectedFields": projectedFieldsDict
         }
     
     def startDateTimeNow(self):
@@ -68,27 +103,26 @@ class Survey():
         saveSurvey
         Saves a .json file containing a dictionary of the current survey
 
-        Inputs:
-            path: str
-                The folder to which the .json file should be saved
+        Args:
+            path: The folder to which the .json file should be saved
 
         Outputs: True if success, False if failure
         """
-        if self.percepts:
+        if self.projectedFields:
             filename = f"{self.participant}_{self.date}_{self.startTime}.json"
             print(f"Saving survey to {filename}...")
             with open(os.path.join(path, filename), 'w') as file:
                 json.dump(self.toDict(), file, indent = 4)
             return True
         else:
-            print("Survey cannot be saved without any percepts!")
+            print("Survey cannot be saved without any projected fields!")
             return False
-
+        
 class SurveyManager():
     """
     SurveyManager
-    An object which handles survey creation, deletion, and editing. Has knowledge of paths 
-    which the survey object itself does not need access to
+    An object which handles survey creation, deletion, and editing. Has 
+    knowledge of paths which the survey object itself does not need access to
     """
     survey: Survey = None
     config: dict = {}
@@ -99,13 +133,13 @@ class SurveyManager():
         __init__
         Class initialization function
 
-        Inputs:
-            _config_path: str
-                The path in which the participant_config.json file lives
-            _data_path: str
-                The path in which surveys should be saved
+        Args:
+            _config_path: The path in which the participant_config.json file 
+            lives
+            _data_path: The path in which surveys should be saved
         """
-        with open(os.path.join(_config_path, "participant_config.json"), 'r') as data:
+        with open(os.path.join(_config_path, "participant_config.json"), 
+                  'r') as data:
             self.config = json.load(data)
         self.data_path = os.path.join(_data_path)
 
@@ -114,15 +148,16 @@ class SurveyManager():
         newSurvey
         Creates a new survey for a given participant if there isn't already one
 
-        Inputs:
-            participant: str
-                The participant for which the survey is created, must be present
-                in the participant config
+        Args:
+            participant: The participant for which the survey is created, must 
+            be present in the participant config
         
-        Outputs: True if success, False if failure
+        Returns: 
+            True if success, False if failure
         """
         if self.survey:
-            print("Cannot begin new survey; there is already an ongoing survey.")
+            print("Cannot begin new survey; there is already an ongoing "
+                  "survey.")
             return False
         else:
             if participant in self.config:
@@ -130,15 +165,17 @@ class SurveyManager():
                 self.survey.startDateTimeNow()
                 return True
             else:
-                print("Cannot begin new survey; given participant is not in participant config.")
+                print("Cannot begin new survey; given participant is not in " 
+                      "participant config.")
     
     def saveSurvey(self):
         """
         saveSurvey
-        Sets the end time to the current time, then saves the survey to a file in the Manager's
-        data path
+        Sets the end time to the current time, then saves the survey to a file 
+        in the Manager's data path
 
-        Outputs: True if success, False if failure
+        Returns: 
+            True if success, False if failure
         """
         self.survey.endTimeNow()
         if self.survey.saveSurvey(self.data_path):

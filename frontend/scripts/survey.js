@@ -1,10 +1,193 @@
+export class Quality {
+    /*  constructor
+        Creates the objects necessary for operating the survey
+    */
+    constructor(
+        intensity = 5, 
+        naturalness = 5, 
+        pain = 0,
+        depth = "atSkin",
+        type = null, 
+    ) {
+        this.model = model;
+        this.intensity = intensity;
+        this.naturalness = naturalness;
+        this.pain = pain;
+        this.depth = depth;
+        this.type = type;
+
+    }
+
+    /*  toJSON
+        Creates a JSON object of the percept.
+
+        Outputs:
+            output: JSON
+                This percept object turned into a JSON object
+    */
+    toJSON() {
+        var output = {
+            intensity  : this.intensity,
+            naturalness: this.naturalness,
+            pain       : this.pain,
+            depth      : this.depth,
+            type       : this.type,
+        }
+        return output;
+    }
+}
+
+export class ProjectedField {
+    constructor(
+        model = "", 
+        name = "", 
+        vertices = new Set([]), 
+        hotSpot = new Set([]), 
+        qualities = []
+    ) {
+        this.model = model;
+        this.name = name;
+
+        this.vertices = vertices;
+        this.hotSpot = hotSpot
+        this.qualities = qualities
+    }
+
+    toJSON() {
+        var jsonQualities = []
+        for (let i = 0; i < this.qualities.length; i++) {
+            jsonQualities.push(this.qualities[i].toJSON())
+        }
+
+        var output = {
+            model    : this.model, 
+            name     : this.name,
+            vertices : this.vertices,
+            hotSpot  : this.hotSpot,
+            qualities: jsonQualities
+        }
+
+        return output;
+    }
+
+    addQuality(quality) {
+        this.qualities.push(quality);
+    }
+}
+
+export class Survey {
+    /*  constructor
+        Creates the objects necessary for operating the survey
+
+        Inputs:
+            participant: str
+                The name of the participant filling out the current survey
+            config: json
+                The full config file 
+            date: str
+                The date, should be in YYYY-MM-DD format if received from the 
+                websocket
+            startTime: str
+                The time the survey was begun, should be in HH:MM:SS format if 
+                received from the websocket
+            endTime: str
+                The time the survey was ended, same format    
+    */
+    constructor(participant, 
+        config, 
+        date, 
+        startTime, 
+        endTime, 
+        projectedFields = null
+    ) {
+        this.participant = participant;
+        this.config = config;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        if (projectedFields) { this.projectedFields = projectedFields; }
+        else { this.projectedFields = []; }
+    }
+
+    /*  addPercept
+        Adds a new percept to the list of percepts
+    */
+    addPercept() {
+        this.projectedFields.push(new Percept());
+    }
+
+    /*  deletePercept
+        Remove a given percept from the list of percepts
+
+        Inputs:
+            percept: Percept
+                The percept to be removed from the list of percepts
+    */
+    deletePercept(percept) {
+        const index = this.projectedFields.indexOf(percept);
+
+        if (index > -1) {
+            this.projectedFields.splice(index, 1);
+        }
+
+        this.renamePercepts();
+    }
+
+    /*  renamePercepts
+        Names each percept in the list of percepts based on how many of
+        each percept type exists in the list
+    */
+    renamePercepts() {
+        for (var i = 0; i < this.projectedFields.length; i++) {
+            var field = this.projectedFields[i];
+            var type = field.type;
+
+            var priorTypeCount = 0;
+
+            for (var j = 0; this.projectedFields[j] !== field; j++) {
+                if (this.projectedFields[j].type == type) {
+                    priorTypeCount++;
+                }  
+            }
+
+            field.name = type.charAt(0).toUpperCase() + type.slice(1) + " "
+                            + (priorTypeCount + 1).toString();
+        }
+    }
+
+    /*  toJSON
+        Creates a JSON object of the survey.
+
+        Outputs:
+            output: JSON
+                This survey object turned into a JSON object
+    */
+    toJSON() {
+        var jsonFields = [];
+        for (var i = 0; i < this.percepts.length; i++) {
+            jsonFields.push(this.percepts[i].toJSON());
+        }
+
+        var output = {
+            participant: this.participant,
+            config     : this.config,
+            date       : this.date,
+            startTime  : this.startTime,
+            endTime    : this.endTime,
+            percepts   : jsonFields
+        }
+
+        return output;
+    }
+}
+
 export class SurveyManager {
     /*  constructor
         Creates the objects necessary for operating the survey
     */
     constructor() {
         this._survey = null;
-        this._currentPercept = null;
+        this.currentField = null;
     }
 
     /*  createNewSurvey
@@ -24,11 +207,16 @@ export class SurveyManager {
             overwrite: bool
                 If true, overwrites the current survey even if it's full
     */
-    createNewSurvey(participant, config, date, startTime, endTime, 
-        overwrite=false) {
+    createNewSurvey(participant, 
+        config, 
+        date, 
+        startTime, 
+        endTime, 
+        overwrite=false
+    ) {
         if (this.survey && !overwrite){
-            console.warn("Attempted to create survey while there is a preexisting" 
-                + "survey without overwriting.");
+            console.warn("Attempted to create survey while there is a "
+                + "preexisting survey without overwriting.");
             return false;
         }
         this.survey = new Survey(participant, config, date, startTime, endTime);
@@ -89,242 +277,6 @@ export class SurveyManager {
             return false;
         }
     }
-
-    set survey(value) {
-        this._survey = value;
-    }
-
-    get survey() {
-        return this._survey;
-    }
-
-    set currentPercept(value) {
-        this._currentPercept = value;
-    }
-
-    get currentPercept() {
-        return this._currentPercept;
-    }
-}
-
-export class Survey {
-    /*  constructor
-        Creates the objects necessary for operating the survey
-
-        Inputs:
-            participant: str
-                The name of the participant filling out the current survey
-            config: json
-                The full config file 
-            date: str
-                The date, should be in YYYY-MM-DD format if received from the 
-                websocket
-            startTime: str
-                The time the survey was begun, should be in HH:MM:SS format if 
-                received from the websocket
-            endTime: str
-                The time the survey was ended, same format    
-    */
-    constructor(participant, config, date, startTime, endTime, percepts = null) {
-        this._participant = participant;
-        this._config = config;
-        this._date = date;
-        this._startTime = startTime;
-        this._endTime = endTime;
-        if (percepts) { this._percepts = percepts; }
-        else { this._percepts = []; }
-    }
-
-    /*  addPercept
-        Adds a new percept to the list of percepts
-    */
-    addPercept() {
-        this.percepts.push(new Percept());
-    }
-
-    /*  deletePercept
-        Remove a given percept from the list of percepts
-
-        Inputs:
-            percept: Percept
-                The percept to be removed from the list of percepts
-    */
-    deletePercept(percept) {
-        const index = this.percepts.indexOf(percept);
-
-        if (index > -1) {
-            this.percepts.splice(index, 1);
-        }
-
-        this.renamePercepts();
-    }
-
-    /*  renamePercepts
-        Names each percept in the list of percepts based on how many of
-        each percept type exists in the list
-    */
-    renamePercepts() {
-        for (var i = 0; i < this.percepts.length; i++) {
-            var percept = this.percepts[i];
-            var type = percept.type;
-
-            var priorTypeCount = 0;
-
-            for (var j = 0; this.percepts[j] !== percept; j++) {
-                if (this.percepts[j].type == type) {
-                    priorTypeCount++;
-                }  
-            }
-
-            percept.name = type.charAt(0).toUpperCase() + type.slice(1) + " "
-                            + (priorTypeCount + 1).toString();
-        }
-    }
-
-    /*  toJSON
-        Creates a JSON object of the survey.
-
-        Outputs:
-            output: JSON
-                This survey object turned into a JSON object
-    */
-    toJSON() {
-        var json_percepts = [];
-        for (var i = 0; i < this.percepts.length; i++) {
-            json_percepts.push(this.percepts[i].toJSON());
-        }
-
-        var output = {
-            participant: this._participant,
-            config     : this._config,
-            date       : this._date,
-            startTime  : this._startTime,
-            endTime    : this._endTime,
-            percepts   : json_percepts
-        }
-
-        return output;
-    }
-
-    set percepts(value) {
-        this._percepts = value;
-    }
-
-    get percepts() {
-        return this._percepts;
-    }
-
-    get config() {
-        return this._config;
-    }
-}
-
-export class Percept {
-    /*  constructor
-        Creates the objects necessary for operating the survey
-    */
-    constructor(vertices = [], 
-        model = null,
-        intensity = 5, 
-        naturalness = 5, 
-        pain = 0,
-        depth = "atSkin",
-        type = null, 
-        name = null) {
-        this._vertices = new Set(vertices);
-        this._model = model;
-        this._intensity = intensity;
-        this._naturalness = naturalness;
-        this._pain = pain;
-        this._depth = depth;
-        this._type = type;
-        this._name = name;
-    }
-
-    /*  toJSON
-        Creates a JSON object of the percept.
-
-        Outputs:
-            output: JSON
-                This percept object turned into a JSON object
-    */
-    toJSON() {
-        var output = {
-            vertices   : Array.from(this._vertices),
-            model      : this._model,
-            intensity  : this._intensity,
-            naturalness: this._naturalness,
-            pain       : this._pain,
-            depth      : this._depth,
-            type       : this._type,
-            name       : this._name
-        }
-        return output;
-    }
-
-    set vertices(value) {
-        this._vertices = value;
-    }
-
-    get vertices() {
-        return this._vertices;
-    }
-
-    set model(value) {
-        this._model = value;
-    }
-
-    get model() {
-        return this._model;
-    }
-
-    set intensity(value) {
-        this._intensity = value;
-    }
-
-    get intensity() {
-        return this._intensity;
-    }
-
-    set naturalness(value) {
-        this._naturalness = value;
-    }
-
-    get naturalness() {
-        return this._naturalness;
-    }
-
-    set pain(value) {
-        this._pain = value;
-    }
-
-    get pain() {
-        return this._pain;
-    }
-
-    set depth(value) {
-        this._depth = value;
-    }
-
-    get depth() {
-        return this._depth;
-    }
-
-    set type(value) {
-        this._type = value;
-    }
-
-    get type() {
-        return this._type;
-    }
-    
-    set name(value) {
-        this._name = value;
-    }
-
-    get name() {
-        return this._name;
-    }
 }
 
 export class SurveyTable {
@@ -342,11 +294,17 @@ export class SurveyTable {
             editCallback: function
                 The function that should be called when an edit button is clicked
     */
-    constructor(parentTable, isParticipant, viewCallbackExternal, 
-        editCallbackExternal) {
+    constructor(
+        parentTable, 
+        isParticipant, 
+        viewCallbackExternal, 
+        editCallbackExternal,
+        addQualityCallbackExternal,
+    ) {
         this._isParticipant = isParticipant;
         this._viewCallbackExternal = viewCallbackExternal;
         this._editCallbackExternal = editCallbackExternal;
+        this._addQualityCallbackExternal = addQualityCallbackExternal;
 
         // Set up the table, with edit column if partitipant
         var thead = document.createElement("thead");
@@ -376,8 +334,8 @@ export class SurveyTable {
             target: Element
                 The eyeButton element that should be set to eye.png
     */
-    viewCallback(percept, target) {
-        this._viewCallbackExternal(percept);
+    viewCallback(projectedField, target) {
+        this._viewCallbackExternal(projectedField);
 
         var eyeButtons = document.getElementsByClassName("eyeButton");
         for (var i = 0; i < eyeButtons.length; i++) {
@@ -398,29 +356,23 @@ export class SurveyTable {
         Outputs:
             row: Element
     */
-    createRow(percept) {
-        var row = document.createElement("tr");
-        row.id = percept.name;
+    createRow(projectedField) {
+        var row = document.createElement("div");
+        row.id = projectedField.name;
 
         const that = this;
 
-        var name = document.createElement("td");
-        name.innerHTML = percept.name;
-        name.style["width"] = "40%";
+        var name = document.createElement("div");
+        name.innerHTML = projectedField.name;
+        name.style["width"] = "60%";
         row.appendChild(name);
 
-        var color = document.createElement("td");
-        var colorBox = document.createElement("div");
-        colorBox.classList.add("colorSquare");
-        colorBox.style["background-color"] = "#ffffff";
-        color.style["width"] = "25px";
-        row.appendChild(color);
-
-        var view = document.createElement("td");
+        var view = document.createElement("div");
+        view.style.width = "20%";
         var viewButton = document.createElement("button");
         viewButton.classList.add("eyeButton");
         viewButton.addEventListener("pointerup", function(e) {
-            that.viewCallback(percept, e.currentTarget);
+            that.viewCallback(projectedField, e.currentTarget);
         })
         var viewEye = document.createElement("img");
         viewEye.src = "/images/eye.png";
@@ -430,11 +382,12 @@ export class SurveyTable {
         row.appendChild(view);
 
         if (this._isParticipant) {
-            var edit = document.createElement("td");
+            var edit = document.createElement("div");
+            edit.style.width = "20%";
             var editButton = document.createElement("button");
             editButton.innerHTML = "Edit";
             editButton.addEventListener("pointerup", function() {
-                that._editCallbackExternal(percept);
+                that._editCallbackExternal(projectedField);
             });
             edit.appendChild(editButton);
             row.appendChild(edit);
@@ -460,8 +413,8 @@ export class SurveyTable {
     */
     update(survey) {
         var table = document.createElement("tbody");
-        for (var i = 0; i < survey.percepts.length; i++) {
-            var row = this.createRow(survey.percepts[i]);
+        for (var i = 0; i < survey.projectedFields.length; i++) {
+            var row = this.createRow(survey.projectedFields[i]);
             table.appendChild(row);
         }
         this.tbody.replaceChildren(...table.children);
