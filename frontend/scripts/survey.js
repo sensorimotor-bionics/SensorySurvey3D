@@ -1,7 +1,13 @@
+/** Contains qualitative data reported by a participant, to be assigned to a projected field */
 export class Quality {
-    /*  constructor
-        Creates the objects necessary for operating the survey
-    */
+    /**
+     * Create a Quality object
+     * @param {number} intensity - an intensity rating of 0 to 10
+     * @param {number} naturalness - a naturalness rating of 0 to 10
+     * @param {number} pain - a pain rating of 0 to 10
+     * @param {string} depth - records if the quality is at/above/below skin level
+     * @param {string} type - the type of the quality 
+     */
     constructor(
         intensity = 5, 
         naturalness = 5, 
@@ -15,16 +21,12 @@ export class Quality {
         this.pain = pain;
         this.depth = depth;
         this.type = type;
-
     }
 
-    /*  toJSON
-        Creates a JSON object of the percept.
-
-        Outputs:
-            output: JSON
-                This percept object turned into a JSON object
-    */
+    /**
+     * Create a JSON object of the percept
+     * @returns {JSON}
+     */
     toJSON() {
         var output = {
             intensity  : this.intensity,
@@ -37,7 +39,18 @@ export class Quality {
     }
 }
 
+/**
+ * An object representing a user's drawing of a projected field onto a 3D model, also stores qualities assigned
+ */
 export class ProjectedField {
+    /**
+     * Construct a ProjectedField object
+     * @param {string} model - the name of the model the projected field is drawn onto
+     * @param {string} name - the name of the projected field
+     * @param {Set} vertices - the set of vertices consisting of the full sensation
+     * @param {Set} hotSpot - the set of vertices consisting of the reported hot spot
+     * @param {Array} qualities - array of Quality objects assigned to this projected field
+     */
     constructor(
         model = "", 
         name = "", 
@@ -53,6 +66,10 @@ export class ProjectedField {
         this.qualities = qualities
     }
 
+    /**
+     * Return a JSON-ified version of the Survey
+     * @returns {JSON}
+     */
     toJSON() {
         var jsonQualities = []
         for (let i = 0; i < this.qualities.length; i++) {
@@ -70,29 +87,28 @@ export class ProjectedField {
         return output;
     }
 
+    /**
+     * Add a given quality object to the qualities array of the  ProjectedField
+     * @param {Quality} quality - the Quality to be added
+     */
     addQuality(quality) {
         this.qualities.push(quality);
     }
 }
 
+/**
+ * Contains properties tracking information on participant survey responses
+ */
 export class Survey {
-    /*  constructor
-        Creates the objects necessary for operating the survey
-
-        Inputs:
-            participant: str
-                The name of the participant filling out the current survey
-            config: json
-                The full config file 
-            date: str
-                The date, should be in YYYY-MM-DD format if received from the 
-                websocket
-            startTime: str
-                The time the survey was begun, should be in HH:MM:SS format if 
-                received from the websocket
-            endTime: str
-                The time the survey was ended, same format    
-    */
+    /**
+     * Construct a Survey option with the given properties
+     * @param {string} participant - The name of the participant filling out the current survey
+     * @param {JSON} config - The full config file 
+     * @param {string} date - The date, should be in YYYY-MM-DD format if received from the websocket
+     * @param {string} startTime - The time the survey was begun, should be in HH:MM:SS format if received from the websocket
+     * @param {string} endTime - The time the survey was ended, same format
+     * @param {Array} projectedFields - The current ProjectedFields stored in the survey
+     */
     constructor(participant, 
         config, 
         date, 
@@ -109,19 +125,16 @@ export class Survey {
         else { this.projectedFields = []; }
     }
 
-    /*  addPercept
-        Adds a new percept to the list of percepts
-    */
+    /**
+     * Add a new percept to the list of percepts
+     */
     addPercept() {
         this.projectedFields.push(new Percept());
     }
 
-    /*  deletePercept
-        Remove a given percept from the list of percepts
-
-        Inputs:
-            percept: Percept
-                The percept to be removed from the list of percepts
+   /**
+    * Remove a given percept from the list of percepts
+    * @param {Percept} percept - The percept to be removed from the list of percepts
     */
     deletePercept(percept) {
         const index = this.projectedFields.indexOf(percept);
@@ -133,10 +146,10 @@ export class Survey {
         this.renamePercepts();
     }
 
-    /*  renamePercepts
-        Names each percept in the list of percepts based on how many of
+    /**
+     * Name each percept in the list of percepts based on how many of
         each percept type exists in the list
-    */
+     */
     renamePercepts() {
         for (var i = 0; i < this.projectedFields.length; i++) {
             var field = this.projectedFields[i];
@@ -155,13 +168,10 @@ export class Survey {
         }
     }
 
-    /*  toJSON
-        Creates a JSON object of the survey.
-
-        Outputs:
-            output: JSON
-                This survey object turned into a JSON object
-    */
+    /**
+     * Create a JSON object of the survey
+     * @returns {JSON}
+     */
     toJSON() {
         var jsonFields = [];
         for (var i = 0; i < this.percepts.length; i++) {
@@ -181,32 +191,28 @@ export class Survey {
     }
 }
 
+/**
+ * An object which creates, sends, and clears survey objects
+ */
 export class SurveyManager {
-    /*  constructor
-        Creates the objects necessary for operating the survey
-    */
+    /**
+     * Initialize the SurveyManager with empty properties
+     */
     constructor() {
         this._survey = null;
         this.currentField = null;
     }
 
-    /*  createNewSurvey
-        Creates a blank survey object in the currentSurvey slot
-
-        Inputs:
-            participant: str
-                The name of the participant
-            config: json
-                The config for the new survey
-            date: str
-                The date on which the survey is being conducted
-            startTime: str
-                The time of the survey's start
-            endTime: str
-                Should be blank if creating a new survey
-            overwrite: bool
-                If true, overwrites the current survey even if it's full
-    */
+    /**
+     * Create a blank survey object in the currentSurvey slot
+     * @param {string} participant - The name of the participant
+     * @param {JSON} config - The config for the new survey
+     * @param {string} date - The date on which the survey is being conducted
+     * @param {string} startTime - The time of the survey's start
+     * @param {string} endTime - Should be blank if creating a new survey
+     * @param {boolean} overwrite - If true, overwrites the current survey even if it's full
+     * @returns 
+     */
     createNewSurvey(participant, 
         config, 
         date, 
@@ -223,22 +229,19 @@ export class SurveyManager {
         return true;
     }
 
-    /*  clearSurvey
-        Clears the currentSurvey object
-    */
+    /**
+     * Clear the currentSurvey object
+     */
     clearSurvey() {
         this.survey = null;
         this.currentPercept = null;
-        return true;
     }
 
-    /*  submitSurveyToServer
-        Submits the currentSurvey across a given websocket
-
-        Inputs:
-            socket: WebSocket
-                The socket the survey is to be sent over
-    */
+    /**
+     * Submit the currentSurvey to the server via websocket
+     * @param {WebSocket} socket - the socket the survey is to be sent over
+     * @returns {boolean}
+     */
     submitSurveyToServer(socket) {
         var msg = {
             type: "submit",
@@ -255,13 +258,11 @@ export class SurveyManager {
         }
     }
 
-    /*  updateSurveyOnServer
-        Updates the currentSurvey across a given websocket
-
-        Inputs:
-            socket: WebSocket
-                The socket the survey is to be sent over
-    */
+    /**
+     * Pass the currentSurvey to the server via websocket
+     * @param {WebSocket} socket - the socket the survey is to be sent over
+     * @returns {boolean}
+     */
     updateSurveyOnServer(socket) {
         var msg = {
             type: "update",
@@ -279,61 +280,38 @@ export class SurveyManager {
     }
 }
 
+/** Class which manages UI elements reflecting data in ProjectedFields */
 export class SurveyTable {
-    /*  constructor
-        The constructor for the SurveyTable class
-
-        Inputs:
-            parentTable: Element
-                The <table> element the table will be a child of
-            isParticipant: bool
-                If true, creates the table with an edit column. If false, 
-                omits the edit column
-            viewCallback: function
-                The function that should be called when a view button is clicked
-            editCallback: function
-                The function that should be called when an edit button is clicked
-    */
+    /**
+     * Create a SurveyTable element
+     * @param {Element} parentElement - the element the table will be a child of
+     * @param {boolean} isParticipant - If true, creates edit buttons for participants to edit the fields and qualities
+     * @param {function} viewCallbackExternal - the function to be called when a view button is clicked
+     * @param {function} editFieldCallbackExternal - the function to be called when an edit button is called for a field
+     * @param {function} editQualityCallbackExternal - the function to be called when an edit button is called for a quality
+     * @param {function} addQualityCallbackExternal - the function to be called when a 
+     */
     constructor(
-        parentTable, 
+        parentElement, 
         isParticipant, 
         viewCallbackExternal, 
-        editCallbackExternal,
+        editFieldCallbackExternal,
+        editQualityCallbackExternal,
         addQualityCallbackExternal,
     ) {
         this._isParticipant = isParticipant;
         this._viewCallbackExternal = viewCallbackExternal;
-        this._editCallbackExternal = editCallbackExternal;
+        this._editFieldCallbackExternal = editFieldCallbackExternal;
+        this._editQualityCallbackExternal = editQualityCallbackExternal;
         this._addQualityCallbackExternal = addQualityCallbackExternal;
-
-        // Set up the table, with edit column if partitipant
-        var thead = document.createElement("thead");
-        parentTable.appendChild(thead);
-
-        this.tbody = document.createElement("tbody");
-        parentTable.appendChild(this.tbody);
-
-        var columns = ["Name", "Color", "View"];
-
-        if (this._isParticipant) { columns.push("Edit") }
-
-        for (var i = 0; i < columns.length; i++) {
-            var column = document.createElement("th");
-            column.innerHTML = columns[i];
-            thead.appendChild(column);
-        }
+        this.parentElement = parentElement;
     }
 
-    /*  viewCallback
-        Behavior for when a view button is clicked within the table, opens
-        eyes for viewed percept and closes them for all others
-
-        Inputs:
-            percept: Percept
-                The percept that should be passed to the external callback
-            target: Element
-                The eyeButton element that should be set to eye.png
-    */
+    /**
+     * Behavior for when a view button is clicked within the table, opens eyes for viewed percept and closes them for all others
+     * @param {ProjectedField} projectedField - The field that should be passed to the external callback on button click
+     * @param {Element} target - The eyeButton element that should be set to eye.png
+     */
     viewCallback(projectedField, target) {
         this._viewCallbackExternal(projectedField);
 
@@ -346,16 +324,11 @@ export class SurveyTable {
         target.getElementsByTagName('img')[0].src = "/images/eye.png";
     }
 
-    /*  createRow
-        Creates a row for a given percept
-
-        Inputs:
-            percept: Percept
-                The percept who should be connected to the row
-
-        Outputs:
-            row: Element
-    */
+    /**
+     * Creates a row for a given projected field
+     * @param {ProjectedField} projectedField - the projected field whose data will be reflected in the returned row
+     * @returns {Element}
+     */
     createRow(projectedField) {
         var row = document.createElement("div");
         row.id = projectedField.name;
@@ -387,7 +360,7 @@ export class SurveyTable {
             var editButton = document.createElement("button");
             editButton.innerHTML = "Edit";
             editButton.addEventListener("pointerup", function() {
-                that._editCallbackExternal(projectedField);
+                that._editFieldCallbackExternal(projectedField);
             });
             edit.appendChild(editButton);
             row.appendChild(edit);
@@ -396,21 +369,17 @@ export class SurveyTable {
         return row;
     }
 
-    /*  clear
-        Clears the table
-    */
+    /**
+     * Clear the table
+     */
     clear() {
-        this.tbody.innerHTML = "";
+        this.parentElement.innerHTML = "";
     }
 
-    /*  update
-        Updates the table to reflect the percepts in a given Survey object
-
-        Inputs:
-            survey: Survey
-                The survey whose percepts should be reflected in the updated
-                table
-    */
+    /**
+     * Update the table to reflect the percepts in a given Survey object
+     * @param {Survey} survey - The survey whose percepts should be reflected in the updated table
+     */
     update(survey) {
         var table = document.createElement("tbody");
         for (var i = 0; i < survey.projectedFields.length; i++) {
