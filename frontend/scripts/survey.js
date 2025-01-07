@@ -1,11 +1,13 @@
-/** Contains qualitative data reported by a participant, to be assigned to a projected field */
+/** Contains qualitative data reported by a participant, to be assigned to a 
+ *  projected field */
 export class Quality {
     /**
      * Create a Quality object
      * @param {number} intensity - an intensity rating of 0 to 10
      * @param {number} naturalness - a naturalness rating of 0 to 10
      * @param {number} pain - a pain rating of 0 to 10
-     * @param {string} depth - records if the quality is at/above/below skin level
+     * @param {string} depth - records if the quality is at/above/below skin 
+     *      level
      * @param {string} type - the type of the quality 
      */
     constructor(
@@ -13,7 +15,7 @@ export class Quality {
         naturalness = 5, 
         pain = 0,
         depth = "atSkin",
-        type = null, 
+        type = null
     ) {
         this.model = model;
         this.intensity = intensity;
@@ -40,16 +42,21 @@ export class Quality {
 }
 
 /**
- * An object representing a user's drawing of a projected field onto a 3D model, also stores qualities assigned
+ * An object representing a user's drawing of a projected field onto a 3D model,
+ * also stores qualities assigned
  */
 export class ProjectedField {
     /**
      * Construct a ProjectedField object
-     * @param {string} model - the name of the model the projected field is drawn onto
+     * @param {string} model - the name of the model the projected field is 
+     *      drawn onto
      * @param {string} name - the name of the projected field
-     * @param {Set} vertices - the set of vertices consisting of the full sensation
-     * @param {Set} hotSpot - the set of vertices consisting of the reported hot spot
-     * @param {Array} qualities - array of Quality objects assigned to this projected field
+     * @param {Set} vertices - the set of vertices consisting of the full 
+     *      sensation
+     * @param {Set} hotSpot - the set of vertices consisting of the reported hot
+     *      spot
+     * @param {Array} qualities - array of Quality objects assigned to this 
+     *      projected field
      */
     constructor(
         model = "", 
@@ -88,11 +95,25 @@ export class ProjectedField {
     }
 
     /**
-     * Add a given quality object to the qualities array of the  ProjectedField
+     * Add a given quality object to the qualities array
      * @param {Quality} quality - the Quality to be added
      */
     addQuality(quality) {
         this.qualities.push(quality);
+    }
+
+    /**
+     * Remove a given quality from the qualities array
+     * @param {Quality} quality - the Quality to be deleted
+     */
+    deleteQuality(quality) {
+        const index = field.qualities.indexOf(quality);
+
+        if (index > -1) {
+            field.qualities.splice(index, 1);
+        }
+
+        this.renameFields();
     }
 }
 
@@ -102,14 +123,19 @@ export class ProjectedField {
 export class Survey {
     /**
      * Construct a Survey option with the given properties
-     * @param {string} participant - The name of the participant filling out the current survey
+     * @param {string} participant - The name of the participant filling out the
+     *      current survey
      * @param {JSON} config - The full config file 
-     * @param {string} date - The date, should be in YYYY-MM-DD format if received from the websocket
-     * @param {string} startTime - The time the survey was begun, should be in HH:MM:SS format if received from the websocket
+     * @param {string} date - The date, should be in YYYY-MM-DD format if 
+     *      received from the websocket
+     * @param {string} startTime - The time the survey was begun, should be in 
+     *      HH:MM:SS format if received from the websocket
      * @param {string} endTime - The time the survey was ended, same format
-     * @param {Array} projectedFields - The current ProjectedFields stored in the survey
+     * @param {Array} projectedFields - The current ProjectedFields stored in 
+     *      the survey
      */
-    constructor(participant, 
+    constructor(
+        participant, 
         config, 
         date, 
         startTime, 
@@ -126,31 +152,31 @@ export class Survey {
     }
 
     /**
-     * Add a new percept to the list of percepts
+     * Add a new field to the list of fields
      */
     addPercept() {
         this.projectedFields.push(new Percept());
     }
 
-   /**
-    * Remove a given percept from the list of percepts
-    * @param {Percept} percept - The percept to be removed from the list of percepts
-    */
-    deletePercept(percept) {
-        const index = this.projectedFields.indexOf(percept);
+    /**
+     * Remove a given field from the list of projected fields
+     * @param {ProjectedField} field - The field to be removed
+     */
+    deleteField(field) {
+        const index = this.projectedFields.indexOf(field);
 
         if (index > -1) {
             this.projectedFields.splice(index, 1);
         }
 
-        this.renamePercepts();
+        this.renameFields();
     }
 
     /**
      * Name each percept in the list of percepts based on how many of
         each percept type exists in the list
      */
-    renamePercepts() {
+    renameFields() {
         for (var i = 0; i < this.projectedFields.length; i++) {
             var field = this.projectedFields[i];
             var type = field.type;
@@ -201,6 +227,7 @@ export class SurveyManager {
     constructor() {
         this._survey = null;
         this.currentField = null;
+        this.currentQuality = null;
     }
 
     /**
@@ -210,10 +237,12 @@ export class SurveyManager {
      * @param {string} date - The date on which the survey is being conducted
      * @param {string} startTime - The time of the survey's start
      * @param {string} endTime - Should be blank if creating a new survey
-     * @param {boolean} overwrite - If true, overwrites the current survey even if it's full
+     * @param {boolean} overwrite - If true, overwrites the current survey even 
+     *      if it's full
      * @returns 
      */
-    createNewSurvey(participant, 
+    createNewSurvey(
+        participant, 
         config, 
         date, 
         startTime, 
@@ -285,11 +314,16 @@ export class SurveyTable {
     /**
      * Create a SurveyTable element
      * @param {Element} parentElement - the element the table will be a child of
-     * @param {boolean} isParticipant - If true, creates edit buttons for participants to edit the fields and qualities
-     * @param {function} viewCallbackExternal - the function to be called when a view button is clicked
-     * @param {function} editFieldCallbackExternal - the function to be called when an edit button is called for a field
-     * @param {function} editQualityCallbackExternal - the function to be called when an edit button is called for a quality
-     * @param {function} addQualityCallbackExternal - the function to be called when a 
+     * @param {boolean} isParticipant - If true, creates edit buttons for 
+     *      participants to edit the fields and qualities
+     * @param {function} viewCallbackExternal - the function to be called when a
+     *      view button is clicked
+     * @param {function} editFieldCallbackExternal - the function to be called 
+     *      when an edit button is called for a field
+     * @param {function} editQualityCallbackExternal - the function to be called 
+     *      when an edit button is called for a quality
+     * @param {function} addQualityCallbackExternal - the function to be called 
+     *      when an add quality button is clicked
      */
     constructor(
         parentElement, 
@@ -308,9 +342,12 @@ export class SurveyTable {
     }
 
     /**
-     * Behavior for when a view button is clicked within the table, opens eyes for viewed percept and closes them for all others
-     * @param {ProjectedField} projectedField - The field that should be passed to the external callback on button click
-     * @param {Element} target - The eyeButton element that should be set to eye.png
+     * Behavior for when a view button is clicked within the table, opens eyes 
+     * for viewed percept and closes them for all others
+     * @param {ProjectedField} projectedField - The field that should be passed 
+     *      to the external callback on button click
+     * @param {Element} target - The eyeButton element that should be set to 
+     *      eye.png
      */
     viewCallback(projectedField, target) {
         this._viewCallbackExternal(projectedField);
@@ -326,7 +363,8 @@ export class SurveyTable {
 
     /**
      * Creates a row for a given projected field
-     * @param {ProjectedField} projectedField - the projected field whose data will be reflected in the returned row
+     * @param {ProjectedField} projectedField - the projected field whose data 
+     *      will be reflected in the returned row
      * @returns {Element}
      */
     createRow(projectedField) {
@@ -378,7 +416,8 @@ export class SurveyTable {
 
     /**
      * Update the table to reflect the percepts in a given Survey object
-     * @param {Survey} survey - The survey whose percepts should be reflected in the updated table
+     * @param {Survey} survey - The survey whose percepts should be reflected in
+     *      the updated table
      */
     update(survey) {
         var table = document.createElement("tbody");

@@ -19,12 +19,11 @@ var updateServerInterval;
 const socketURL = COM.socketURL + "participant-ws";
 var socket;
 
-/*  socketConnect
-	Connects to the survey's backend via websocket to enable data transfer. 
-	Surveys are unable to start unless the backend is connected as the survey 
-	begins. Attempts to reconnect every second if not connected.
-*/
-
+/**
+ * Connect to the survey's backend via websocket to enable data transfer. 
+ * Surveys are unable to start unless the backend is connected as the 
+ * survey begins. Attempts to reconnect every second if not connected.
+ */
 function socketConnect() {
     socket = new WebSocket(socketURL);
 
@@ -118,38 +117,17 @@ function socketConnect() {
 
 /* USER INTERFACE */
 
-/*  toggleEditorTabs
-	Reveals or hides the "Draw" and "Qualify" tabs at the top of the sidebar,
-	depending on input
-
-	Inputs:
-		truefalse: bool
-			If true then show tabs, if false hide them
-*/
-function toggleEditorTabs(truefalse) {
-	var editorTabs = document.getElementById("tabSelector");
-	if (truefalse) {
-		editorTabs.style.display = "flex";
-	}
-	else {
-		editorTabs.style.display = "none";
-	}
-}
-
-/*  toggleButtons
-	Find all button elements and enable or disable them, depending on input
-
-	Inputs:
-		truefalse: bool
-			If true disable buttons, if false enable them
-*/
-function toggleButtons(truefalse) {
+/**
+ * Find all button elements and enable or disable them, depending on input
+ * @param {boolean} enabled - Determines if the buttons are enabled
+ */
+function toggleButtons(enabled) {
 	const sidebar = document.getElementById("sidebar");
 
 	var buttons = sidebar.querySelectorAll("button");
 	for (var i = 0; i < buttons.length; i++) {
-		buttons[i].disabled = truefalse;
-		if (truefalse) {
+		buttons[i].disabled = !enabled;
+		if (!enabled) {
 			buttons[i].style.pointerEvents = "none";
 		}
 		else {
@@ -158,51 +136,52 @@ function toggleButtons(truefalse) {
 	}
 }
 
-/*  toggleUndoRedo
-	Enables or disables the undo and redo buttons depending on input
-
-	Inputs:
-		truefalse: bool
-			If true disable buttons, if false enable them
-*/
-function toggleUndoRedo(truefalse) {
-	document.getElementById("undoButton").disabled = truefalse;
-	document.getElementById("redoButton").disabled = truefalse;
+/**
+ * Enables or disables the undo and redo buttons depending on input
+ * @param {boolean} enabled - Determines if the buttons are enabled
+ */
+function toggleUndoRedo(enabled) {
+	document.getElementById("undoButton").disabled = !enabled;
+	document.getElementById("redoButton").disabled = !enabled;
 }
 
-/*  openEditor
-	Displays the editor menu
-*/
-function openEditor() {
-	toggleEditorTabs(true);
+/**
+ * Display the projected field editor menu
+ */
+function openFieldEditor() {
 	toggleUndoRedo(false);
-	document.getElementById("drawTabButton").dispatchEvent(
-		new Event("pointerup"));
+	COM.openSidebarTab("fieldTab");
 }
 
-/*  openPerceptList
-	Displays the percept menu
-*/
+/**
+ * Display the quality editor menu
+ */
+function openQualityEditor() {
+	toggleUndoRedo(false);
+	COM.openSidebarTab("qualifyTab");
+}
+
+/**
+ * Display the percept menu
+ */
 function openPerceptList() {
-	document.getElementById("orbitButton").dispatchEvent(new Event("pointerup"));
+	document.getElementById("orbitButton").dispatchEvent(
+		new Event("pointerup"));
 	surveyManager.survey.renamePercepts();
 	surveyTable.update(surveyManager.survey);
-	toggleEditorTabs(false);
 	toggleUndoRedo(true);
 	COM.openSidebarTab("perceptTab");
 }
 
-/*  populateTypeSelect
-	Clears all children of a <select> element, then takes a list and creates 
-	<option> elements for each element in the list as children of the select 
-	element 
-
-	Inputs:
-		selectElement: Element
-			The <select> element which the options should be childen of
-		optionList: list of str
-			The names of each option to be added to the selectElement
-*/
+/**
+ * Clear all children of a <select> element, then use a given list to create 
+ * <option> elements for each element in the list as children of the select 
+ * element 	
+ * @param {Element} selectElement - The <select> element which the options 
+ * 		should be childen of
+ * @param {Array} optionList - The names of each option to be added to the 
+ * 		selectElement
+ */
 function populateSelect(selectElement, optionList) {
 	selectElement.innerHTML = "";
 
@@ -216,27 +195,12 @@ function populateSelect(selectElement, optionList) {
 	}
 }
 
-/*  populateEditorWithPercept
-	Puts the data from the given percept into the editor UI
-
-	Inputs:
-		percept: Percept
-			The percept whose data should be displayed
-*/
-function populateEditorWithPercept(percept) {
-
-	const intensitySlider = document.getElementById("intensitySlider");
-	intensitySlider.value = percept.intensity;
-	intensitySlider.dispatchEvent(new Event("input"));
-
-	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	naturalnessSlider.value = percept.naturalness;
-	naturalnessSlider.dispatchEvent(new Event("input"));
-
-	const painSlider = document.getElementById("painSlider");
-	painSlider.value = percept.pain;
-	painSlider.dispatchEvent(new Event("input"));
-
+/**
+ * Put the data from the given projected field into the editor UI
+ * @param {ProjectedField} projectedField - the ProjectedField whose data is to
+ * 		be displayed
+ */
+function populateFieldEditor(projectedField) {
 	const modelSelect = document.getElementById("modelSelect");
 	if (percept.model) {
 		modelSelect.value = percept.model;
@@ -247,12 +211,33 @@ function populateEditorWithPercept(percept) {
 		}
 	}
 
+	surveyManager.currentField = projectedField;
+}
+
+/**
+ * Take the values in the relevant editor elements and save them to the
+ * corresponding fields in the surveyManager's currentField
+ */
+function saveFieldFromEditor() {
+	const modelSelect = document.getElementById("modelSelect");
+	surveyManager.currentField.model = modelSelect.value;
+
+	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
+	surveyManager.currentField.vertices = vertices;
+}
+
+/**
+ * Take a Quality and populate its data in the quality editor
+ * @param {Quality} quality - the quality whose data will be populated in the
+ * 		editor
+ */
+function populateQualityEditor(quality) {
 	const typeSelect = document.getElementById("typeSelect");
 	if (percept.type) {
-		typeSelect.value = percept.type;
+		typeSelect.value = quality.type;
 	}
 
-	switch(percept.depth) {
+	switch(quality.depth) {
 		case "belowSkin":
 			document.getElementById("belowSkinRadio").checked = true;
 			break;
@@ -264,36 +249,40 @@ function populateEditorWithPercept(percept) {
 			break;
 	}
 
-	surveyManager.currentPercept = percept;
-}
-
-/*  savePerceptFromEditor
-	Takes the values in the relevant editor elements and saves them to the
-	corresponding fields in the surveyManager's currentPercept
-*/
-function savePerceptFromEditor() {
 	const intensitySlider = document.getElementById("intensitySlider");
-	surveyManager.currentPercept.intensity = parseFloat(intensitySlider.value);
+	intensitySlider.value = quality.intensity;
+	intensitySlider.dispatchEvent(new Event("input"));
 
 	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	surveyManager.currentPercept.naturalness = parseFloat(
+	naturalnessSlider.value = quality.naturalness;
+	naturalnessSlider.dispatchEvent(new Event("input"));
+
+	const painSlider = document.getElementById("painSlider");
+	painSlider.value = quality.pain;
+	painSlider.dispatchEvent(new Event("input"));
+}
+
+/**
+ * Take the values in the relevant editor elements and save them to the
+ * corresponding fields in the surveyManager's currentQuality
+ */
+function saveQualityFromEditor() {
+	const intensitySlider = document.getElementById("intensitySlider");
+	surveyManager.currentQuality.intensity = parseFloat(intensitySlider.value);
+
+	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	surveyManager.currentQuality.naturalness = parseFloat(
 		naturalnessSlider.value);
 
 	const painSlider = document.getElementById("painSlider");
-	surveyManager.currentPercept.pain = parseFloat(painSlider.value);
+	surveyManager.currentQuality.pain = parseFloat(painSlider.value);
 
 	const depthSelected = 
 		document.querySelector("input[name=\"skinLevelRadioSet\"]:checked");
-	surveyManager.currentPercept.depth = depthSelected.value;
-
-	const modelSelect = document.getElementById("modelSelect");
-	surveyManager.currentPercept.model = modelSelect.value;
+	surveyManager.currentQuality.depth = depthSelected.value;
 
 	const typeSelect = document.getElementById("typeSelect");
-	surveyManager.currentPercept.type = typeSelect.value;
-
-	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
-	surveyManager.currentPercept.vertices = vertices;
+	surveyManager.currentQuality.type = typeSelect.value;
 }
 
 /*  startWaiting
@@ -370,27 +359,30 @@ function submitCallback() {
 	}
 }
 
-/*  editPerceptCallback
-	Loads a given percept and opens the menu for it to be edited.
-
-	Inputs: 
-		percept: Percept
-			The percept that will be edited
-*/
-function editPerceptCallback(percept) {
-	populateEditorWithPercept(percept);
-	openEditor();
+/**
+ * Loads a given field and opens the tab for it to be edited
+ * @param {ProjectedField} field - the field to be edited
+ */
+function editFieldCallback(field) {
+	populateFieldEditor(field);
+	openFieldEditor();
 }
 
-/*  viewPerceptCallback
-    Update the viewport to display the given percept
+/**
+ * Loads a given field, allowing it to be viewed in the viewport
+ * @param {ProjectedField} field - the field to be viewed
+ */
+function viewFieldCallback(field) {
+	populateFieldEditor(field);
+}
 
-	Inputs: 
-		percept: Percept
-			The percept that will be viewed
-*/
-function viewPerceptCallback(percept) {
-	populateEditorWithPercept(percept);
+/**
+ * 
+ * @param {Quality} quality 
+ */
+function editQualityCallback(quality) {
+	populateQualityEditor(quality);
+	openQualityEditor();
 }
 
 /*  newPercept
@@ -411,29 +403,49 @@ function newPerceptCallback() {
 	editPerceptCallback(newPercept);
 }
 
-/* 	perceptDoneCallback
-   	Finish working with the surveyManager's currentPercept and return to the 
-	main menu
-*/
-function perceptDoneCallback() {
-	savePerceptFromEditor();
-	surveyManager.currentPercept = null;
+/**
+ * Finish working with the surveyManager's currentField and return to the 
+ * main menu
+ */
+function fieldDoneCallback() {
+	saveFieldFromEditor();
+	surveyManager.currentField = null;
 	openPerceptList();
 }
 
-/*  perceptCancelCallback
-	Return to the percept list without saving changes to the currentPercept
-*/
-function perceptCancelCallback() {
+/**
+ * Finish working with the surveyManager's currentField and return to the 
+ * main menu
+ */
+function qualifyDoneCallback() {
+	saveQualityFromEditor();
+	surveyManager.currentQuality = null;
 	openPerceptList();
 }
 
-/*  perceptDeleteCallback
-	Delete the currentPercept from the current survey
-*/
-function perceptDeleteCallback() {
+/**
+ * Return to the percept list without saving changes from the current editor
+ */
+function cancelCallback() {
+	openPerceptList();
+}
+
+/**
+ * Delete the currentField from the current survey
+ */
+function fieldDeleteCallback() {
 	// TODO - maybe add a confirm dialogue to this step?
-	surveyManager.survey.deletePercept(surveyManager.currentPercept);
+	surveyManager.survey.deleteField(surveyManager.currentField);
+	openPerceptList();
+}
+
+/**
+ * Delete the currentField from the current survey
+ */
+function qualifyDeleteCallback() {
+	// TODO - maybe add a confirm dialogue to this step?
+	surveyManager.survey.currentField.deleteQuality(
+		surveyManager.currentQuality);
 	openPerceptList();
 }
 
@@ -541,7 +553,7 @@ window.onload = function() {
 	const drawTabButton = document.getElementById("drawTabButton");
 	const qualifyTabButton = document.getElementById("qualifyTabButton");
 	drawTabButton.onpointerup = function() {
-		COM.openSidebarTab("drawTab");
+		
 		drawTabButton.classList.add('active');
 		qualifyTabButton.classList.remove('active');
 	}
@@ -551,14 +563,23 @@ window.onload = function() {
 		qualifyTabButton.classList.add('active');
 	}
 
-	const perceptDoneButton = document.getElementById("perceptDoneButton");
-	perceptDoneButton.onpointerup = perceptDoneCallback;
+	const fieldDoneButton = document.getElementById("fieldDoneButton");
+	fieldDoneButton.onpointerup = fieldDoneCallback;
 
-	const perceptCancelButton = document.getElementById("perceptCancelButton");
-	perceptCancelButton.onpointerup = perceptCancelCallback;
+	const fieldCancelButton = document.getElementById("fieldCancelButton");
+	fieldCancelButton.onpointerup = cancelCallback;
 
-	const perceptDeleteButton = document.getElementById("perceptDeleteButton");
-	perceptDeleteButton.onpointerup = perceptDeleteCallback;
+	const fieldDeleteButton = document.getElementById("fieldDeleteButton");
+	fieldDeleteButton.onpointerup = fieldDeleteCallback;
+
+	const qualifyDoneButton = document.getElementById("qualifyDoneButton");
+	qualifyDoneButton.onpointerup = qualifyDoneCallback;
+
+	const qualifyCancelButton = document.getElementById("qualifyCancelButton");
+	qualifyCancelButton.onpointerup = cancelCallback;
+
+	const qualifyDeleteButton = document.getElementById("qualifyDeleteButton");
+	qualifyDeleteButton.onpointerup = qualifyDeleteCallback;
 
 	const modelSelect = document.getElementById("modelSelect");
 	modelSelect.onchange = modelSelectChangeCallback;

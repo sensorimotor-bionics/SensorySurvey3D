@@ -254,16 +254,3 @@ select {
     margin-top: 8px;
     margin-bottom: 8px;
 }
-
-table {
-    font-family: sans-serif;
-    font-weight: normal;
-    color: white;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    table-layout: fixed;
-}
-
-th, td {
-    padding: 4px;
-}

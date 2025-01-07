@@ -6,24 +6,18 @@
     <body>
 
         <div id="sidebar" class="sidebar">
-            <div id="tabSelector" class="tabSelector">
-                <button id="drawTabButton">Draw</button>
-                <button id="qualifyTabButton">Qualify</button>
-            </div>
-
             <div id="waitingTab" class="sidebarTab">
                 <p>Waiting for next survey to begin...</p>
             </div>
 
-            <div id="perceptTab" class="sidebarTab">
-                <table style="width:100%" id="senseTable">
-                </table>
+            <div id="fieldTab" class="sidebarTab">
+                <div id="fieldListParent"></div>
                 <br>
-                <button id="newPerceptButton">+</button>
+                <button id="newFieldButton">Add Field</button>
                 <button id="submitButton">Submit</button>
             </div>
 
-            <div id="drawTab" class="sidebarTab">
+            <div id="fieldTab" class="sidebarTab">
                 <p>Model:</p>
                 <select id="modelSelect"></select>
                 <button id="orbitButton" class="paletteButton active">Orbit</button><br>
@@ -31,11 +25,14 @@
                 <button id="paintButton" class="paletteButton">Paint</button><br>
                 <button id="eraseButton" class="paletteButton">Erase</button>
                 <div style="width:80%;">
-                    <p style="text-align:center">Brush Size: </span><span id="brushSizeValue"></span></p>
+                    <p style="text-align:center">Brush Size: <span id="brushSizeValue"></span></p>
                     <div class="rangeContainer">
                         <input type="range" min="0.003" max="0.01" value="0.003" step="0.001" id="brushSizeSlider">
                     </div>
                 </div>
+                <button id="fieldDoneButton">Done</button>
+                <button id="fieldCancelButton">Cancel</button>
+                <button id="fieldDeleteButton">Delete</button>
             </div>
 
             <div id="qualifyTab" class="sidebarTab">
@@ -79,9 +76,9 @@
                     <input type="radio" id="aboveSkinRadio" value="aboveSkin" name="skinLevelRadioSet">
                     <label for="aboveSkinRadio">Above Skin</label>
                 </form>
-                <button id="perceptDoneButton">Done</button>
-                <button id="perceptCancelButton">Cancel</button>
-                <button id="perceptDeleteButton">Delete</button>
+                <button id="qualifyDoneButton">Done</button>
+                <button id="qualifyCancelButton">Cancel</button>
+                <button id="qualifyDeleteButton">Delete</button>
             </div>
         </div>
 
