@@ -344,11 +344,10 @@ function endSubmissionTimeout(success) {
 
 /* BUTTON CALLBACKS */
 
-/*  submitCallback
-	Requests the current survey from the surveyManager and sends it along the 
-	websocket. Resets the interface and starts the wait for a new survey to 
-	begin.
-*/
+/**
+ * Request the surveyManager to submit the survey. Resets the interface and 
+ * starts the wait for a new survey to begin.
+ */
 function submitCallback() {
 	if (surveyManager.submitSurveyToServer(socket)) {
 		toggleButtons(true);
@@ -377,20 +376,34 @@ function viewFieldCallback(field) {
 }
 
 /**
- * 
- * @param {Quality} quality 
+ * Populates the quality editor with a given Quality's data, then opens the 
+ * quality editor menu
+ * @param {ProjectedField} field - the projected field which has the quality to 
+ * 		be edited as one of its "qualities"
+ * @param {Quality} quality - the quality to be edited 
  */
-function editQualityCallback(quality) {
-	populateQualityEditor(quality);
+function editQualityCallback(field, quality) {
+	viewFieldCallback(field);
+	populateQualityEditor(field, quality);
 	openQualityEditor();
 }
 
-/*  newPercept
-	Add a new percept, then open the edit menu for that percept. Set the model
-	and type values using whatever values were previously selected
-*/
-function newPerceptCallback() {
-	surveyManager.survey.addPercept();
+/**
+ * Add a quality to the given field, then open the quality editor to edit
+ * that new quality
+ * @param {ProjectedField} field 
+ */
+function addQualityCallback(field) {
+	field.addQuality();
+	editQualityCallback(field, field.qualities[field.qualities.length - 1]);
+}
+
+/**
+ * Add a new ProjectedField, then open the edit menu for that percept. Set the 
+ * model and type values using whatever values were previously selected
+ */
+function addFieldCallback() {
+	surveyManager.survey.addField();
 	const percepts = surveyManager.survey.percepts;
 	const newPercept = percepts[percepts.length - 1];
 
@@ -449,9 +462,9 @@ function qualifyDeleteCallback() {
 	openPerceptList();
 }
 
-/*  modelSelectChangeCallback
-	Calls for the model corresponding to the newly selected option to be loaded
-*/
+/**
+ * Call for the model corresponding to the selected option to be loaded
+ */
 function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
 	viewport.replaceCurrentMesh(
@@ -459,24 +472,24 @@ function modelSelectChangeCallback() {
 	cameraController.reset();
 }
 
-/*  typeSelectChangeCallback
-	Updates the drawing color on the mesh to reflect the newly selected type
-*/
+/**
+ * Update the drawing color on the mesh to reflect the newly selected type
+ */
 function typeSelectChangeCallback() {
 	const typeSelect = document.getElementById("typeSelect");
 	// TODO - take the value of typeSelect and use it to change the color on the mesh
 }
 
-/*  undoCallback
-	Calls for the viewport to "undo" the last action
-*/
+/**
+ * Call for the viewport to "undo" the last action
+ */
 function undoCallback() {
 	viewport.undo();
 }
 
-/*  redoCallback
-	Calls for the viewport to "redo" the next action
-*/
+/**
+ * Call for the viewport to "redo" the next action
+ */
 function redoCallback() {
 	viewport.redo();
 }
@@ -500,8 +513,12 @@ window.onload = function() {
     surveyManager = new SVY.SurveyManager(); 
 
 	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), 
-										true, viewPerceptCallback, 
-										editPerceptCallback)
+										true, 
+										viewFieldCallback, 
+										editFieldCallback,
+										editQualityCallback,
+										addQualityCallback
+									);
 
     // Start the websocket
     socketConnect();
@@ -513,7 +530,7 @@ window.onload = function() {
 
     /* EVENT LISTENERS */
 	const newPerceptButton = document.getElementById("newPerceptButton");
-	newPerceptButton.onpointerup = newPerceptCallback;
+	newPerceptButton.onpointerup = addFieldCallback;
 
 	const submitButton = document.getElementById("submitButton");
 	submitButton.onpointerup = submitCallback;
@@ -545,7 +562,7 @@ window.onload = function() {
 	const brushSizeSlider = document.getElementById("brushSizeSlider");
 	brushSizeSlider.oninput = function() {
 		document.getElementById("brushSizeValue").innerHTML = 
-			brushSizeSlider.value;
+		(brushSizeSlider.value / brushSizeSlider.max).toFixed(2);
 		viewport.brushSize = brushSizeSlider.value;
 	}
 	brushSizeSlider.dispatchEvent(new Event("input"));

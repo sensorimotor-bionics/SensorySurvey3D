@@ -26,6 +26,22 @@ export class Quality {
     }
 
     /**
+     * Return a readibly-formatted string according to the depth value
+     * @returns {string}
+     */
+    depthString() {
+        switch(this.depth) {
+            case "aboveSkin":
+                return "Above Skin";
+            case "atSkin":
+                return "At Skin";
+            case "belowSkin":
+                return "Below Skin";
+        }
+        return "Unrecognized Depth"
+    }
+
+    /**
      * Create a JSON object of the percept
      * @returns {JSON}
      */
@@ -38,6 +54,19 @@ export class Quality {
             type       : this.type,
         }
         return output;
+    }
+
+    /**
+     * Take a JSON object, and use its fields to populate the properties of this
+     * Quality object
+     * @param {JSON} json 
+     */
+    fromJSON(json) {
+        this.intensity = json.intensity;
+        this.naturalness = json.naturalness;
+        this.pain = json.pain;
+        this.depth = json.depth;
+        this.type = json.type;
     }
 }
 
@@ -95,11 +124,10 @@ export class ProjectedField {
     }
 
     /**
-     * Add a given quality object to the qualities array
-     * @param {Quality} quality - the Quality to be added
+     * Add a new quality object to the qualities array
      */
-    addQuality(quality) {
-        this.qualities.push(quality);
+    addQuality() {
+        this.qualities.push(new Quality());
     }
 
     /**
@@ -154,8 +182,8 @@ export class Survey {
     /**
      * Add a new field to the list of fields
      */
-    addPercept() {
-        this.projectedFields.push(new Percept());
+    addField() {
+        this.projectedFields.push(new ProjectedField());
     }
 
     /**
@@ -239,7 +267,7 @@ export class SurveyManager {
      * @param {string} endTime - Should be blank if creating a new survey
      * @param {boolean} overwrite - If true, overwrites the current survey even 
      *      if it's full
-     * @returns 
+     * @returns {boolean}
      */
     createNewSurvey(
         participant, 
@@ -362,35 +390,39 @@ export class SurveyTable {
     }
 
     /**
-     * Creates a row for a given projected field
-     * @param {ProjectedField} projectedField - the projected field whose data 
-     *      will be reflected in the returned row
+     * Creates a chunk containing information for a given projected field, 
+     * including edit buttons if the user "isParticipant"
+     * @param {ProjectedField} field - the projected field whose data 
+     *      will be reflected in the returned element
      * @returns {Element}
      */
-    createRow(projectedField) {
-        var row = document.createElement("div");
-        row.id = projectedField.name;
+    createListChunk(field) {
+        var chunk = document.createElement("div");
+        chunk.id = field.name;
 
         const that = this;
 
+        var fieldRow = document.createElement("div");
+        fieldRow.classList.add("surveyTableRow");
+
         var name = document.createElement("div");
-        name.innerHTML = projectedField.name;
+        name.innerHTML = field.name;
         name.style["width"] = "60%";
-        row.appendChild(name);
+        fieldRow.appendChild(name);
 
         var view = document.createElement("div");
         view.style.width = "20%";
         var viewButton = document.createElement("button");
         viewButton.classList.add("eyeButton");
         viewButton.addEventListener("pointerup", function(e) {
-            that.viewCallback(projectedField, e.currentTarget);
+            that.viewCallback(field, e.currentTarget);
         })
         var viewEye = document.createElement("img");
         viewEye.src = "/images/eye.png";
         viewEye.style["width"] = "32px";
         viewButton.appendChild(viewEye);
         view.appendChild(viewButton);
-        row.appendChild(view);
+        fieldRow.appendChild(view);
 
         if (this._isParticipant) {
             var edit = document.createElement("div");
@@ -398,13 +430,40 @@ export class SurveyTable {
             var editButton = document.createElement("button");
             editButton.innerHTML = "Edit";
             editButton.addEventListener("pointerup", function() {
-                that._editFieldCallbackExternal(projectedField);
+                that._editFieldCallbackExternal(field);
             });
             edit.appendChild(editButton);
-            row.appendChild(edit);
+            fieldRow.appendChild(edit);
         }
+
+        chunk.appendChild(fieldRow);
+
+        for (let i = 0; i < field.qualities.length; i++) {
+            const quality = field.qualities[i];
+
+            var qualityRow = document.createElement("div");
+            qualityRow.classList.add("surveyTableRow");
+
+            var name = document.createElement("p");
+            name.innerHTML = quality.type + ", " + quality.depthString();
+            qualityRow.appendChild(name);
+
+            var qualityEditButton = document.createElement("button");
+            qualityEditButton.addEventListener("pointerup", function() {
+                _editQualityCallbackExternal(field, quality);
+            });
+            qualityRow.appendChild(qualityEditButton);
+            
+            chunk.appendChild(qualityRow);
+        }
+
+        var addQualityButton = document.createElement("button");
+        addQualityButton.addEventListener("pointerup", function() {
+            that._addQualityCallbackExternal(field);
+        });
+        chunk.appendChild(addQualityButton);
         
-        return row;
+        return chunk;
     }
 
     /**
