@@ -162,15 +162,15 @@ function openQualityEditor() {
 }
 
 /**
- * Display the percept menu
+ * Display the list menu
  */
-function openPerceptList() {
+function openList() {
 	document.getElementById("orbitButton").dispatchEvent(
 		new Event("pointerup"));
 	surveyManager.survey.renamePercepts();
 	surveyTable.update(surveyManager.survey);
 	toggleUndoRedo(true);
-	COM.openSidebarTab("perceptTab");
+	COM.openSidebarTab("listTab");
 }
 
 /**
@@ -197,21 +197,21 @@ function populateSelect(selectElement, optionList) {
 
 /**
  * Put the data from the given projected field into the editor UI
- * @param {ProjectedField} projectedField - the ProjectedField whose data is to
+ * @param {ProjectedField} field - the ProjectedField whose data is to
  * 		be displayed
  */
-function populateFieldEditor(projectedField) {
+function populateFieldEditor(field) {
 	const modelSelect = document.getElementById("modelSelect");
-	if (percept.model) {
-		modelSelect.value = percept.model;
+	if (field.model) {
+		modelSelect.value = field.model;
 		if (viewport.replaceCurrentMesh(
 			surveyManager.survey.config.models[modelSelect.value],
-			percept.vertices, new THREE.Color("#abcabc"))) {
+			field.vertices, new THREE.Color("#abcabc"))) {
 			cameraController.reset();
 		}
 	}
 
-	surveyManager.currentField = projectedField;
+	surveyManager.currentField = field;
 }
 
 /**
@@ -233,7 +233,7 @@ function saveFieldFromEditor() {
  */
 function populateQualityEditor(quality) {
 	const typeSelect = document.getElementById("typeSelect");
-	if (percept.type) {
+	if (quality.type) {
 		typeSelect.value = quality.type;
 	}
 
@@ -303,7 +303,7 @@ function startWaiting() {
 */
 function endWaiting() {
 	waitingInterval = clearInterval(waitingInterval);
-	COM.openSidebarTab("perceptTab");
+	COM.openSidebarTab("listTab");
 }
 
 /*  startSubmissionTimeout
@@ -399,21 +399,21 @@ function addQualityCallback(field) {
 }
 
 /**
- * Add a new ProjectedField, then open the edit menu for that percept. Set the 
+ * Add a new ProjectedField, then open the edit menu for that field. Set the 
  * model and type values using whatever values were previously selected
  */
 function addFieldCallback() {
 	surveyManager.survey.addField();
-	const percepts = surveyManager.survey.percepts;
-	const newPercept = percepts[percepts.length - 1];
+	const fields = surveyManager.survey.projectedFields;
+	const newField = fields[fields.length - 1];
 
 	const modelSelect = document.getElementById("modelSelect");
-	newPercept.model = modelSelect.value;
+	newField.model = modelSelect.value;
 
 	const typeSelect = document.getElementById("typeSelect");
-	newPercept.type = typeSelect.value; 
+	newField.type = typeSelect.value; 
 
-	editPerceptCallback(newPercept);
+	editFieldCallback(newField);
 }
 
 /**
@@ -423,7 +423,7 @@ function addFieldCallback() {
 function fieldDoneCallback() {
 	saveFieldFromEditor();
 	surveyManager.currentField = null;
-	openPerceptList();
+	openList();
 }
 
 /**
@@ -433,14 +433,14 @@ function fieldDoneCallback() {
 function qualifyDoneCallback() {
 	saveQualityFromEditor();
 	surveyManager.currentQuality = null;
-	openPerceptList();
+	openList();
 }
 
 /**
- * Return to the percept list without saving changes from the current editor
+ * Return to the list without saving changes from the current editor
  */
 function cancelCallback() {
-	openPerceptList();
+	openList();
 }
 
 /**
@@ -449,7 +449,7 @@ function cancelCallback() {
 function fieldDeleteCallback() {
 	// TODO - maybe add a confirm dialogue to this step?
 	surveyManager.survey.deleteField(surveyManager.currentField);
-	openPerceptList();
+	openList();
 }
 
 /**
@@ -459,7 +459,7 @@ function qualifyDeleteCallback() {
 	// TODO - maybe add a confirm dialogue to this step?
 	surveyManager.survey.currentField.deleteQuality(
 		surveyManager.currentQuality);
-	openPerceptList();
+	openList();
 }
 
 /**
@@ -529,8 +529,8 @@ window.onload = function() {
 	toggleEditorTabs();
 
     /* EVENT LISTENERS */
-	const newPerceptButton = document.getElementById("newPerceptButton");
-	newPerceptButton.onpointerup = addFieldCallback;
+	const newFieldButton = document.getElementById("newFieldButton");
+	newFieldButton.onpointerup = addFieldCallback;
 
 	const submitButton = document.getElementById("submitButton");
 	submitButton.onpointerup = submitCallback;
