@@ -41,46 +41,34 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "survey":
-				const percepts = []
-				for (let i = 0; i < msg.survey.percepts.length; i++) {
-					var percept = msg.survey.percepts[i];
-					percept = new SVY.Percept(percept.vertices, percept.model,
-						percept.intensity, percept.naturalness,
-						percept.pain, percept.type, percept.name);
-					percepts.push(percept);
+				// Initialize a survey using the received data
+				surveyManager.survey = new SVY.Survey().fromJSON(msg.survey);
+				const modelSelect = document.getElementById("modelSelect");
+				// Set the UI to defaults
+				populateSelect(modelSelect, 
+								Object.keys(msg.survey.config.models));
+				populateSelect(document.getElementById("typeSelect"), 
+								msg.survey.config.typeList);
+				viewport.replaceCurrentMesh(surveyManager.survey.config.
+									models[modelSelect.value]);
+				cameraController.reset();
+				// If the survey has projected fields, fill the survey table
+				// and click the first "view" button
+				if (surveyManager.survey.projectedFields) {
+					surveyTable.update(surveyManager.survey);
+					const eyeButtons = 
+						document.getElementsByClassName("eyeButton");
+					if (eyeButtons[0]) {
+						eyeButtons[0].dispatchEvent(new Event("pointerup"));
+					}
 				}
-				surveyManager.survey = new SVY.Survey(
-					msg.survey.participant,
-					msg.survey.config,
-					msg.survey.date,
-					msg.survey.startTime,
-					msg.survey.endTime,
-					percepts
-				);
+				// If the config has hidden scale values, hide them
 				if (surveyManager.survey.config.hideScaleValues) {
 					document.getElementById("intensityValue").innerHTML = "";
 					document.getElementById("naturalnessValue").innerHTML = "";
 					document.getElementById("painValue").innerHTML = "";
 				}
-				if (waitingInterval) {
-					const modelSelect = document.getElementById("modelSelect");
-					populateSelect(modelSelect, 
-									Object.keys(msg.survey.config.models));
-					populateSelect(document.getElementById("typeSelect"), 
-									msg.survey.config.typeList);
-					viewport.replaceCurrentMesh(surveyManager.survey.config.
-										models[modelSelect.value]);
-					cameraController.reset();
-					endWaiting();
-					if (percepts) {
-						surveyTable.update(surveyManager.survey);
-						const eyeButtons = 
-							document.getElementsByClassName("eyeButton");
-						if (eyeButtons[0]) {
-							eyeButtons[0].dispatchEvent(new Event("pointerup"));
-						}
-					}
-				}
+				if (waitingInterval) { endWaiting(); }
 				break;
 			case "submitResponse":
 				if (msg.success) {
@@ -125,7 +113,7 @@ function toggleButtons(enabled) {
 	const sidebar = document.getElementById("sidebar");
 
 	var buttons = sidebar.querySelectorAll("button");
-	for (var i = 0; i < buttons.length; i++) {
+	for (let i = 0; i < buttons.length; i++) {
 		buttons[i].disabled = !enabled;
 		if (!enabled) {
 			buttons[i].style.pointerEvents = "none";
@@ -167,7 +155,7 @@ function openQualityEditor() {
 function openList() {
 	document.getElementById("orbitButton").dispatchEvent(
 		new Event("pointerup"));
-	surveyManager.survey.renamePercepts();
+	surveyManager.survey.renameFields();
 	surveyTable.update(surveyManager.survey);
 	toggleUndoRedo(true);
 	COM.openSidebarTab("listTab");
@@ -185,7 +173,7 @@ function openList() {
 function populateSelect(selectElement, optionList) {
 	selectElement.innerHTML = "";
 
-	for (var i = 0; i < optionList.length; i++) {
+	for (let i = 0; i < optionList.length; i++) {
 		const newOption = document.createElement("option");
         newOption.innerHTML = (optionList[i].charAt(0).toUpperCase() 
 								+ optionList[i].slice(1));
@@ -526,7 +514,6 @@ window.onload = function() {
 
 	/* ARRANGE USER INTERFACE */
 	COM.placeUI(COM.uiPositions.LEFT, COM.uiPositions.TOP);
-	toggleEditorTabs();
 
     /* EVENT LISTENERS */
 	const newFieldButton = document.getElementById("newFieldButton");
@@ -566,19 +553,6 @@ window.onload = function() {
 		viewport.brushSize = brushSizeSlider.value;
 	}
 	brushSizeSlider.dispatchEvent(new Event("input"));
-
-	const drawTabButton = document.getElementById("drawTabButton");
-	const qualifyTabButton = document.getElementById("qualifyTabButton");
-	drawTabButton.onpointerup = function() {
-		
-		drawTabButton.classList.add('active');
-		qualifyTabButton.classList.remove('active');
-	}
-	qualifyTabButton.onpointerup = function() {
-		COM.openSidebarTab("qualifyTab");
-		drawTabButton.classList.remove('active');
-		qualifyTabButton.classList.add('active');
-	}
 
 	const fieldDoneButton = document.getElementById("fieldDoneButton");
 	fieldDoneButton.onpointerup = fieldDoneCallback;

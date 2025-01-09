@@ -42,7 +42,7 @@ export class Quality {
     }
 
     /**
-     * Create a JSON object of the percept
+     * Create a JSON object of the quality
      * @returns {JSON}
      */
     toJSON() {
@@ -59,7 +59,7 @@ export class Quality {
     /**
      * Take a JSON object, and use its fields to populate the properties of this
      * Quality object
-     * @param {JSON} json 
+     * @param {JSON} json - the object whose fields will be used
      */
     fromJSON(json) {
         this.intensity = json.intensity;
@@ -103,6 +103,27 @@ export class ProjectedField {
     }
 
     /**
+     * Add a new quality object to the qualities array
+     */
+    addQuality() {
+        this.qualities.push(new Quality());
+    }
+
+    /**
+     * Remove a given quality from the qualities array
+     * @param {Quality} quality - the Quality to be deleted
+     */
+    deleteQuality(quality) {
+        const index = field.qualities.indexOf(quality);
+
+        if (index > -1) {
+            field.qualities.splice(index, 1);
+        }
+
+        this.renameFields();
+    }
+
+    /**
      * Return a JSON-ified version of the Survey
      * @returns {JSON}
      */
@@ -124,24 +145,20 @@ export class ProjectedField {
     }
 
     /**
-     * Add a new quality object to the qualities array
+     * Take a JSON object, and use its fields to populate the properties of this
+     * ProjectedField object
+     * @param {JSON} json - the object whose fields will be used
      */
-    addQuality() {
-        this.qualities.push(new Quality());
-    }
-
-    /**
-     * Remove a given quality from the qualities array
-     * @param {Quality} quality - the Quality to be deleted
-     */
-    deleteQuality(quality) {
-        const index = field.qualities.indexOf(quality);
-
-        if (index > -1) {
-            field.qualities.splice(index, 1);
+    fromJSON(json) {
+        this.model = json.model;
+        this.name = json.name;
+        this.vertices = json.vertices;
+        this.hotSpot = json.hotSpot;
+        this.qualities = [];
+        for (let i = 0; i < json.qualities.length; i++) {
+            var converted = new Quality().fromJSON(json.qualities[i]);
+            this.qualities.push(converted);
         }
-
-        this.renameFields();
     }
 }
 
@@ -201,17 +218,17 @@ export class Survey {
     }
 
     /**
-     * Name each percept in the list of percepts based on how many of
-        each percept type exists in the list
+     * Name each field in the list of fields based on how many of
+     * each field type exists in the list
      */
     renameFields() {
-        for (var i = 0; i < this.projectedFields.length; i++) {
+        for (let i = 0; i < this.projectedFields.length; i++) {
             var field = this.projectedFields[i];
             var type = field.type;
 
             var priorTypeCount = 0;
 
-            for (var j = 0; this.projectedFields[j] !== field; j++) {
+            for (let j = 0; this.projectedFields[j] !== field; j++) {
                 if (this.projectedFields[j].type == type) {
                     priorTypeCount++;
                 }  
@@ -228,20 +245,39 @@ export class Survey {
      */
     toJSON() {
         var jsonFields = [];
-        for (var i = 0; i < this.percepts.length; i++) {
-            jsonFields.push(this.percepts[i].toJSON());
+        for (let i = 0; i < this.projectedFields.length; i++) {
+            jsonFields.push(this.projectedFields[i].toJSON());
         }
 
         var output = {
-            participant: this.participant,
-            config     : this.config,
-            date       : this.date,
-            startTime  : this.startTime,
-            endTime    : this.endTime,
-            percepts   : jsonFields
+            participant     : this.participant,
+            config          : this.config,
+            date            : this.date,
+            startTime       : this.startTime,
+            endTime         : this.endTime,
+            projectedFields : jsonFields
         }
 
         return output;
+    }
+
+    /**
+     * Take a JSON object, and use its fields to populate the properties of this
+     * Survey object
+     * @param {JSON} json - the object whose fields will be used 
+     */
+    fromJSON(json) {
+        this.participant = json.participant;
+        this.config = json.config;
+        this.date = json.date;
+        this.startTime = json.startTime;
+        this.endTime = json.endTime;
+        this.projectedFields = [];
+        for (let i = 0; i < json.projectedFields.length; i++) {
+            var converted = new ProjectedField().fromJSON(
+                json.projectedFields[i]);
+            this.projectedFields.push(converted);
+        }
     }
 }
 
@@ -291,7 +327,8 @@ export class SurveyManager {
      */
     clearSurvey() {
         this.survey = null;
-        this.currentPercept = null;
+        this.currentField = null;
+        this.currentQuality = null;
     }
 
     /**
@@ -371,7 +408,7 @@ export class SurveyTable {
 
     /**
      * Behavior for when a view button is clicked within the table, opens eyes 
-     * for viewed percept and closes them for all others
+     * for viewed field and closes them for all others
      * @param {ProjectedField} projectedField - The field that should be passed 
      *      to the external callback on button click
      * @param {Element} target - The eyeButton element that should be set to 
@@ -381,7 +418,7 @@ export class SurveyTable {
         this._viewCallbackExternal(projectedField);
 
         var eyeButtons = document.getElementsByClassName("eyeButton");
-        for (var i = 0; i < eyeButtons.length; i++) {
+        for (let i = 0; i < eyeButtons.length; i++) {
             eyeButtons[i].getElementsByTagName('img')[0].src 
                 = "/images/close-eye.png";
         }
@@ -474,13 +511,13 @@ export class SurveyTable {
     }
 
     /**
-     * Update the table to reflect the percepts in a given Survey object
-     * @param {Survey} survey - The survey whose percepts should be reflected in
+     * Update the table to reflect the fields in a given Survey object
+     * @param {Survey} survey - The survey whose fields are to be reflected in
      *      the updated table
      */
     update(survey) {
         var table = document.createElement("tbody");
-        for (var i = 0; i < survey.projectedFields.length; i++) {
+        for (let i = 0; i < survey.projectedFields.length; i++) {
             var row = this.createRow(survey.projectedFields[i]);
             table.appendChild(row);
         }

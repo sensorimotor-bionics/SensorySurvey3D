@@ -453,7 +453,7 @@ export class SurveyViewport {
 
                             // If the pointer is down, draw
                             if (this.pointerDownViewport) {
-                                for (var i = 0; i < indices.length; i++) {
+                                for (let i = 0; i < indices.length; i++) {
                                     const vertex = indexAttr.getX(indices[i]);
                                     this.populateColorOnVertex(new THREE.Color(
                                         "#abcabc"), this.currentMesh, vertex);
@@ -492,7 +492,7 @@ export class SurveyViewport {
 
                             // If the pointer is down, draw
                             if (this.pointerDownViewport) {
-                                for (var i = 0; i < indices.length; i++) {
+                                for (let i = 0; i < indices.length; i++) {
                                     const vertex = indexAttr.getX(indices[i]);
                                     this.populateColorOnVertex(this.defaultColor, 
                                         this.currentMesh, vertex);
@@ -643,7 +643,7 @@ export class SurveyViewport {
     unloadModels() {
         var meshes = this.scene.getObjectsByProperty("isMesh", true);
     
-        for (var i = 0; i < meshes.length; i++) {
+        for (let i = 0; i < meshes.length; i++) {
             this.scene.remove(meshes[i]);
         }
 
@@ -826,7 +826,7 @@ export class SurveyViewport {
     */
     getVerticesFromFaces(faces) {
         var vertices = [];
-        for (var i = 0; i < faces.length; i++) {
+        for (let i = 0; i < faces.length; i++) {
             vertices.push(faces[i].a, faces[i].b, faces[i].c);
         }
         return vertices;

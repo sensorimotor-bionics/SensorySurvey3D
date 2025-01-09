@@ -72,7 +72,7 @@ export function placeUI(rightleft, topbottom) {
 export function openSidebarTab(tabID) {
 	var tab = document.getElementById(tabID);
     var tabContent = document.getElementsByClassName("sidebarTab");
-    for (var i = 0; i < tabContent.length; i++) {
+    for (let i = 0; i < tabContent.length; i++) {
         tabContent[i].style.display = "none";
     }
     tab.style.display = "flex";
@@ -88,7 +88,7 @@ export function openSidebarTab(tabID) {
  */
 export function activatePaletteButton(buttonID) {
     var imageButtons = document.getElementsByClassName("paletteButton");
-	for (var i = 0; i < imageButtons.length; i++) {
+	for (let i = 0; i < imageButtons.length; i++) {
         imageButtons[i].classList.remove("active")
     }
 	document.getElementById(buttonID).classList.add("active");
