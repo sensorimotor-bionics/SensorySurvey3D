@@ -103,7 +103,9 @@ export class ProjectedField {
     }
 
     /**
-     * Add a new quality object to the qualities array
+     * Add a new quality object to the qualities array, returning the quality
+     * that was just added
+     * @returns {Quality}
      */
     addQuality() {
         this.qualities.push(new Quality());
@@ -180,11 +182,11 @@ export class Survey {
      *      the survey
      */
     constructor(
-        participant, 
-        config, 
-        date, 
-        startTime, 
-        endTime, 
+        participant = null, 
+        config = null, 
+        date = null, 
+        startTime = null, 
+        endTime = null, 
         projectedFields = null
     ) {
         this.participant = participant;
@@ -197,7 +199,8 @@ export class Survey {
     }
 
     /**
-     * Add a new field to the list of fields
+     * Add a new field to the list of fields, returning the ProjectedField that
+     * was just added
      */
     addField() {
         this.projectedFields.push(new ProjectedField());
@@ -292,34 +295,6 @@ export class SurveyManager {
         this._survey = null;
         this.currentField = null;
         this.currentQuality = null;
-    }
-
-    /**
-     * Create a blank survey object in the currentSurvey slot
-     * @param {string} participant - The name of the participant
-     * @param {JSON} config - The config for the new survey
-     * @param {string} date - The date on which the survey is being conducted
-     * @param {string} startTime - The time of the survey's start
-     * @param {string} endTime - Should be blank if creating a new survey
-     * @param {boolean} overwrite - If true, overwrites the current survey even 
-     *      if it's full
-     * @returns {boolean}
-     */
-    createNewSurvey(
-        participant, 
-        config, 
-        date, 
-        startTime, 
-        endTime, 
-        overwrite=false
-    ) {
-        if (this.survey && !overwrite){
-            console.warn("Attempted to create survey while there is a "
-                + "preexisting survey without overwriting.");
-            return false;
-        }
-        this.survey = new Survey(participant, config, date, startTime, endTime);
-        return true;
     }
 
     /**
@@ -518,9 +493,9 @@ export class SurveyTable {
     update(survey) {
         var table = document.createElement("tbody");
         for (let i = 0; i < survey.projectedFields.length; i++) {
-            var row = this.createRow(survey.projectedFields[i]);
-            table.appendChild(row);
+            var chunk = this.createListChunk(survey.projectedFields[i]);
+            table.appendChild(chunk);
         }
-        this.tbody.replaceChildren(...table.children);
+        this.parentElement.replaceChildren(...table.children);
     }
 }

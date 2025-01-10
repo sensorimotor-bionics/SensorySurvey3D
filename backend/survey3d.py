@@ -5,15 +5,15 @@ from dataclasses import dataclass, field
 
 @dataclass
 class Quality():
-    intensity: float
-    naturalness: float
-    pain: float
-    depth: str
-    type: str
+    intensity: float = -1.0
+    naturalness: float = -1.0
+    pain: float = -1.0
+    depth: str = ""
+    type: str = ""
     
     def toDict(self) -> dict:
         """
-        Returns the Quality's properties as a dictionary.
+        Return the Quality's properties as a dictionary.
 
         Returns: A dictionary of the Quality's properties
         """
@@ -27,7 +27,7 @@ class Quality():
     
     def fromDict(self, dictionary: dict) -> None:
         """
-        Takes a dictionary and uses its fields to populate the fields of the
+        Take a dictionary and uses its fields to populate the fields of the
         Quality object.
 
         Args:
@@ -42,15 +42,15 @@ class Quality():
 
 @dataclass
 class ProjectedField():
-    model: str
-    name: str
-    vertices: list[int]
-    hotSpot: list[int]
-    qualities: list[Quality]
+    model: str = ""
+    name: str = ""
+    vertices: list[int] = field(default_factory = list)
+    hotSpot: list[int] = field(default_factory = list)
+    qualities: list[Quality] = field(default_factory = list)
 
     def toDict(self) -> dict:
         """
-        Returns the ProjectedField's properties as a dictionary.
+        Return the ProjectedField's properties as a dictionary.
 
         Returns: A dictionary of the ProjectedField's properties
         """
@@ -65,7 +65,7 @@ class ProjectedField():
     
     def fromDict(self, dictionary: dict) -> None:
         """
-        Takes a dictionary and uses its fields to populate the fields of the
+        Take a dictionary and uses its fields to populate the fields of the
         ProjectedField object.
 
         Args:
@@ -77,8 +77,9 @@ class ProjectedField():
         self.vertices = dictionary["vertices"]
         self.hotSpot = dictionary["hotSpot"]
         self.qualities = []
-        for quality in dictionary["qualities"]:
-            quality = Quality().fromDict(quality)
+        for qualityDict in dictionary["qualities"]:
+            quality = Quality()
+            quality.fromDict(qualityDict)
             self.qualities.append(quality)
 
 @dataclass
@@ -86,8 +87,8 @@ class Survey():
     """
     A class which handles saving and maintaining individual survey data
     """
-    participant: str
-    config: dict
+    participant: str = ""
+    config: dict = field(default_factory=dict)
     date: str = ""
     startTime: str = ""
     endTime: str = ""
@@ -95,7 +96,7 @@ class Survey():
     
     def startDateTimeNow(self) -> None:
         """
-        Sets date and startTime to match the time of the system clock
+        Set date and startTime to match the time of the system clock
         """
         now = datetime.now()
         self.date = now.strftime("%Y-%m-%d")
@@ -103,14 +104,14 @@ class Survey():
     
     def endTimeNow(self) -> None:
         """
-        Sets the endTime to match the time of the system clock
+        Set the endTime to match the time of the system clock
         """
         now = datetime.now()
         self.endTime = now.strftime("%H-%M-%S")
 
     def saveSurvey(self, path: str) -> bool:
         """
-        Saves a .json file containing a dictionary of the current survey
+        Save a .json file containing a dictionary of the current survey
 
         Args:
             path: The folder to which the .json file should be saved
@@ -129,7 +130,7 @@ class Survey():
         
     def toDict(self) -> dict:
         """
-        Returns a dictionary containing the Survey's properties
+        Return a dictionary containing the Survey's properties
 
         Returns: A dictionary containing the Survey's properties
         """
@@ -145,7 +146,7 @@ class Survey():
 
     def fromDict(self, dictionary: dict) -> None:
         """
-        Takes a dictionary and uses its fields to populate the fields of the
+        Take a dictionary and use its fields to populate the fields of the
         Survey object.
 
         Args:
@@ -158,8 +159,9 @@ class Survey():
         self.startTime = dictionary["startTime"]
         self.endTime = dictionary["endTime"]
         self.projectedFields = []
-        for field in dictionary["projectedFields"]:
-            field = ProjectedField.fromDict(field)
+        for fieldDict in dictionary["projectedFields"]:
+            field = ProjectedField()
+            field.fromDict(fieldDict)
             self.projectedFields.append(field)
         
 class SurveyManager():
@@ -187,7 +189,8 @@ class SurveyManager():
 
     def newSurvey(self, participant: str):
         """
-        Creates a new survey for a given participant if there isn't already one
+        Create a new survey for a given participant if one does not already
+        exist
 
         Args:
             participant: The participant for which the survey is created, must 
@@ -210,7 +213,7 @@ class SurveyManager():
     
     def saveSurvey(self):
         """
-        Sets the end time to the current time, then saves the survey to a file 
+        Set the end time to the current time, then saves the survey to a file 
         in the Manager's data path
 
         Returns: True if success, False if failure

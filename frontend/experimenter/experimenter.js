@@ -19,12 +19,11 @@ var lastClickedView = null;
 const socketURL = COM.socketURL + "experimenter-ws";
 var socket;
 
-/*  socketConnect
-	Connects to the survey's backend via websocket to enable data transfer. 
-	Surveys are unable to start unless the backend is connected as the survey 
-	begins. Attempts to reconnect every second if not connected.
-*/
-
+/**
+ * Connect to the survey's backend via websocket to enable data transfer. 
+ * Surveys are unable to start unless the backend is connected as the survey 
+ * begins. Attempts to reconnect every second if not connected.
+ */
 function socketConnect() {
     socket = new WebSocket(socketURL);
 
@@ -42,14 +41,8 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "survey":
-				surveyManager.survey = new SVY.Survey(
-					msg.survey.participant,
-					msg.survey.config,
-					msg.survey.date,
-					msg.survey.startTime,
-					msg.survey.endTime,
-					msg.survey.percepts
-				);
+				surveyManager.survey = new SVY.Survey();
+				surveyManager.survey.fromJSON(msg.survey);
 				surveyTable.update(surveyManager.survey);
 				if (lastClickedView) {
 					document.getElementById(lastClickedView)
@@ -104,9 +97,10 @@ function socketConnect() {
 
 /* BUTTON CALLBACKS */
 
-/* newSurveyCallback
-    Tells the websocket to start a new survey
-*/
+/**
+ * Tell the server to start a new survey for the subject selected in the
+ * dropdown
+ */
 function newSurveyCallback() {
     const dropdown = document.getElementById("participantSelect");
 
@@ -118,22 +112,20 @@ function newSurveyCallback() {
     socket.send(JSON.stringify(msg));
 }
 
-/*  viewPerceptCallback
-    Update the viewport to display the given percept
-
-	Inputs: 
-		percept: Percept
-			The percept that will be viewed
-*/
-function viewPerceptCallback(percept) {
+/**
+ * Change the current model to the model of the given field, then colors the
+ * field's vertices on that model
+ * @param {ProjectedField} field 
+ */
+function viewFieldCallback(field) {
 	if (viewport.replaceCurrentMesh(
-		surveyManager.survey.config.models[percept.model],
-		percept.vertices, new THREE.Color("#abcabc"))) {
+		surveyManager.survey.config.models[field.model],
+		field.vertices, new THREE.Color("#abcabc"))) {
 		cameraController.reset();
 	}
-	surveyManager.currentPercept = percept;
+	surveyManager.currentField = field;
 
-	lastClickedView = percept.name;
+	lastClickedView = field.name;
 }
 
 /* STARTUP CODE */
@@ -154,8 +146,14 @@ window.onload = function() {
 
     surveyManager = new SVY.SurveyManager();
 
-	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), 
-										false, viewPerceptCallback, null);
+	surveyTable = new SVY.SurveyTable(
+		document.getElementById("fieldListParent"), 
+		false, 
+		viewFieldCallback, 
+		null,
+		null,
+		null
+	);
 
     // Start the websocket
     socketConnect();

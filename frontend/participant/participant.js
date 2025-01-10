@@ -42,7 +42,9 @@ function socketConnect() {
 		switch (msg.type) {
 			case "survey":
 				// Initialize a survey using the received data
-				surveyManager.survey = new SVY.Survey().fromJSON(msg.survey);
+				surveyManager.survey = new SVY.Survey();
+				surveyManager.survey.fromJSON(msg.survey);
+				console.log(surveyManager.survey);
 				const modelSelect = document.getElementById("modelSelect");
 				// Set the UI to defaults
 				populateSelect(modelSelect, 
@@ -500,13 +502,14 @@ window.onload = function() {
 
     surveyManager = new SVY.SurveyManager(); 
 
-	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), 
-										true, 
-										viewFieldCallback, 
-										editFieldCallback,
-										editQualityCallback,
-										addQualityCallback
-									);
+	surveyTable = new SVY.SurveyTable(
+		document.getElementById("fieldListParent"), 
+		true, 
+		viewFieldCallback, 
+		editFieldCallback,
+		editQualityCallback,
+		addQualityCallback
+	);
 
     // Start the websocket
     socketConnect();

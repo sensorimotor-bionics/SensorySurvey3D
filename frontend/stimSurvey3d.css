@@ -150,7 +150,8 @@ html {
 .surveyTableRow {
     display: flex;
     flex-direction: row;
-    align-items: right;
+    align-items: center;
+    justify-content: center;
 }
 
 p {
