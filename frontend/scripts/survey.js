@@ -17,7 +17,6 @@ export class Quality {
         depth = "atSkin",
         type = null
     ) {
-        this.model = model;
         this.intensity = intensity;
         this.naturalness = naturalness;
         this.pain = pain;
@@ -109,6 +108,7 @@ export class ProjectedField {
      */
     addQuality() {
         this.qualities.push(new Quality());
+        return this.qualities[this.qualities.length - 1];
     }
 
     /**
@@ -116,13 +116,11 @@ export class ProjectedField {
      * @param {Quality} quality - the Quality to be deleted
      */
     deleteQuality(quality) {
-        const index = field.qualities.indexOf(quality);
+        const index = this.qualities.indexOf(quality);
 
         if (index > -1) {
-            field.qualities.splice(index, 1);
+            this.qualities.splice(index, 1);
         }
-
-        this.renameFields();
     }
 
     /**
@@ -225,20 +223,23 @@ export class Survey {
      * each field type exists in the list
      */
     renameFields() {
-        for (let i = 0; i < this.projectedFields.length; i++) {
-            var field = this.projectedFields[i];
-            var type = field.type;
-
-            var priorTypeCount = 0;
-
-            for (let j = 0; this.projectedFields[j] !== field; j++) {
-                if (this.projectedFields[j].type == type) {
-                    priorTypeCount++;
-                }  
+        
+        if (this.projectedFields.length) {
+            for (let i = 0; i < this.projectedFields.length; i++) {
+                var field = this.projectedFields[i];
+                var model = field.model;
+                 
+                var priorTypeCount = 0;
+    
+                for (let j = 0; this.projectedFields[j].model !== model; j++) {
+                    if (this.projectedFields[j].model == model) {
+                        priorTypeCount++;
+                    }  
+                }
+    
+                field.name = model.charAt(0).toUpperCase() + model.slice(1) + " "
+                                + (priorTypeCount + 1).toString();
             }
-
-            field.name = type.charAt(0).toUpperCase() + type.slice(1) + " "
-                            + (priorTypeCount + 1).toString();
         }
     }
 
@@ -419,11 +420,10 @@ export class SurveyTable {
 
         var name = document.createElement("div");
         name.innerHTML = field.name;
-        name.style["width"] = "60%";
+        name.style["flex"] = "1 1 auto";
         fieldRow.appendChild(name);
 
         var view = document.createElement("div");
-        view.style.width = "20%";
         var viewButton = document.createElement("button");
         viewButton.classList.add("eyeButton");
         viewButton.addEventListener("pointerup", function(e) {
@@ -438,7 +438,6 @@ export class SurveyTable {
 
         if (this._isParticipant) {
             var edit = document.createElement("div");
-            edit.style.width = "20%";
             var editButton = document.createElement("button");
             editButton.innerHTML = "Edit";
             editButton.addEventListener("pointerup", function() {
@@ -456,24 +455,34 @@ export class SurveyTable {
             var qualityRow = document.createElement("div");
             qualityRow.classList.add("surveyTableRow");
 
-            var name = document.createElement("p");
-            name.innerHTML = quality.type + ", " + quality.depthString();
+            var name = document.createElement("div");
+            name.innerHTML = "→ "
+                + quality.type.charAt(0).toUpperCase() 
+                + quality.type.slice(1)
+                + ", " 
+                + quality.depthString();
+            name.style["flex"] = "1 1 auto";
             qualityRow.appendChild(name);
 
             var qualityEditButton = document.createElement("button");
+            qualityEditButton.innerHTML = "Edit";
             qualityEditButton.addEventListener("pointerup", function() {
-                _editQualityCallbackExternal(field, quality);
+                that._editQualityCallbackExternal(field, quality);
             });
             qualityRow.appendChild(qualityEditButton);
             
             chunk.appendChild(qualityRow);
         }
-
+        
+        var addQualityButtonContainer = document.createElement("div");
+        addQualityButtonContainer.classList.add("surveyTableRow");
         var addQualityButton = document.createElement("button");
+        addQualityButton.innerHTML = "Add Quality";
         addQualityButton.addEventListener("pointerup", function() {
             that._addQualityCallbackExternal(field);
         });
-        chunk.appendChild(addQualityButton);
+        addQualityButtonContainer.appendChild(addQualityButton);
+        chunk.appendChild(addQualityButtonContainer);
         
         return chunk;
     }
@@ -495,6 +504,9 @@ export class SurveyTable {
         for (let i = 0; i < survey.projectedFields.length; i++) {
             var chunk = this.createListChunk(survey.projectedFields[i]);
             table.appendChild(chunk);
+            if (i != survey.projectedFields.length){
+                table.appendChild(document.createElement("hr"));
+            }
         }
         this.parentElement.replaceChildren(...table.children);
     }

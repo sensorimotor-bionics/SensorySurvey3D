@@ -10,6 +10,7 @@
 html {
     color: white;
     font-family: sans-serif;
+    font-size: 2.4vh;
 }
 
 .sidebar {
@@ -44,36 +45,6 @@ html {
     flex-direction: row;
     justify-content: left;
     align-items: center;
-}
-
-.tabSelector {
-    overflow: hidden;
-    background-color: var(--buttonColor);
-    height: var(--widthbarHeight);
-}
-
-.tabSelector button {
-    background-color: inherit;
-    float: left;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    border-radius: 0px;
-    margin: 0px 0px;
-    width: 50%;
-    height: var(--widthbarHeight);
-}
-
-.tabSelector button.active {
-    background-color: var(--buttonActiveColor);
-}
-
-.tabSelector button:hover {
-    background-color: var(--uiElementContrast);
-}
-
-.tabSelector button:disabled {
-    background-color: var(--uiElementContrast);
 }
 
 .threeDContainer {
@@ -136,7 +107,7 @@ html {
     position: fixed;
     justify-content: center;
     align-items: center;
-    font-size: 72px;
+    font-size: 6.66vh;
     top: 0;
     left: 0;
 }
@@ -147,21 +118,26 @@ html {
     align-items: center;
 }
 
+.surveyTable {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
 .surveyTableRow {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 p {
-    font-size: 24px;
+    font-size: 2.4vh;
     color: white;
-    margin: 8px 8px;
 }
 
 label {
-    font-size: 24px;
+    font-size: 2.4vh;
     color: white;
     margin: 8px 8px;
 }
@@ -174,11 +150,11 @@ button {
     text-align: center;
     text-decoration: none;
     display: block;
-    font-size: 24px;
     margin: 4px 8px;
     cursor: pointer;
     float: left;
     border-radius: 5px;
+    font-size: 2.4vh;
 }
 
 button:hover {
@@ -256,7 +232,7 @@ input[type="radio"]:not(:disabled):checked {
 
 select {
     height: 32px;
-    font-size: 16px;
+    font-size: 1.5vh;
     width:   75%;
     margin-top: 8px;
     margin-bottom: 8px;

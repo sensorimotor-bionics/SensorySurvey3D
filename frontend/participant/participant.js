@@ -221,7 +221,7 @@ function saveFieldFromEditor() {
  * @param {Quality} quality - the quality whose data will be populated in the
  * 		editor
  */
-function populateQualityEditor(quality) {
+function populateQualityEditor(field, quality) {
 	const typeSelect = document.getElementById("typeSelect");
 	if (quality.type) {
 		typeSelect.value = quality.type;
@@ -250,6 +250,9 @@ function populateQualityEditor(quality) {
 	const painSlider = document.getElementById("painSlider");
 	painSlider.value = quality.pain;
 	painSlider.dispatchEvent(new Event("input"));
+
+	surveyManager.currentField = field;
+	surveyManager.currentQuality = quality;
 }
 
 /**
@@ -384,8 +387,10 @@ function editQualityCallback(field, quality) {
  * @param {ProjectedField} field 
  */
 function addQualityCallback(field) {
-	field.addQuality();
-	editQualityCallback(field, field.qualities[field.qualities.length - 1]);
+	var newQuality = field.addQuality();
+	const typeSelect = document.getElementById("typeSelect");
+	newQuality.type = typeSelect.value;
+	editQualityCallback(field, newQuality);
 }
 
 /**
@@ -439,6 +444,7 @@ function cancelCallback() {
 function fieldDeleteCallback() {
 	// TODO - maybe add a confirm dialogue to this step?
 	surveyManager.survey.deleteField(surveyManager.currentField);
+	viewport.populateColor(viewport.defaultColor, viewport.currentMesh);
 	openList();
 }
 
@@ -447,7 +453,7 @@ function fieldDeleteCallback() {
  */
 function qualifyDeleteCallback() {
 	// TODO - maybe add a confirm dialogue to this step?
-	surveyManager.survey.currentField.deleteQuality(
+	surveyManager.currentField.deleteQuality(
 		surveyManager.currentQuality);
 	openList();
 }
