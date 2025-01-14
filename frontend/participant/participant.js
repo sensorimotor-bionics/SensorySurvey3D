@@ -196,10 +196,19 @@ function populateFieldEditor(field) {
 		modelSelect.value = field.model;
 		if (viewport.replaceCurrentMesh(
 			surveyManager.survey.config.models[modelSelect.value],
-			field.vertices, new THREE.Color("#abcabc"))) {
+			field.vertices, 
+			new THREE.Color("#abcabc"))) {
 			cameraController.reset();
 		}
 	}
+
+	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	naturalnessSlider.value = field.naturalness;
+	naturalnessSlider.dispatchEvent(new Event("input"));
+
+	const painSlider = document.getElementById("painSlider");
+	painSlider.value = field.pain;
+	painSlider.dispatchEvent(new Event("input"));
 
 	surveyManager.currentField = field;
 }
@@ -214,6 +223,13 @@ function saveFieldFromEditor() {
 
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
 	surveyManager.currentField.vertices = vertices;
+
+	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	surveyManager.currentField.naturalness = parseFloat(
+		naturalnessSlider.value);
+
+	const painSlider = document.getElementById("painSlider");
+	surveyManager.currentField.pain = parseFloat(painSlider.value);
 }
 
 /**
@@ -227,29 +243,23 @@ function populateQualityEditor(field, quality) {
 		typeSelect.value = quality.type;
 	}
 
-	switch(quality.depth) {
-		case "belowSkin":
-			document.getElementById("belowSkinRadio").checked = true;
-			break;
-		case "atSkin":
-			document.getElementById("atSkinRadio").checked = true;
-			break;
-		case "aboveSkin":
-			document.getElementById("aboveSkinRadio").checked = true;
-			break;
+	for (let i = 0; i < quality.depth.length; i++) {
+		switch(quality.depth[i]) {
+			case "belowSkin":
+				document.getElementById("belowSkinCheck").checked = true;
+				break;
+			case "atSkin":
+				document.getElementById("atSkinCheck").checked = true;
+				break;
+			case "aboveSkin":
+				document.getElementById("aboveSkinCheck").checked = true;
+				break;
+		}
 	}
 
 	const intensitySlider = document.getElementById("intensitySlider");
 	intensitySlider.value = quality.intensity;
 	intensitySlider.dispatchEvent(new Event("input"));
-
-	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	naturalnessSlider.value = quality.naturalness;
-	naturalnessSlider.dispatchEvent(new Event("input"));
-
-	const painSlider = document.getElementById("painSlider");
-	painSlider.value = quality.pain;
-	painSlider.dispatchEvent(new Event("input"));
 
 	surveyManager.currentField = field;
 	surveyManager.currentQuality = quality;
@@ -263,16 +273,12 @@ function saveQualityFromEditor() {
 	const intensitySlider = document.getElementById("intensitySlider");
 	surveyManager.currentQuality.intensity = parseFloat(intensitySlider.value);
 
-	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	surveyManager.currentQuality.naturalness = parseFloat(
-		naturalnessSlider.value);
-
-	const painSlider = document.getElementById("painSlider");
-	surveyManager.currentQuality.pain = parseFloat(painSlider.value);
-
 	const depthSelected = 
-		document.querySelector("input[name=\"skinLevelRadioSet\"]:checked");
-	surveyManager.currentQuality.depth = depthSelected.value;
+		document.querySelectorAll("input[name=\"skinLevelCheckSet\"]:checked");
+	surveyManager.currentQuality.depth = [];
+	for (let i = 0; i < depthSelected.length; i++) {
+		surveyManager.currentQuality.depth.push(depthSelected.value);
+	}
 
 	const typeSelect = document.getElementById("typeSelect");
 	surveyManager.currentQuality.type = typeSelect.value;

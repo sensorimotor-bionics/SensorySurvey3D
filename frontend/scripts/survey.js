@@ -4,40 +4,18 @@ export class Quality {
     /**
      * Create a Quality object
      * @param {number} intensity - an intensity rating of 0 to 10
-     * @param {number} naturalness - a naturalness rating of 0 to 10
-     * @param {number} pain - a pain rating of 0 to 10
-     * @param {string} depth - records if the quality is at/above/below skin 
-     *      level
+     * @param {Array} depth - records if the quality is at/above/below skin 
+     *      level, array of strings
      * @param {string} type - the type of the quality 
      */
     constructor(
         intensity = 5, 
-        naturalness = 5, 
-        pain = 0,
-        depth = "atSkin",
+        depth = [],
         type = null
     ) {
         this.intensity = intensity;
-        this.naturalness = naturalness;
-        this.pain = pain;
         this.depth = depth;
         this.type = type;
-    }
-
-    /**
-     * Return a readibly-formatted string according to the depth value
-     * @returns {string}
-     */
-    depthString() {
-        switch(this.depth) {
-            case "aboveSkin":
-                return "Above Skin";
-            case "atSkin":
-                return "At Skin";
-            case "belowSkin":
-                return "Below Skin";
-        }
-        return "Unrecognized Depth"
     }
 
     /**
@@ -47,8 +25,6 @@ export class Quality {
     toJSON() {
         var output = {
             intensity  : this.intensity,
-            naturalness: this.naturalness,
-            pain       : this.pain,
             depth      : this.depth,
             type       : this.type,
         }
@@ -62,8 +38,6 @@ export class Quality {
      */
     fromJSON(json) {
         this.intensity = json.intensity;
-        this.naturalness = json.naturalness;
-        this.pain = json.pain;
         this.depth = json.depth;
         this.type = json.type;
     }
@@ -83,6 +57,8 @@ export class ProjectedField {
      *      sensation
      * @param {Set} hotSpot - the set of vertices consisting of the reported hot
      *      spot
+     * @param {number} naturalness - a naturalness rating of 0 to 10
+     * @param {number} pain - a pain rating of 0 to 10
      * @param {Array} qualities - array of Quality objects assigned to this 
      *      projected field
      */
@@ -91,14 +67,18 @@ export class ProjectedField {
         name = "", 
         vertices = new Set([]), 
         hotSpot = new Set([]), 
+        naturalness = 5.0,
+        pain = 5.0,
         qualities = []
     ) {
         this.model = model;
         this.name = name;
 
         this.vertices = vertices;
-        this.hotSpot = hotSpot
-        this.qualities = qualities
+        this.hotSpot = hotSpot;
+        this.naturalness = naturalness;
+        this.pain = pain;
+        this.qualities = qualities;
     }
 
     /**
@@ -134,10 +114,12 @@ export class ProjectedField {
         }
 
         var output = {
-            model    : this.model, 
-            name     : this.name,
-            vertices : this.vertices,
-            hotSpot  : this.hotSpot,
+            model       : this.model, 
+            name        : this.name,
+            vertices    : this.vertices,
+            hotSpot     : this.hotSpot,
+            naturalness : this.naturalness,
+            pain        : this.pain,
             qualities: jsonQualities
         }
 
@@ -154,6 +136,8 @@ export class ProjectedField {
         this.name = json.name;
         this.vertices = json.vertices;
         this.hotSpot = json.hotSpot;
+        this.naturalness = json.naturalness;
+        this.pain = json.pain;
         this.qualities = [];
         for (let i = 0; i < json.qualities.length; i++) {
             var converted = new Quality().fromJSON(json.qualities[i]);
@@ -231,7 +215,7 @@ export class Survey {
                  
                 var priorTypeCount = 0;
     
-                for (let j = 0; this.projectedFields[j].model !== model; j++) {
+                for (let j = 0; this.projectedFields[j] !== field; j++) {
                     if (this.projectedFields[j].model == model) {
                         priorTypeCount++;
                     }  
@@ -460,7 +444,7 @@ export class SurveyTable {
                 + quality.type.charAt(0).toUpperCase() 
                 + quality.type.slice(1)
                 + ", " 
-                + quality.depthString();
+                + quality.intensity.toFixed(1);
             name.style["flex"] = "1 1 auto";
             qualityRow.appendChild(name);
 

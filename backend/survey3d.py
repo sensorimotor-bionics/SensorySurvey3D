@@ -6,9 +6,7 @@ from dataclasses import dataclass, field
 @dataclass
 class Quality():
     intensity: float = -1.0
-    naturalness: float = -1.0
-    pain: float = -1.0
-    depth: str = ""
+    depth: list[str] = field(default_factory = list)
     type: str = ""
     
     def toDict(self) -> dict:
@@ -19,8 +17,6 @@ class Quality():
         """
         return {
             "intensity": self.intensity,
-            "naturalness": self.naturalness,
-            "pain": self.pain,
             "depth": self.depth,
             "type": self.type
         }
@@ -35,8 +31,6 @@ class Quality():
             Quality
         """
         self.intensity = dictionary["intensity"]
-        self.naturalness = dictionary["naturalness"]
-        self.pain = dictionary["pain"]
         self.depth = dictionary["depth"]
         self.type = dictionary["type"]
 
@@ -46,6 +40,8 @@ class ProjectedField():
     name: str = ""
     vertices: list[int] = field(default_factory = list)
     hotSpot: list[int] = field(default_factory = list)
+    naturalness: float = -1.0
+    pain: float = -1.0
     qualities: list[Quality] = field(default_factory = list)
 
     def toDict(self) -> dict:
@@ -60,6 +56,8 @@ class ProjectedField():
             "name": self.name,
             "verices": self.vertices,
             "hotSpot": self.hotSpot,
+            "naturalness": self.naturalness,
+            "pain": self.pain,
             "qualities": qualitiesDict
         }
     
@@ -76,11 +74,11 @@ class ProjectedField():
         self.name = dictionary["name"]
         self.vertices = dictionary["vertices"]
         self.hotSpot = dictionary["hotSpot"]
-        self.qualities = []
-        for qualityDict in dictionary["qualities"]:
-            quality = Quality()
-            quality.fromDict(qualityDict)
-            self.qualities.append(quality)
+        self.naturalness = dictionary["naturalness"]
+        self.pain = dictionary["pain"]
+        self.qualities = [
+            Quality().fromDict(q) for q in dictionary["qualities"]
+        ]
 
 @dataclass
 class Survey():
@@ -158,11 +156,9 @@ class Survey():
         self.date = dictionary["date"]
         self.startTime = dictionary["startTime"]
         self.endTime = dictionary["endTime"]
-        self.projectedFields = []
-        for fieldDict in dictionary["projectedFields"]:
-            field = ProjectedField()
-            field.fromDict(fieldDict)
-            self.projectedFields.append(field)
+        self.projectedFields = [
+            ProjectedField().fromDict(f) for f in dictionary["projectedFields"]
+        ]
         
 class SurveyManager():
     """
