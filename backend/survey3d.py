@@ -50,7 +50,12 @@ class ProjectedField():
 
         Returns: A dictionary of the ProjectedField's properties
         """
-        qualitiesDict = [quality.toDict() for quality in self.qualities]
+        if self.qualities:
+            qualitiesDict = [
+                quality.toDict() for quality in self.qualities
+            ]
+        else: qualitiesDict = []
+
         return {
             "model": self.model,
             "name": self.name,
@@ -76,9 +81,10 @@ class ProjectedField():
         self.hotSpot = dictionary["hotSpot"]
         self.naturalness = dictionary["naturalness"]
         self.pain = dictionary["pain"]
-        self.qualities = [
-            Quality().fromDict(q) for q in dictionary["qualities"]
-        ]
+        self.qualities = []
+        for quality in dictionary["qualities"]:
+            self.qualities.append(Quality())
+            self.qualities[-1].fromDict(quality)
 
 @dataclass
 class Survey():
@@ -132,7 +138,13 @@ class Survey():
 
         Returns: A dictionary containing the Survey's properties
         """
-        projectedFieldsDict = [field.toDict() for field in self.projectedFields]
+        if self.projectedFields:
+            projectedFieldsDict = [
+                field.toDict()
+                for field in self.projectedFields
+            ]
+        else: projectedFieldsDict = []
+
         return {
             "participant": self.participant,
             "config": self.config,
@@ -156,9 +168,11 @@ class Survey():
         self.date = dictionary["date"]
         self.startTime = dictionary["startTime"]
         self.endTime = dictionary["endTime"]
-        self.projectedFields = [
-            ProjectedField().fromDict(f) for f in dictionary["projectedFields"]
-        ]
+        self.projectedFields = []
+        for field in dictionary["projectedFields"]:
+            self.projectedFields.append(ProjectedField())
+            self.projectedFields[-1].fromDict(field)
+        
         
 class SurveyManager():
     """

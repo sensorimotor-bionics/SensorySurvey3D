@@ -30,9 +30,7 @@ function socketConnect() {
 	socket.onopen = function() { 
 		console.log("Socket connected!") 
 		updateServerInterval = setInterval(function() {
-			if (surveyManager.survey) {
-				surveyManager.updateSurveyOnServer(socket);
-			}
+			surveyManager.updateSurveyOnServer(socket);
 		}, 1000);
 	};
 
@@ -277,7 +275,7 @@ function saveQualityFromEditor() {
 		document.querySelectorAll("input[name=\"skinLevelCheckSet\"]:checked");
 	surveyManager.currentQuality.depth = [];
 	for (let i = 0; i < depthSelected.length; i++) {
-		surveyManager.currentQuality.depth.push(depthSelected.value);
+		surveyManager.currentQuality.depth.push(depthSelected[i].value);
 	}
 
 	const typeSelect = document.getElementById("typeSelect");
@@ -338,7 +336,7 @@ function endSubmissionTimeout(success) {
 		alert("Submission failed!");
 	}
 
-	toggleButtons(false);
+	toggleButtons(true);
 }
 
 /* BUTTON CALLBACKS */
@@ -349,10 +347,11 @@ function endSubmissionTimeout(success) {
  */
 function submitCallback() {
 	if (surveyManager.submitSurveyToServer(socket)) {
-		toggleButtons(true);
+		toggleButtons(false);
 		startSubmissionTimeout();
 	}
 	else {
+		toggleButtons(true);
 		alert("Survey submission failed -- socket is not connected!");
 	}
 }

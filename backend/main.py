@@ -34,7 +34,7 @@ async def participant(websocket: WebSocket):
             # representation of the survey with that data
             elif data["type"] == "update":
                 if manager.survey.startTime == data["survey"]["startTime"]:
-                    Survey().fromDict(data["survey"])
+                    manager.survey.fromDict(data["survey"])
                 else:
                     print("Cannot update survey with mismatched start time")
             # If participant requests to submit the survey, update the survey
@@ -42,7 +42,7 @@ async def participant(websocket: WebSocket):
             elif data["type"] == "submit":
                 print("Saving survey...")
                 if manager.survey.startTime == data["survey"]["startTime"]:
-                    Survey().fromDict(data["survey"])
+                    manager.survey.fromDict(data["survey"])
                     result = manager.saveSurvey()
                 else:
                     print("Cannot save survey with mismatched start time")

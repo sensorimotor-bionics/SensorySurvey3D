@@ -140,8 +140,9 @@ export class ProjectedField {
         this.pain = json.pain;
         this.qualities = [];
         for (let i = 0; i < json.qualities.length; i++) {
-            var converted = new Quality().fromJSON(json.qualities[i]);
-            this.qualities.push(converted);
+            var quality = new Quality();
+            quality.fromJSON(json.qualities[i]);
+            this.qualities.push(quality);
         }
     }
 }
@@ -262,8 +263,8 @@ export class Survey {
         this.endTime = json.endTime;
         this.projectedFields = [];
         for (let i = 0; i < json.projectedFields.length; i++) {
-            var converted = new ProjectedField().fromJSON(
-                json.projectedFields[i]);
+            var field = new ProjectedField();
+            field.fromJSON(json.projectedFields[i]);
             this.projectedFields.push(converted);
         }
     }
