@@ -59,7 +59,7 @@ class ProjectedField():
         return {
             "model": self.model,
             "name": self.name,
-            "verices": self.vertices,
+            "vertices": self.vertices,
             "hotSpot": self.hotSpot,
             "naturalness": self.naturalness,
             "pain": self.pain,

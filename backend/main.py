@@ -54,7 +54,7 @@ async def participant(websocket: WebSocket):
                 await websocket.send_json(msg)
             else:
                 raise ValueError("Bad type value in participant-ws: " 
-                                 + f"{data["type"]}")
+                                 + f"{data['type']}")
     except WebSocketDisconnect:
         print("Participant disconnected")
 
@@ -96,6 +96,6 @@ async def experimenter(websocket: WebSocket):
                 await websocket.send_json(msg)
             else:
                 raise ValueError(f"Bad type value in experimenter-ws: " 
-                                 + f"{data["type"]}")
+                                 + f"{data['type']}")
     except WebSocketDisconnect:
         print("Experimenter disconnected")

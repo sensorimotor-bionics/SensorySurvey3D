@@ -220,6 +220,7 @@ function saveFieldFromEditor() {
 	surveyManager.currentField.model = modelSelect.value;
 
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
+	console.log(vertices);
 	surveyManager.currentField.vertices = vertices;
 
 	const naturalnessSlider = document.getElementById("naturalnessSlider");

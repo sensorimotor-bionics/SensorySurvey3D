@@ -55,8 +55,8 @@ export class ProjectedField {
      * @param {string} name - the name of the projected field
      * @param {Set} vertices - the set of vertices consisting of the full 
      *      sensation
-     * @param {Set} hotSpot - the set of vertices consisting of the reported hot
-     *      spot
+     * @param {JSON} hotSpot - the point, represented by x, y, and z
+     *      coordinates, where the hotSpot was placed
      * @param {number} naturalness - a naturalness rating of 0 to 10
      * @param {number} pain - a pain rating of 0 to 10
      * @param {Array} qualities - array of Quality objects assigned to this 
@@ -66,7 +66,7 @@ export class ProjectedField {
         model = "", 
         name = "", 
         vertices = new Set([]), 
-        hotSpot = new Set([]), 
+        hotSpot = {x: null, y: null, z: null}, 
         naturalness = 5.0,
         pain = 5.0,
         qualities = []
@@ -116,7 +116,7 @@ export class ProjectedField {
         var output = {
             model       : this.model, 
             name        : this.name,
-            vertices    : this.vertices,
+            vertices    : Array.from(this.vertices),
             hotSpot     : this.hotSpot,
             naturalness : this.naturalness,
             pain        : this.pain,
@@ -265,7 +265,7 @@ export class Survey {
         for (let i = 0; i < json.projectedFields.length; i++) {
             var field = new ProjectedField();
             field.fromJSON(json.projectedFields[i]);
-            this.projectedFields.push(converted);
+            this.projectedFields.push(field);
         }
     }
 }
@@ -278,7 +278,7 @@ export class SurveyManager {
      * Initialize the SurveyManager with empty properties
      */
     constructor() {
-        this._survey = null;
+        this.survey = null;
         this.currentField = null;
         this.currentQuality = null;
     }
@@ -319,18 +319,20 @@ export class SurveyManager {
      * @returns {boolean}
      */
     updateSurveyOnServer(socket) {
-        var msg = {
-            type: "update",
-            survey: this.survey.toJSON()
-        }
-
-        if (socket.readyState == WebSocket.OPEN) {
-            socket.send(JSON.stringify(msg));
-            return true;
-        }
-        else {
-            console.error("Socket is not OPEN, cannot submit survey.")
-            return false;
+        if (this.survey) {
+            var msg = {
+                type: "update",
+                survey: this.survey.toJSON()
+            }
+    
+            if (socket.readyState == WebSocket.OPEN) {
+                socket.send(JSON.stringify(msg));
+                return true;
+            }
+            else {
+                console.error("Socket is not OPEN, cannot submit survey.")
+                return false;
+            }
         }
     }
 }
@@ -449,25 +451,29 @@ export class SurveyTable {
             name.style["flex"] = "1 1 auto";
             qualityRow.appendChild(name);
 
-            var qualityEditButton = document.createElement("button");
-            qualityEditButton.innerHTML = "Edit";
-            qualityEditButton.addEventListener("pointerup", function() {
-                that._editQualityCallbackExternal(field, quality);
-            });
-            qualityRow.appendChild(qualityEditButton);
+            if (this._isParticipant) {
+                var qualityEditButton = document.createElement("button");
+                qualityEditButton.innerHTML = "Edit";
+                qualityEditButton.addEventListener("pointerup", function() {
+                    that._editQualityCallbackExternal(field, quality);
+                });
+                qualityRow.appendChild(qualityEditButton);
+            }
             
             chunk.appendChild(qualityRow);
         }
-        
-        var addQualityButtonContainer = document.createElement("div");
-        addQualityButtonContainer.classList.add("surveyTableRow");
-        var addQualityButton = document.createElement("button");
-        addQualityButton.innerHTML = "Add Quality";
-        addQualityButton.addEventListener("pointerup", function() {
-            that._addQualityCallbackExternal(field);
-        });
-        addQualityButtonContainer.appendChild(addQualityButton);
-        chunk.appendChild(addQualityButtonContainer);
+
+        if (this._isParticipant) {
+            var addQualityButtonContainer = document.createElement("div");
+            addQualityButtonContainer.classList.add("surveyTableRow");
+            var addQualityButton = document.createElement("button");
+            addQualityButton.innerHTML = "Add Quality";
+            addQualityButton.addEventListener("pointerup", function() {
+                that._addQualityCallbackExternal(field);
+            });
+            addQualityButtonContainer.appendChild(addQualityButton);
+            chunk.appendChild(addQualityButtonContainer);
+        }
         
         return chunk;
     }
