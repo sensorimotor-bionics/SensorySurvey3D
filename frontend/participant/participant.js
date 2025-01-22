@@ -249,19 +249,17 @@ function populateQualityEditor(field, quality) {
 		typeSelect.value = quality.type;
 	}
 
-	for (let i = 0; i < quality.depth.length; i++) {
-		switch(quality.depth[i]) {
-			case "belowSkin":
-				document.getElementById("belowSkinCheck").checked = true;
-				break;
-			case "atSkin":
-				document.getElementById("atSkinCheck").checked = true;
-				break;
-			case "aboveSkin":
-				document.getElementById("aboveSkinCheck").checked = true;
-				break;
-		}
-	}
+	var belowSkinCheck = document.getElementById("belowSkinCheck");
+	if (quality.depth.includes('belowSkin')) { belowSkinCheck.checked = true }
+	else { belowSkinCheck.checked = false }
+
+	var atSkinCheck = document.getElementById("atSkinCheck");
+	if (quality.depth.includes('atSkin')) { atSkinCheck.checked = true }
+	else { atSkinCheck.checked = false }
+
+	var aboveSkinCheck = document.getElementById("aboveSkinCheck");
+	if (quality.depth.includes('aboveSkin')) { aboveSkinCheck.checked = true }
+	else { aboveSkinCheck.checked = false }
 
 	const intensitySlider = document.getElementById("intensitySlider");
 	intensitySlider.value = quality.intensity;
@@ -596,9 +594,6 @@ window.onload = function() {
 
 	const modelSelect = document.getElementById("modelSelect");
 	modelSelect.onchange = modelSelectChangeCallback;
-
-	const typeSelect = document.getElementById("typeSelect");
-	typeSelect.onchange = typeSelectChangeCallback;
 
 	const undoButton = document.getElementById("undoButton");
 	undoButton.onpointerup = undoCallback;

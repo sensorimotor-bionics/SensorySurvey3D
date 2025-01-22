@@ -74,7 +74,7 @@ export class ProjectedField {
         this.model = model;
         this.name = name;
 
-        this.vertices = vertices;
+        this.vertices = new Set(vertices);
         this.hotSpot = hotSpot;
         this.naturalness = naturalness;
         this.pain = pain;
@@ -134,7 +134,7 @@ export class ProjectedField {
     fromJSON(json) {
         this.model = json.model;
         this.name = json.name;
-        this.vertices = json.vertices;
+        this.vertices = new Set(json.vertices);
         this.hotSpot = json.hotSpot;
         this.naturalness = json.naturalness;
         this.pain = json.pain;
