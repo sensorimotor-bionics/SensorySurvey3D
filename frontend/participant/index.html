@@ -20,39 +20,46 @@
             <div id="fieldTab" class="sidebarTab">
                 <p>Model:</p>
                 <select id="modelSelect"></select>
-                <button id="orbitButton" class="paletteButton active">Orbit</button><br>
-                <button id="panButton" class="paletteButton">Pan</button><br>
-                <button id="paintButton" class="paletteButton">Paint</button><br>
-                <button id="eraseButton" class="paletteButton">Erase</button>
+                <div class="rowContainer">
+                    <button id="orbitButton" class="paletteButton active">Orbit</button>
+                    <button id="panButton" class="paletteButton">Pan</button>
+                </div>
+                <div class="rowContainer">
+                    <button id="paintButton" class="paletteButton">Paint</button>
+                    <button id="eraseButton" class="paletteButton">Erase</button>
+                </div>
+                <button id="hotSpotButton">Add Hot Spot</button>
                 <div style="width:80%;">
                     <p style="text-align:center">Brush Size: <span id="brushSizeValue"></span></p>
-                    <div class="rangeContainer">
+                    <div class="rowContainer">
                         <input type="range" min="0.003" max="0.01" value="0.003" step="0.001" id="brushSizeSlider">
                     </div>
                 </div>
                 <div style="width:80%;">
                     <p style="text-align:center">Naturalness: <span id="naturalnessValue"></span></p>
-                    <div class="rangeContainer">
+                    <div class="rowContainer">
                         <input type="range" min="0" max="10" value="5.0" step="0.1" id="naturalnessSlider">
                     </div>
-                    <div class="rangeContainer">
+                    <div class="rowContainer">
                         <p style="width:50%; font-size:2vh">Natural</p>
                         <p style="width:50%; text-align: right; font-size:2vh">Unnatural</p>
                     </div>
                 </div>
                 <div style="width:80%;">
                     <p style="text-align:center">Pain: <span id="painValue"></span></p>
-                    <div class="rangeContainer">
+                    <div class="rowContainer">
                         <input type="range" min="0" max="10" value="0" step="0.1" id="painSlider">
                     </div>
-                    <div class="rangeContainer">
+                    <div class="rowContainer">
                         <p style="width:50%; font-size:2vh">None</p>
                         <p style="width:50%; text-align: right; font-size:2vh">Worst</p>
                     </div>
                 </div>
-                <button id="fieldDoneButton">Done</button>
-                <button id="fieldCancelButton">Cancel</button>
-                <button id="fieldDeleteButton">Delete</button>
+                <div class="rowContainer">
+                    <button id="fieldDoneButton">Done</button>
+                    <button id="fieldCancelButton">Cancel</button>
+                    <button id="fieldDeleteButton">Delete</button>
+                </div>
             </div>
 
             <div id="qualifyTab" class="sidebarTab">
@@ -60,10 +67,10 @@
                 <select id="typeSelect"></select>
                 <div style="width:80%;">
                     <p style="text-align:center">Intensity: <span id="intensityValue"></span></p>
-                    <div class="rangeContainer">
+                    <div class="rowContainer">
                         <input type="range" min="0" max="10" value="5.0" step="0.1" id="intensitySlider">
                     </div>
-                    <div class="rangeContainer">
+                    <div class="rowContainer">
                         <p style="width: 50%">Faint</p>
                         <p style="width: 50%; text-align: right;">Intense</p>
                     </div>

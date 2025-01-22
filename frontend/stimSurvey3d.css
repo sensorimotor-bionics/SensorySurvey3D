@@ -112,7 +112,7 @@ html {
     left: 0;
 }
 
-.rangeContainer {
+.rowContainer {
     display: flex; 
     flex-direction: row; 
     align-items: center;

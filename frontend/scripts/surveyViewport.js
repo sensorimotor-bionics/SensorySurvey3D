@@ -21,7 +21,7 @@ const meshMaterial = new THREE.MeshPhongMaterial({
     color: 0xffffff,
     flatShading: true,
     vertexColors: true,
-    shininess: 0,
+    shininess: 20,
     side: THREE.DoubleSide
 });
 
@@ -347,7 +347,12 @@ export class SurveyViewport {
             defaultModelFilename: string
                 The name of the gltf file that is to be loaded by default
     */
-    constructor(parentElement, backgroundColor, defaultColor, eventQueueLength) {
+    constructor(
+        parentElement, 
+        backgroundColor, 
+        defaultColor, 
+        eventQueueLength
+    ) {
         // Create the scene
         this.scene = new THREE.Scene();
         this.scene.background = backgroundColor;
