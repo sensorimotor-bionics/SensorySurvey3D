@@ -323,14 +323,6 @@ function startSubmissionTimeout() {
 	}.bind(timeoutCount), 500);
 }
 
-/*  endSubmissionTimeout
-	
-
-	Inputs:
-		success: bool
-			A boolean representing if the submission was a success, determines
-			which alert is displayed
-*/
 /**
  * Clears the timeout interval, displays a successful or unsuccessful alert for 
  * the user, and restores button functionality
