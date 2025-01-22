@@ -214,21 +214,28 @@ function populateFieldEditor(field) {
 /**
  * Take the values in the relevant editor elements and save them to the
  * corresponding fields in the surveyManager's currentField
+ * @returns {boolean}
  */
 function saveFieldFromEditor() {
-	const modelSelect = document.getElementById("modelSelect");
-	surveyManager.currentField.model = modelSelect.value;
-
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
-	console.log(vertices);
-	surveyManager.currentField.vertices = vertices;
+	if (vertices) {
+		surveyManager.currentField.vertices = vertices;
 
-	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	surveyManager.currentField.naturalness = parseFloat(
-		naturalnessSlider.value);
+		const modelSelect = document.getElementById("modelSelect");
+		surveyManager.currentField.model = modelSelect.value;
 
-	const painSlider = document.getElementById("painSlider");
-	surveyManager.currentField.pain = parseFloat(painSlider.value);
+		const naturalnessSlider = document.getElementById("naturalnessSlider");
+		surveyManager.currentField.naturalness = parseFloat(
+			naturalnessSlider.value);
+
+		const painSlider = document.getElementById("painSlider");
+		surveyManager.currentField.pain = parseFloat(painSlider.value);
+
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 /**
@@ -319,14 +326,19 @@ function startSubmissionTimeout() {
 }
 
 /*  endSubmissionTimeout
-	Clears the timeout interval, displays a successful or unsuccessful
-	alert for the user, and restores button functionality
+	
 
 	Inputs:
 		success: bool
 			A boolean representing if the submission was a success, determines
 			which alert is displayed
 */
+/**
+ * Clears the timeout interval, displays a successful or unsuccessful alert for 
+ * the user, and restores button functionality
+ * @param {boolean} success - A boolean representing if the submission was a 
+ * 		success, determines which alert is displayed
+ */
 function endSubmissionTimeout(success) {
 	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
 
@@ -422,9 +434,12 @@ function addFieldCallback() {
  * main menu
  */
 function fieldDoneCallback() {
-	saveFieldFromEditor();
-	surveyManager.currentField = null;
-	openList();
+	var result = saveFieldFromEditor();
+	if (result) {
+		surveyManager.currentField = null;
+		openList();
+	}
+	else { alert("Cannot save a field with no drawing!") }
 }
 
 /**
@@ -472,14 +487,6 @@ function modelSelectChangeCallback() {
 	viewport.replaceCurrentMesh(
 		surveyManager.survey.config.models[modelSelect.value]);
 	cameraController.reset();
-}
-
-/**
- * Update the drawing color on the mesh to reflect the newly selected type
- */
-function typeSelectChangeCallback() {
-	const typeSelect = document.getElementById("typeSelect");
-	// TODO - take the value of typeSelect and use it to change the color on the mesh
 }
 
 /**

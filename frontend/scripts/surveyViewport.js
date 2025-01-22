@@ -13,7 +13,8 @@ const controlStates = Object.freeze({
     ORBIT: 0,
     PAN: 1,
     PAINT: 2,
-    ERASE: 3
+    ERASE: 3,
+    ORB_PLACE: 4
 });
 
 const meshMaterial = new THREE.MeshPhongMaterial({
@@ -32,6 +33,17 @@ const brushMaterial = new THREE.MeshStandardMaterial( {
     opacity: 0.5,
     premultipliedAlpha: true,
     emissive: 0xEC407A,
+    emissiveIntensity: 0.5,
+} );
+
+const orbMaterial = new THREE.MeshStandardMaterial( {
+    color: 0xFC9105,
+    roughness: 0.75,
+    metalness: 0,
+    transparent: true,
+    opacity: 0.5,
+    premultipliedAlpha: true,
+    emissive: 0xFC9105,
     emissiveIntensity: 0.5,
 } );
 
@@ -398,6 +410,10 @@ export class SurveyViewport {
                                         brushMaterial);
         this.scene.add(this.brushMesh);
 
+        this.orbMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 40),
+                            orbMaterial);
+        this.orbMesh.scale.setScalar(0.03); //TODO - make dynamic?
+
         this.eventQueue = new ViewportEventQueue(eventQueueLength);
 
         this.pointerDownViewport = true;
@@ -510,6 +526,19 @@ export class SurveyViewport {
                     }
                     else {
                         this.brushMesh.visible = false;
+                    }
+                    break;
+                case controlStates.ORB_PLACE:
+                    if (this.brushActive) {
+                        this.raycaster.setFromCamera(this.pointer, this.camera);
+                        const res = this.raycaster.intersectObject(
+                            this.currentMesh, true);
+                        
+                        // If the raycaster hits anything
+                        if (res.length) {
+                            this.orbMesh.position.copy(res[0].point);
+                            this.orbMesh.visible = true;
+                        }
                     }
                     break;
             }
@@ -923,9 +952,10 @@ export class SurveyViewport {
 
     /* VIEWPORT EVENTS */
 
-    /*  undo
-
-    */
+    /**
+     * Use information provided by the eventQueue object to restore to the
+     * "last state" in the queue
+     */
     undo() {
         const undoEvent = this.eventQueue.previous();
         if (undoEvent) {
@@ -935,15 +965,28 @@ export class SurveyViewport {
         }
     }
 
-    /*  redo
-
-    */
+    
+    /**
+     * Use information provided by the eventQueue object to restore to the
+     * "next state" in the queue
+     */
     redo() {
         const redoEvent = this.eventQueue.next();
         if (redoEvent) {
             const colorAttr = redoEvent.mesh.geometry.attributes.color;
             colorAttr.copy(redoEvent.colorState);
             colorAttr.needsUpdate = true;
+        }
+    }
+
+    /**
+     * Getter for the position of the orbMesh object
+     */
+    get orbPosition() {
+        return {
+            x: this.orbMesh.position.x,
+            y: this.orbMesh.position.y,
+            z: this.orbMesh.position.z,
         }
     }
 }
