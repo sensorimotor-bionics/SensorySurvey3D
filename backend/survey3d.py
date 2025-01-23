@@ -39,7 +39,7 @@ class ProjectedField():
     model: str = ""
     name: str = ""
     vertices: list[int] = field(default_factory = list)
-    hotSpot: list[int] = field(default_factory = list)
+    hotSpot: dict = field(default_factory = dict)
     naturalness: float = -1.0
     pain: float = -1.0
     qualities: list[Quality] = field(default_factory = list)

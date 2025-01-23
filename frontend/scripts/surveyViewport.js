@@ -37,13 +37,13 @@ const brushMaterial = new THREE.MeshStandardMaterial( {
 } );
 
 const orbMaterial = new THREE.MeshStandardMaterial( {
-    color: 0xFC9105,
+    color: 0xE97A16,
     roughness: 0.75,
     metalness: 0,
     transparent: true,
     opacity: 0.5,
     premultipliedAlpha: true,
-    emissive: 0xFC9105,
+    emissive: 0xE97A16,
     emissiveIntensity: 0.5,
 } );
 
@@ -419,7 +419,8 @@ export class SurveyViewport {
 
         this.orbMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 40),
                             orbMaterial);
-        this.orbMesh.scale.setScalar(0.03); //TODO - make dynamic?
+        this.orbMesh.scale.setScalar(0.003); //TODO - make dynamic?
+        this.scene.add(this.orbMesh);
 
         this.eventQueue = new ViewportEventQueue(eventQueueLength);
 
@@ -536,13 +537,14 @@ export class SurveyViewport {
                     }
                     break;
                 case controlStates.ORB_PLACE:
-                    if (this.brushActive) {
+                    if (this.pointerDownViewport) {
                         this.raycaster.setFromCamera(this.pointer, this.camera);
                         const res = this.raycaster.intersectObject(
                             this.currentMesh, true);
                         
                         // If the raycaster hits anything
                         if (res.length) {
+                            console.log("hit");
                             this.orbMesh.position.copy(res[0].point);
                             this.orbMesh.visible = true;
                         }
@@ -607,6 +609,11 @@ export class SurveyViewport {
      */
     toErase() {
         this.controlState = controlStates.ERASE;
+        this.controls.enabled = false;
+    }
+    
+    toOrbPlace() {
+        this.controlState = controlStates.ORB_PLACE;
         this.controls.enabled = false;
     }
 
@@ -683,6 +690,8 @@ export class SurveyViewport {
         }
 
         this.currentModelFile = null;
+
+        this.orbMesh.visible = false;
     }
 
     /**

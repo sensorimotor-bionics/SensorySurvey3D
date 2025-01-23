@@ -200,6 +200,20 @@ function populateFieldEditor(field) {
 		}
 	}
 
+	if (field.hotSpot.x) {
+		viewport.orbMesh.position.copy(
+			new THREE.Vector3(
+				field.hotSpot.x,
+				field.hotSpot.y,
+				field.hotSpot.z
+		));
+		viewport.orbMesh.visible = true;
+	}
+	else {
+		viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
+		viewport.orbMesh.visible = false;
+	}
+
 	const naturalnessSlider = document.getElementById("naturalnessSlider");
 	naturalnessSlider.value = field.naturalness;
 	naturalnessSlider.dispatchEvent(new Event("input"));
@@ -220,6 +234,10 @@ function saveFieldFromEditor() {
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
 	if (vertices) {
 		surveyManager.currentField.vertices = vertices;
+
+		if (viewport.orbMesh.visible = true) {
+			surveyManager.currentField.hotSpot = viewport.orbPosition;
+		}
 
 		const modelSelect = document.getElementById("modelSelect");
 		surveyManager.currentField.model = modelSelect.value;
@@ -499,7 +517,7 @@ window.onload = function() {
     // Initialize required classes
     viewport = new VP.SurveyViewport(document.getElementById("3dContainer"),
 										new THREE.Color(0xffffff),
-										new THREE.Color(0x535353),
+										new THREE.Color(0x424242),
 										20);
 
 	cameraController = new VP.CameraController(viewport.controls, 
@@ -556,6 +574,12 @@ window.onload = function() {
 	eraseButton.onpointerup = function() {
 		viewport.toErase();
 		COM.activatePaletteButton("eraseButton");
+	}
+
+	const hotSpotButton = document.getElementById("hotSpotButton");
+	hotSpotButton.onpointerup = function() {
+		viewport.toOrbPlace();
+		COM.activatePaletteButton("hotSpotButton");
 	}
 
 	const brushSizeSlider = document.getElementById("brushSizeSlider");
