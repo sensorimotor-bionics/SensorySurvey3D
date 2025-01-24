@@ -118,13 +118,30 @@ function newSurveyCallback() {
  * @param {ProjectedField} field 
  */
 function viewFieldCallback(field) {
-	if (viewport.replaceCurrentMesh(
-		surveyManager.survey.config.models[field.model],
-		field.vertices, new THREE.Color("#abcabc"))) {
-		cameraController.reset();
+	if (field.model) {
+		if (viewport.replaceCurrentMesh(
+			surveyManager.survey.config.models[field.model],
+			field.vertices, 
+			new THREE.Color("#abcabc"))) {
+			cameraController.reset();
+		}
 	}
-	surveyManager.currentField = field;
 
+	if (field.hotSpot.x) {
+		viewport.orbMesh.position.copy(
+			new THREE.Vector3(
+				field.hotSpot.x,
+				field.hotSpot.y,
+				field.hotSpot.z
+		));
+		viewport.orbMesh.visible = true;
+	}
+	else {
+		viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
+		viewport.orbMesh.visible = false;
+	}
+
+	surveyManager.currentField = field;
 	lastClickedView = field.name;
 }
 
