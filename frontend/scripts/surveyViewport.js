@@ -785,7 +785,7 @@ export class SurveyViewport {
      * @param {THREE.Vector3} sphereCenter 
      * @param {number} sphereSize 
      * @param {THREE.Mesh} mesh 
-     * @returns {Array}
+     * @returns {number[]}
      */
     getMeshIndicesFromSphere(sphereCenter, sphereSize, mesh) {
         const inverseMatrix = new THREE.Matrix4();

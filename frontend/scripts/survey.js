@@ -4,8 +4,8 @@ export class Quality {
     /**
      * Create a Quality object
      * @param {number} intensity - an intensity rating of 0 to 10
-     * @param {Array} depth - records if the quality is at/above/below skin 
-     *      level, array of strings
+     * @param {string[]} depth - records if the quality is at/above/below skin 
+     *      level
      * @param {string} type - the type of the quality 
      */
     constructor(
@@ -59,7 +59,7 @@ export class ProjectedField {
      *      coordinates, where the hotSpot was placed
      * @param {number} naturalness - a naturalness rating of 0 to 10
      * @param {number} pain - a pain rating of 0 to 10
-     * @param {Array} qualities - array of Quality objects assigned to this 
+     * @param {Quality[]} qualities - array of Quality objects assigned to this 
      *      projected field
      */
     constructor(
@@ -169,8 +169,8 @@ export class Survey {
      * @param {string} startTime - The time the survey was begun, should be in 
      *      HH:MM:SS format if received from the websocket
      * @param {string} endTime - The time the survey was ended, same format
-     * @param {Array} projectedFields - The current ProjectedFields stored in 
-     *      the survey
+     * @param {ProjectedField[]} projectedFields - The current ProjectedFields 
+     *      stored in the survey
      */
     constructor(
         participant = null, 

@@ -81,7 +81,9 @@ function socketConnect() {
 					endSubmissionTimeout(msg.success);
 				}
 				else {
-					alert("Received submitSuccess without making a submission!");
+					alert(
+						"Received submitSuccess without making a submission!"
+					);
 				}
 				break;
 		}
@@ -133,6 +135,36 @@ function toggleUndoRedo(enabled) {
 }
 
 /**
+ * Open the alert tab, displaying the given message and creating buttons 
+ * displaying the given names and with the given functions as their callbacks
+ * @param {string} message - the message to be displayed with the alert
+ * @param {string[]} buttonNames - the names of the buttons, to be displayed
+ * @param {function[]} buttonFunctions - the functions to be used as callbacks
+ * 		for each button, 
+ */
+function openAlert(message, buttonNames, buttonFunctions) {
+	const alertTab = document.getElementById("alertTab");
+	alertTab.innerHTML = "";
+
+	const messageParagraph = document.createElement("p");
+	messageParagraph.innerHTML = message;
+
+	const buttonRow = document.createElement("div");
+	for (let i = 0; i < buttonNames.length; i++) {
+		const name = buttonNames[i];
+		const button = document.createElement("button");
+		button.innerHTML = name;
+		button.onpointerup = buttonFunctions[i];
+		buttonRow.appendChild(button);
+	}
+
+	alertTab.appendChild(messageParagraph);
+	alertTab.appendChild(buttonRow);
+
+	COM.openSidebarTab("alertTab");
+}	
+
+/**
  * Display the projected field editor menu
  */
 function openFieldEditor() {
@@ -181,7 +213,7 @@ function openList() {
  * element 	
  * @param {Element} selectElement - The <select> element which the options 
  * 		should be childen of
- * @param {Array} optionList - The names of each option to be added to the 
+ * @param {string[]} optionList - The names of each option to be added to the 
  * 		selectElement
  */
 function populateSelect(selectElement, optionList) {
@@ -318,10 +350,10 @@ function saveQualityFromEditor() {
 	surveyManager.currentQuality.type = typeSelect.value;
 }
 
-/*  startWaiting
-	Sets the waitingInterval variable to a new interval which polls the
-	websocket for a new survey. Also opens the waitingTab
-*/
+/**
+ * Sets the waitingInterval variable to a new interval which polls the websocket
+ * for a new survey. Also opens the waitingTab
+ */
 function startWaiting() {
 	waitingInterval = setInterval(function() {
 		if (socket.readyState == WebSocket.OPEN) {
@@ -331,18 +363,18 @@ function startWaiting() {
 	COM.openSidebarTab("waitingTab");
 }
 
-/*  endWaiting
-	Clears the waitingInterval, and opens the tab for the new survey
-*/
+/**
+ * Clear the waitingInterval, and opens the tab for the new survey
+ */
 function endWaiting() {
 	waitingInterval = clearInterval(waitingInterval);
 	COM.openSidebarTab("listTab");
 }
 
-/*  startSubmissionTimeout
-	Sets an interval which times out after 5 seconds, alerting the user
-	that the submission did not go through
-*/
+/**
+ * Set an interval which times out after 5 seconds, alerting the user that the 
+ * submission did not go through
+ */
 function startSubmissionTimeout() {
 	var timeoutCount = 0;
 	submissionTimeoutInterval = setInterval(function() {
@@ -363,10 +395,22 @@ function endSubmissionTimeout(success) {
 	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
 
 	if (success) {
-		alert("Submission was successful!")
+		openAlert(
+			"Submission was successful!",
+			["Ok"],
+			[startWaiting]
+		);
 	}
 	else {
-		alert("Submission failed!");
+		const toListFunction = function() {
+			COM.openSidebarTab("listTab");
+		}
+
+		openAlert(
+			"Submission failed - please notify the experimenter!",
+			["Ok"],
+			[toListFunction]
+		);
 	}
 
 	toggleButtons(true);
@@ -485,21 +529,44 @@ function cancelCallback() {
  * Delete the currentField from the current survey
  */
 function fieldDeleteCallback() {
-	// TODO - maybe add a confirm dialogue to this step?
-	surveyManager.survey.deleteField(surveyManager.currentField);
-	surveyManager.currentField = null;
-	viewport.populateColor(viewport.defaultColor, viewport.currentMesh);
-	openList();
+	console.log("yah!");
+	const deleteNoFunction = function() {
+		openFieldEditor();
+	}
+
+	const deleteYesFunction = function() {
+		surveyManager.survey.deleteField(surveyManager.currentField);
+		surveyManager.currentField = null;
+		viewport.populateColor(viewport.defaultColor, viewport.currentMesh);
+		openList();
+	}
+
+	openAlert(
+		"Are you sure you want to delete this projected field?",
+		["No", "Yes"],
+		[deleteNoFunction, deleteYesFunction]
+	);
 }
 
 /**
  * Delete the currentField from the current survey
  */
 function qualifyDeleteCallback() {
-	// TODO - maybe add a confirm dialogue to this step?
-	surveyManager.currentField.deleteQuality(
-		surveyManager.currentQuality);
-	openList();
+	const deleteNoFunction = function() {
+		openQualityEditor();
+	}
+
+	const deleteYesFunction = function() {
+		surveyManager.currentField.deleteQuality(
+			surveyManager.currentQuality);
+		openList();
+	}
+
+	openAlert(
+		"Are you sure you want to delete this quality?",
+		["No", "Yes"],
+		[deleteNoFunction, deleteYesFunction]
+	);
 }
 
 /**
@@ -509,6 +576,9 @@ function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
 	viewport.replaceCurrentMesh(
 		surveyManager.survey.config.models[modelSelect.value]);
+
+	viewport.orbMesh.visible = false;
+
 	cameraController.reset();
 }
 
