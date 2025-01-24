@@ -42,7 +42,6 @@ function socketConnect() {
 				// Initialize a survey using the received data
 				surveyManager.survey = new SVY.Survey();
 				surveyManager.survey.fromJSON(msg.survey);
-				console.log(surveyManager.survey);
 				const modelSelect = document.getElementById("modelSelect");
 				// Set the UI to defaults
 				populateSelect(modelSelect, 
@@ -137,7 +136,7 @@ function toggleUndoRedo(enabled) {
  * Display the projected field editor menu
  */
 function openFieldEditor() {
-	toggleUndoRedo(false);
+	toggleUndoRedo(true);
 	COM.openSidebarTab("fieldTab");
 }
 
@@ -157,7 +156,22 @@ function openList() {
 		new Event("pointerup"));
 	surveyManager.survey.renameFields();
 	surveyTable.update(surveyManager.survey);
-	toggleUndoRedo(true);
+	toggleUndoRedo(false);
+	
+	const eyeButtons = document.getElementsByClassName("eyeButton");
+	if (surveyManager.currentField) {
+		
+		let idx = surveyManager.survey.projectedFields.indexOf(
+			surveyManager.currentField
+		);
+		if (eyeButtons[idx]) {
+			eyeButtons[idx].dispatchEvent(new Event("pointerup"));
+		}
+	}
+	else if (eyeButtons[0]) {
+		eyeButtons[0].dispatchEvent(new Event("pointerup"));
+	}
+	
 	COM.openSidebarTab("listTab");
 }
 
@@ -232,12 +246,10 @@ function populateFieldEditor(field) {
  */
 function saveFieldFromEditor() {
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
-	if (vertices) {
+	if (vertices.size > 0 && viewport.orbMesh.visible) {
 		surveyManager.currentField.vertices = vertices;
 
-		if (viewport.orbMesh.visible = true) {
-			surveyManager.currentField.hotSpot = viewport.orbPosition;
-		}
+		surveyManager.currentField.hotSpot = viewport.orbPosition;
 
 		const modelSelect = document.getElementById("modelSelect");
 		surveyManager.currentField.model = modelSelect.value;
@@ -444,10 +456,12 @@ function addFieldCallback() {
 function fieldDoneCallback() {
 	var result = saveFieldFromEditor();
 	if (result) {
-		surveyManager.currentField = null;
 		openList();
+		surveyManager.currentField = null;
 	}
-	else { alert("Cannot save a field with no drawing!") }
+	else { 
+		alert("Cannot save field -- fields require a drawing and hot spot!"); 
+	}
 }
 
 /**
@@ -473,6 +487,7 @@ function cancelCallback() {
 function fieldDeleteCallback() {
 	// TODO - maybe add a confirm dialogue to this step?
 	surveyManager.survey.deleteField(surveyManager.currentField);
+	surveyManager.currentField = null;
 	viewport.populateColor(viewport.defaultColor, viewport.currentMesh);
 	openList();
 }
@@ -499,16 +514,22 @@ function modelSelectChangeCallback() {
 
 /**
  * Call for the viewport to "undo" the last action
+ * @param {Event} event - the event which triggered the callback
  */
-function undoCallback() {
-	viewport.undo();
+function undoCallback(event) {
+	if (!event.target.disabled) {
+		viewport.undo();
+	}
 }
 
 /**
  * Call for the viewport to "redo" the next action
+ * @param {Event} event - the event which triggered the callback
  */
-function redoCallback() {
-	viewport.redo();
+function redoCallback(event) {
+	if (!event.target.disabled) {
+		viewport.redo();
+	}
 }
 
 /* STARTUP CODE */
@@ -647,6 +668,6 @@ window.onload = function() {
 	}
 	painSlider.dispatchEvent(new Event("input"));
 
-	toggleUndoRedo(true);
+	toggleUndoRedo(false);
 	viewport.animate();
 }
