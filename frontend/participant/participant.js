@@ -147,6 +147,7 @@ function openAlert(message, buttonNames, buttonFunctions) {
 	alertTab.innerHTML = "";
 
 	const messageParagraph = document.createElement("p");
+	messageParagraph.style.textAlign = "center";
 	messageParagraph.innerHTML = message;
 
 	const buttonRow = document.createElement("div");
@@ -278,26 +279,27 @@ function populateFieldEditor(field) {
  */
 function saveFieldFromEditor() {
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
-	if (vertices.size > 0 && viewport.orbMesh.visible) {
-		surveyManager.currentField.vertices = vertices;
+	if (vertices.size > 0) {
+		if (viewport.orbMesh.visible) {
+			surveyManager.currentField.vertices = vertices;
 
-		surveyManager.currentField.hotSpot = viewport.orbPosition;
+			surveyManager.currentField.hotSpot = viewport.orbPosition;
 
-		const modelSelect = document.getElementById("modelSelect");
-		surveyManager.currentField.model = modelSelect.value;
+			const modelSelect = document.getElementById("modelSelect");
+			surveyManager.currentField.model = modelSelect.value;
 
-		const naturalnessSlider = document.getElementById("naturalnessSlider");
-		surveyManager.currentField.naturalness = parseFloat(
-			naturalnessSlider.value);
+			const naturalnessSlider = document.getElementById("naturalnessSlider");
+			surveyManager.currentField.naturalness = parseFloat(
+				naturalnessSlider.value);
 
-		const painSlider = document.getElementById("painSlider");
-		surveyManager.currentField.pain = parseFloat(painSlider.value);
+			const painSlider = document.getElementById("painSlider");
+			surveyManager.currentField.pain = parseFloat(painSlider.value);
 
-		return true;
+			return 1;
+		}
+		else { return -2; }
 	}
-	else {
-		return false;
-	}
+	else { return -1; }
 }
 
 /**
@@ -499,12 +501,37 @@ function addFieldCallback() {
  */
 function fieldDoneCallback() {
 	var result = saveFieldFromEditor();
-	if (result) {
+	if (result == 1) {
 		openList();
 		surveyManager.currentField = null;
 	}
 	else { 
-		alert("Cannot save field -- fields require a drawing and hot spot!"); 
+		let alertMessage = "Alert message default value";
+		if (result == -1) {
+			alertMessage = 
+				`Are you sure you're done with this projected field?<br><br>
+				The current projected field is missing a drawing.`;
+		}
+		else if (result == -2) {
+			alertMessage = 
+				`Are you sure you're done with this projected field?<br><br>
+				The current projected field is missing a hot spot.`;
+		}
+
+		const noFunction = function() {
+			openFieldEditor();
+		}
+
+		const yesFunction = function() {
+			openList();
+			surveyManager.currentField = null;
+		}
+		
+		openAlert(
+			alertMessage,
+			["No", "Yes"],
+			[noFunction, yesFunction]
+		); 
 	}
 }
 
