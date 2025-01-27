@@ -67,14 +67,15 @@ function socketConnect() {
 					document.getElementById("naturalnessValue").innerHTML = "";
 					document.getElementById("painValue").innerHTML = "";
 				}
-				if (waitingInterval) { endWaiting(); }
+				if (waitingInterval) { 
+					endWaiting(); 
+				}
 				break;
 			case "submitResponse":
 				if (msg.success) {
 					surveyManager.clearSurvey();
 					surveyTable.clear();
 					viewport.unloadCurrentMesh();
-					startWaiting();
 					endSubmissionTimeout(msg.success);
 				}
 				else if (submissionTimeoutInterval) {
@@ -370,6 +371,7 @@ function startWaiting() {
  */
 function endWaiting() {
 	waitingInterval = clearInterval(waitingInterval);
+	console.log(waitingInterval);
 	COM.openSidebarTab("listTab");
 }
 

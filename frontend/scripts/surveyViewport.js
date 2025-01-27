@@ -699,6 +699,7 @@ export class SurveyViewport {
      */
     unloadCurrentMesh() {
         this.scene.remove(this.currentMesh);
+        this.orbMesh.visible = false;
         this.currentModelFile = null;
     }
 
