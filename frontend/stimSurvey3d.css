@@ -230,6 +230,28 @@ input[type="radio"]:not(:disabled):checked {
     )   
 }
 
+input[type="checkbox"] {
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--uiElementContrast);
+    appearance: none;
+    background-color: var(--uiElementColor);
+}
+
+input[type="checkbox"]:not(:disabled):checked {
+    background-color: var(--buttonColor);
+    background-clip: content-box;
+    padding: 2px;
+    background-image: linear-gradient(
+        to right,
+        var(--buttonColor) 0%,
+        var(--buttonColor) 50%,
+    )   
+}
+
 select {
     height: 32px;
     font-size: 1.5vh;
