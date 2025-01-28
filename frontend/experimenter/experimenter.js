@@ -30,10 +30,12 @@ function socketConnect() {
 	socket.onopen = function() {
         console.log("Socket connected!");
         socket.send(JSON.stringify({"type" : "requestConfig"}));
-		updateSurveyInterval = setInterval(function() {
-			const msg = { type: "requestSurvey" }
-			socket.send(JSON.stringify(msg));
-		}, 1000)
+		if (!updateSurveyInterval) {
+			updateSurveyInterval = setInterval(function() {
+				const msg = { type: "requestSurvey" }
+				socket.send(JSON.stringify(msg));
+			}, 1000);
+		}
     }
 
 	socket.onmessage = function(event) {
@@ -43,13 +45,8 @@ function socketConnect() {
 			case "survey":
 				surveyManager.survey = new SVY.Survey();
 				surveyManager.survey.fromJSON(msg.survey);
-				surveyTable.update(surveyManager.survey);
-				if (lastClickedView) {
-					document.getElementById(lastClickedView)
-						.getElementsByClassName("eyeButton")[0]
-						.dispatchEvent(new Event("pointerup"));
-				}
-				else {
+				surveyTable.update(surveyManager.survey, lastClickedView);
+				if (lastClickedView === null) {
 					const eyeButtons = 
 						document.getElementsByClassName("eyeButton");
 					if (eyeButtons[0]) {
@@ -142,7 +139,7 @@ function viewFieldCallback(field) {
 	}
 
 	surveyManager.currentField = field;
-	lastClickedView = field.name;
+	lastClickedView = surveyManager.survey.projectedFields.indexOf(field);
 }
 
 /* STARTUP CODE */

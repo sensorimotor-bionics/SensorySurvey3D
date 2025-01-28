@@ -9,7 +9,7 @@ export class Quality {
      * @param {string} type - the type of the quality 
      */
     constructor(
-        intensity = 5, 
+        intensity = 5.0, 
         depth = [],
         type = null
     ) {
@@ -68,7 +68,7 @@ export class ProjectedField {
         vertices = new Set([]), 
         hotSpot = {x: null, y: null, z: null}, 
         naturalness = 5.0,
-        pain = 5.0,
+        pain = 0.0,
         qualities = []
     ) {
         this.model = model;
@@ -425,7 +425,7 @@ export class SurveyTable {
             that.viewCallback(field, e.currentTarget);
         })
         var viewEye = document.createElement("img");
-        viewEye.src = "/images/eye.png";
+        viewEye.src = "/images/close-eye.png";
         viewEye.style["width"] = "32px";
         viewButton.appendChild(viewEye);
         view.appendChild(viewButton);
@@ -497,12 +497,19 @@ export class SurveyTable {
      * Update the table to reflect the fields in a given Survey object
      * @param {Survey} survey - The survey whose fields are to be reflected in
      *      the updated table
+     * @param {number} [eyeButtonOpen] - the index of the projected field whose
+     *      eye button should be "open"
      */
-    update(survey) {
+    update(survey, eyeButtonOpen = null) {
         var table = document.createElement("tbody");
         for (let i = 0; i < survey.projectedFields.length; i++) {
             var chunk = this.createListChunk(survey.projectedFields[i]);
             table.appendChild(chunk);
+            if (eyeButtonOpen !== null && i == eyeButtonOpen) {
+                let eyeButton = chunk.getElementsByClassName("eyeButton")[0];
+                eyeButton.getElementsByTagName('img')[0].src 
+                = "/images/eye.png";
+            }
             if (i != survey.projectedFields.length){
                 table.appendChild(document.createElement("hr"));
             }

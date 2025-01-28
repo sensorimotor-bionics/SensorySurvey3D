@@ -544,7 +544,6 @@ export class SurveyViewport {
                         
                         // If the raycaster hits anything
                         if (res.length) {
-                            console.log("hit");
                             this.orbMesh.position.copy(res[0].point);
                             this.orbMesh.visible = true;
                         }
@@ -690,8 +689,6 @@ export class SurveyViewport {
         }
 
         this.currentModelFile = null;
-
-        this.orbMesh.visible = false;
     }
 
     /**
@@ -699,7 +696,6 @@ export class SurveyViewport {
      */
     unloadCurrentMesh() {
         this.scene.remove(this.currentMesh);
-        this.orbMesh.visible = false;
         this.currentModelFile = null;
     }
 
@@ -746,12 +742,12 @@ export class SurveyViewport {
      * @returns 
      */
     replaceCurrentMesh(filename, colorVertices = null, color = null) {
+        if (this.currentMesh) {
+            this.unloadCurrentMesh();
+        }
         if (filename != this.currentModelFile) {
             const loadResult = this.loadModel(filename).then(function(value) {
                 if (value) {
-                    if (this.currentMesh) {
-                        this.unloadCurrentMesh();
-                    }
                     this.currentMesh = value;
                     this.currentModelFile = filename;
                     this.scene.add(this.currentMesh);

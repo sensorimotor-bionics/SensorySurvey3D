@@ -48,8 +48,7 @@ function socketConnect() {
 								Object.keys(msg.survey.config.models));
 				populateSelect(document.getElementById("typeSelect"), 
 								msg.survey.config.typeList);
-				viewport.replaceCurrentMesh(surveyManager.survey.config.
-									models[modelSelect.value]);
+				
 				cameraController.reset();
 				// If the survey has projected fields, fill the survey table
 				// and click the first "view" button
@@ -60,6 +59,10 @@ function socketConnect() {
 					if (eyeButtons[0]) {
 						eyeButtons[0].dispatchEvent(new Event("pointerup"));
 					}
+				}
+				else {
+					viewport.replaceCurrentMesh(surveyManager.survey.config.
+						models[modelSelect.value]);
 				}
 				// If the config has hidden scale values, hide them
 				if (surveyManager.survey.config.hideScaleValues) {
@@ -276,31 +279,22 @@ function populateFieldEditor(field) {
 /**
  * Take the values in the relevant editor elements and save them to the
  * corresponding fields in the surveyManager's currentField
- * @returns {boolean}
  */
 function saveFieldFromEditor() {
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
-	if (vertices.size > 0) {
-		if (viewport.orbMesh.visible) {
-			surveyManager.currentField.vertices = vertices;
+	surveyManager.currentField.vertices = vertices;
 
-			surveyManager.currentField.hotSpot = viewport.orbPosition;
+	surveyManager.currentField.hotSpot = viewport.orbPosition;
 
-			const modelSelect = document.getElementById("modelSelect");
-			surveyManager.currentField.model = modelSelect.value;
+	const modelSelect = document.getElementById("modelSelect");
+	surveyManager.currentField.model = modelSelect.value;
 
-			const naturalnessSlider = document.getElementById("naturalnessSlider");
-			surveyManager.currentField.naturalness = parseFloat(
-				naturalnessSlider.value);
+	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	surveyManager.currentField.naturalness = parseFloat(
+		naturalnessSlider.value);
 
-			const painSlider = document.getElementById("painSlider");
-			surveyManager.currentField.pain = parseFloat(painSlider.value);
-
-			return 1;
-		}
-		else { return -2; }
-	}
-	else { return -1; }
+	const painSlider = document.getElementById("painSlider");
+	surveyManager.currentField.pain = parseFloat(painSlider.value);
 }
 
 /**
@@ -502,38 +496,40 @@ function addFieldCallback() {
  * main menu
  */
 function fieldDoneCallback() {
-	var result = saveFieldFromEditor();
-	if (result == 1) {
-		openList();
-		surveyManager.currentField = null;
+	var alertMessage = "";
+	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
+	if (vertices.size <= 0) {
+		alertMessage = 
+			`Are you sure you're done with this projected field?<br><br>
+			The current projected field is missing a drawing.`;
 	}
-	else { 
-		let alertMessage = "Alert message default value";
-		if (result == -1) {
-			alertMessage = 
-				`Are you sure you're done with this projected field?<br><br>
-				The current projected field is missing a drawing.`;
-		}
-		else if (result == -2) {
-			alertMessage = 
+	else if (!viewport.orbMesh.visible) {
+		alertMessage = 
 				`Are you sure you're done with this projected field?<br><br>
 				The current projected field is missing a hot spot.`;
-		}
+	}
 
-		const noFunction = function() {
+	if (alertMessage) {
+		const goBackFunction = function() {
 			openFieldEditor();
 		}
 
-		const yesFunction = function() {
+		const continueFunction = function() {
+			saveFieldFromEditor();
 			openList();
 			surveyManager.currentField = null;
 		}
 		
 		openAlert(
 			alertMessage,
-			["No", "Yes"],
-			[noFunction, yesFunction]
+			["Go Back", "Continue"],
+			[goBackFunction, continueFunction]
 		); 
+	}
+	else { 
+		saveFieldFromEditor();  
+		openList();
+		surveyManager.currentField = null;
 	}
 }
 
