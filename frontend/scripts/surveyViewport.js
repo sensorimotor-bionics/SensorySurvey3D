@@ -420,6 +420,7 @@ export class SurveyViewport {
         this.orbMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 40),
                             orbMaterial);
         this.orbMesh.scale.setScalar(0.003); //TODO - make dynamic?
+        this.orbMesh.visible = false;
         this.scene.add(this.orbMesh);
 
         this.eventQueue = new ViewportEventQueue(eventQueueLength);

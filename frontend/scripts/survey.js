@@ -301,6 +301,24 @@ export class SurveyManager {
     }
 
     /**
+     * Check the current survey for missing information 
+     */
+    validateSurvey() {
+        // Invalid if there are no projected fields
+        if (this.survey.projectedFields.length == 0) {
+            return "Survey has no projected fields.";
+        }
+        // Invalid if there is a projected field without any qualities
+        for (let i = 0; i < this.survey.projectedFields.length; i++) {
+            if (this.survey.projectedFields[i].qualities.length <= 0) {
+                return "At least one projected field has no qualities.";
+            }
+        }
+
+        return "";
+    }   
+
+    /**
      * Submit the currentSurvey to the server via websocket
      * @param {WebSocket} socket - the socket the survey is to be sent over
      * @returns {boolean}

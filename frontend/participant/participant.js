@@ -79,6 +79,7 @@ function socketConnect() {
 					surveyManager.clearSurvey();
 					surveyTable.clear();
 					viewport.unloadCurrentMesh();
+					viewport.orbMesh.visible = false;
 					endSubmissionTimeout(msg.success);
 				}
 				else if (submissionTimeoutInterval) {
@@ -421,13 +422,27 @@ function endSubmissionTimeout(success) {
  * starts the wait for a new survey to begin.
  */
 function submitCallback() {
-	if (surveyManager.submitSurveyToServer(socket)) {
-		toggleButtons(false);
-		startSubmissionTimeout();
+	const surveyValidityError = surveyManager.validateSurvey();
+	if (!surveyValidityError) {
+		if (surveyManager.submitSurveyToServer(socket)) {
+			toggleButtons(false);
+			startSubmissionTimeout();
+		}
+		else {
+			toggleButtons(true);
+			alert("Survey submission failed -- socket is not connected!");
+		}
 	}
 	else {
-		toggleButtons(true);
-		alert("Survey submission failed -- socket is not connected!");
+		var goBackButton = function() {
+			openList();
+		}
+
+		openAlert(
+			`Cannot submit survey.<br><br>` + surveyValidityError,
+			["Go Back"],
+			[goBackButton]
+		)
 	}
 }
 
@@ -538,9 +553,27 @@ function fieldDoneCallback() {
  * main menu
  */
 function qualifyDoneCallback() {
-	saveQualityFromEditor();
-	surveyManager.currentQuality = null;
-	openList();
+	console.log(surveyManager.currentQuality.depth.length);
+	if (
+		!document.getElementById("belowSkinCheck").checked
+		&& !document.getElementById("atSkinCheck").checked
+		&& !document.getElementById("aboveSkinCheck").checked
+	) {
+		const okFunction = function() {
+			openQualityEditor();
+		}
+		
+		openAlert(
+			"You must select at least one depth before continuing.",
+			["Go Back"],
+			[okFunction]
+		); 
+	}
+	else {
+		saveQualityFromEditor();
+		surveyManager.currentQuality = null;
+		openList();
+	}	
 }
 
 /**
