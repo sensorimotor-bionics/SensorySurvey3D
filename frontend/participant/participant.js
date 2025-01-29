@@ -634,12 +634,15 @@ function qualifyDeleteCallback() {
  */
 function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
-	viewport.replaceCurrentMesh(
-		surveyManager.survey.config.models[modelSelect.value]);
-
-	viewport.orbMesh.visible = false;
-
-	cameraController.reset();
+	modelSelect.disabled = true;
+	const value = viewport.replaceCurrentMesh(
+		surveyManager.survey.config.models[modelSelect.value]
+	).then(function() {
+		console.log("so that happened");
+		viewport.orbMesh.visible = false;
+		cameraController.reset();
+		document.getElementById("modelSelect").disabled = false;
+	}.bind(this));
 }
 
 /**

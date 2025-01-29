@@ -740,39 +740,53 @@ export class SurveyViewport {
      *      be populated
      * @param {THREE.Color} color - The color to be populated on the given
      *      vertices
-     * @returns 
+     * @returns {Promise}
      */
     replaceCurrentMesh(filename, colorVertices = null, color = null) {
-        if (this.currentMesh) {
-            this.unloadCurrentMesh();
-        }
-        if (filename != this.currentModelFile) {
-            const loadResult = this.loadModel(filename).then(function(value) {
-                if (value) {
-                    this.currentMesh = value;
-                    this.currentModelFile = filename;
-                    this.scene.add(this.currentMesh);
-                    this.populateColor(this.defaultColor, this.currentMesh);
-                    if (colorVertices && color) {
-                        this.populateColorOnVertices(color, this.currentMesh, 
-                            colorVertices);
-                    }
-                    this.eventQueue.reset();
-                    var defaultEvent = new ViewportEvent(controlStates.PAINT);
-                    defaultEvent.updateColorStateFromMesh(this.currentMesh);
-                    this.eventQueue.push(defaultEvent);
-                }
-            }.bind(this));
-            return true;
-        }
-        else {
-            this.populateColor(this.defaultColor, this.currentMesh);
-            if (colorVertices && color) {
-                this.populateColorOnVertices(color, this.currentMesh, 
-                    colorVertices);
+        return new Promise(function(resolve, reject) {
+            if (this.currentMesh) {
+                this.unloadCurrentMesh();
             }
-            return false;
-        }
+            if (filename != this.currentModelFile) {
+                const loadResult = this.loadModel(filename).then(
+                    function(value) {
+                        if (value) {
+                            this.currentMesh = value;
+                            this.currentModelFile = filename;
+                            this.scene.add(this.currentMesh);
+                            this.populateColor(
+                                this.defaultColor, 
+                                this.currentMesh
+                            );
+                            if (colorVertices && color) {
+                                this.populateColorOnVertices(
+                                    color, 
+                                    this.currentMesh, 
+                                    colorVertices
+                                );
+                            }
+                            this.eventQueue.reset();
+                            var defaultEvent = new ViewportEvent(
+                                controlStates.PAINT
+                            );
+                            defaultEvent.updateColorStateFromMesh(
+                                this.currentMesh
+                            );
+                            this.eventQueue.push(defaultEvent);
+                        }
+                        resolve(true);
+                    }.bind(this)
+                );
+            }
+            else {
+                this.populateColor(this.defaultColor, this.currentMesh);
+                if (colorVertices && color) {
+                    this.populateColorOnVertices(color, this.currentMesh, 
+                        colorVertices);
+                }
+                resolve(false);
+            }
+        }.bind(this));
     }
 
     /**
