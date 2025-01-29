@@ -244,12 +244,7 @@ function populateFieldEditor(field) {
 	const modelSelect = document.getElementById("modelSelect");
 	if (field.model) {
 		modelSelect.value = field.model;
-		if (viewport.replaceCurrentMesh(
-			surveyManager.survey.config.models[modelSelect.value],
-			field.vertices, 
-			new THREE.Color("#abcabc"))) {
-			cameraController.reset();
-		}
+		modelSelect.dispatchEvent(new Event("change"));
 	}
 
 	if (field.hotSpot.x) {
@@ -638,7 +633,6 @@ function modelSelectChangeCallback() {
 	const value = viewport.replaceCurrentMesh(
 		surveyManager.survey.config.models[modelSelect.value]
 	).then(function() {
-		console.log("so that happened");
 		viewport.orbMesh.visible = false;
 		cameraController.reset();
 		document.getElementById("modelSelect").disabled = false;
