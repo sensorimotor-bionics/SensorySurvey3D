@@ -426,7 +426,6 @@ export class SurveyViewport {
         this.eventQueue = new ViewportEventQueue(eventQueueLength);
 
         this.pointerDownViewport = true;
-        this.loadingMesh = false;
 
         // Set event listeners
         window.onresize = this.onWindowResize.bind(this);
@@ -748,39 +747,22 @@ export class SurveyViewport {
             this.unloadCurrentMesh();
         }
         if (filename != this.currentModelFile) {
-            if (!this.loadingMesh) {
-                this.loadingMesh = true;
-                const loadResult = this.loadModel(filename).then(
-                    function(value) {
-                        if (value) {
-                            this.currentMesh = value;
-                            this.currentModelFile = filename;
-                            this.scene.add(this.currentMesh);
-                            this.populateColor(
-                                this.defaultColor, 
-                                this.currentMesh
-                            );
-                            if (colorVertices && color) {
-                                this.populateColorOnVertices(
-                                    color, 
-                                    this.currentMesh, 
-                                    colorVertices
-                                );
-                            }
-                            this.eventQueue.reset();
-                            var defaultEvent = new ViewportEvent(
-                                controlStates.PAINT
-                            );
-                            defaultEvent.updateColorStateFromMesh(
-                                this.currentMesh
-                            );
-                            this.eventQueue.push(defaultEvent);
-                        }
-                        this.loadingMesh = false;
-                    }.bind(this)
-                );
-            }
-            
+            const loadResult = this.loadModel(filename).then(function(value) {
+                if (value) {
+                    this.currentMesh = value;
+                    this.currentModelFile = filename;
+                    this.scene.add(this.currentMesh);
+                    this.populateColor(this.defaultColor, this.currentMesh);
+                    if (colorVertices && color) {
+                        this.populateColorOnVertices(color, this.currentMesh, 
+                            colorVertices);
+                    }
+                    this.eventQueue.reset();
+                    var defaultEvent = new ViewportEvent(controlStates.PAINT);
+                    defaultEvent.updateColorStateFromMesh(this.currentMesh);
+                    this.eventQueue.push(defaultEvent);
+                }
+            }.bind(this));
             return true;
         }
         else {
