@@ -6,89 +6,91 @@
     <body>
 
         <div id="sidebar" class="sidebar">
-            <div id="waitingTab" class="sidebarTab">
-                <p>Waiting for next survey to begin...</p>
-            </div>
-
-            <div id="alertTab" class="sidebarTab"></div>
-
-            <div id="listTab" class="sidebarTab">
-                <div id="fieldListParent" class="surveyTable"></div>
-                <br>
-                <button id="newFieldButton">Add Field</button>
-                <button id="submitButton">Submit</button>
-            </div>
-
-            <div id="fieldTab" class="sidebarTab">
-                <p>Model:</p>
-                <select id="modelSelect"></select>
-                <div class="rowContainer">
-                    <button id="orbitButton" class="paletteButton active">Orbit</button>
-                    <button id="panButton" class="paletteButton">Pan</button>
+            <div class="scrollContainer">
+                <div id="waitingTab" class="sidebarTab">
+                    <p>Waiting for next survey to begin...</p>
                 </div>
-                <div class="rowContainer">
-                    <button id="paintButton" class="paletteButton">Paint</button>
-                    <button id="eraseButton" class="paletteButton">Erase</button>
+    
+                <div id="alertTab" class="sidebarTab"></div>
+    
+                <div id="listTab" class="sidebarTab">
+                    <div id="fieldListParent" class="surveyTable"></div>
+                    <br>
+                    <button id="newFieldButton">Add Field</button>
+                    <button id="submitButton">Submit</button>
                 </div>
-                <button id="hotSpotButton" class="paletteButton">Hot Spot</button>
-                <div style="width:80%;">
-                    <p style="text-align:center">Brush Size: <span id="brushSizeValue"></span></p>
+    
+                <div id="fieldTab" class="sidebarTab">
+                    <p>Model:</p>
+                    <select id="modelSelect"></select>
                     <div class="rowContainer">
-                        <input type="range" min="0.003" max="0.01" value="0.003" step="0.001" id="brushSizeSlider">
-                    </div>
-                </div>
-                <div style="width:80%;">
-                    <p style="text-align:center">Naturalness: <span id="naturalnessValue"></span></p>
-                    <div class="rowContainer">
-                        <input type="range" min="0" max="10" value="5.0" step="0.1" id="naturalnessSlider">
+                        <button id="orbitButton" class="paletteButton active">Orbit</button>
+                        <button id="panButton" class="paletteButton">Pan</button>
                     </div>
                     <div class="rowContainer">
-                        <p style="width:50%; font-size:2vh">Unnatural</p>
-                        <p style="width:50%; text-align: right; font-size:2vh">Natural</p>
+                        <button id="paintButton" class="paletteButton">Paint</button>
+                        <button id="eraseButton" class="paletteButton">Erase</button>
+                    </div>
+                    <button id="hotSpotButton" class="paletteButton">Hot Spot</button>
+                    <div style="width:80%;">
+                        <p style="text-align:center">Brush Size: <span id="brushSizeValue"></span></p>
+                        <div class="rowContainer">
+                            <input type="range" min="0.003" max="0.01" value="0.003" step="0.001" id="brushSizeSlider">
+                        </div>
+                    </div>
+                    <div style="width:80%;">
+                        <p style="text-align:center">Naturalness: <span id="naturalnessValue"></span></p>
+                        <div class="rowContainer">
+                            <input type="range" min="0" max="10" value="5.0" step="0.1" id="naturalnessSlider">
+                        </div>
+                        <div class="rowContainer">
+                            <p style="width:50%; font-size:2vh">Unnatural</p>
+                            <p style="width:50%; text-align: right; font-size:2vh">Natural</p>
+                        </div>
+                    </div>
+                    <div style="width:80%;">
+                        <p style="text-align:center">Pain: <span id="painValue"></span></p>
+                        <div class="rowContainer">
+                            <input type="range" min="0" max="10" value="0" step="0.1" id="painSlider">
+                        </div>
+                        <div class="rowContainer">
+                            <p style="width:50%; font-size:2vh">None</p>
+                            <p style="width:50%; text-align: right; font-size:2vh">Worst</p>
+                        </div>
+                    </div>
+                    <div class="rowContainer">
+                        <button id="fieldDoneButton">Done</button>
+                        <button id="fieldCancelButton">Cancel</button>
+                        <button id="fieldDeleteButton">Delete</button>
                     </div>
                 </div>
-                <div style="width:80%;">
-                    <p style="text-align:center">Pain: <span id="painValue"></span></p>
-                    <div class="rowContainer">
-                        <input type="range" min="0" max="10" value="0" step="0.1" id="painSlider">
+    
+                <div id="qualifyTab" class="sidebarTab">
+                    <p>Type:</p>
+                    <select id="typeSelect"></select>
+                    <div style="width:80%;">
+                        <p style="text-align:center">Intensity: <span id="intensityValue"></span></p>
+                        <div class="rowContainer">
+                            <input type="range" min="0" max="10" value="5.0" step="0.1" id="intensitySlider">
+                        </div>
+                        <div class="rowContainer">
+                            <p style="width: 50%">Faint</p>
+                            <p style="width: 50%; text-align: right;">Intense</p>
+                        </div>
                     </div>
+                    <form>
+                        <input type="checkbox" id="belowSkinCheck" value="belowSkin" name="skinLevelCheckSet">
+                        <label for="belowSkinCheck">Below Skin</label>
+                        <input type="checkbox" id="atSkinCheck" value="atSkin" name="skinLevelCheckSet">
+                        <label for="atSkinCheck">At Skin</label>
+                        <input type="checkbox" id="aboveSkinCheck" value="aboveSkin" name="skinLevelCheckSet">
+                        <label for="aboveSkinCheck">Above Skin</label>
+                    </form>
                     <div class="rowContainer">
-                        <p style="width:50%; font-size:2vh">None</p>
-                        <p style="width:50%; text-align: right; font-size:2vh">Worst</p>
+                        <button id="qualifyDoneButton">Done</button>
+                        <button id="qualifyCancelButton">Cancel</button>
+                        <button id="qualifyDeleteButton">Delete</button>
                     </div>
-                </div>
-                <div class="rowContainer">
-                    <button id="fieldDoneButton">Done</button>
-                    <button id="fieldCancelButton">Cancel</button>
-                    <button id="fieldDeleteButton">Delete</button>
-                </div>
-            </div>
-
-            <div id="qualifyTab" class="sidebarTab">
-                <p>Type:</p>
-                <select id="typeSelect"></select>
-                <div style="width:80%;">
-                    <p style="text-align:center">Intensity: <span id="intensityValue"></span></p>
-                    <div class="rowContainer">
-                        <input type="range" min="0" max="10" value="5.0" step="0.1" id="intensitySlider">
-                    </div>
-                    <div class="rowContainer">
-                        <p style="width: 50%">Faint</p>
-                        <p style="width: 50%; text-align: right;">Intense</p>
-                    </div>
-                </div>
-                <form>
-                    <input type="checkbox" id="belowSkinCheck" value="belowSkin" name="skinLevelCheckSet">
-                    <label for="belowSkinCheck">Below Skin</label>
-                    <input type="checkbox" id="atSkinCheck" value="atSkin" name="skinLevelCheckSet">
-                    <label for="atSkinCheck">At Skin</label>
-                    <input type="checkbox" id="aboveSkinCheck" value="aboveSkin" name="skinLevelCheckSet">
-                    <label for="aboveSkinCheck">Above Skin</label>
-                </form>
-                <div class="rowContainer">
-                    <button id="qualifyDoneButton">Done</button>
-                    <button id="qualifyCancelButton">Cancel</button>
-                    <button id="qualifyDeleteButton">Delete</button>
                 </div>
             </div>
         </div>

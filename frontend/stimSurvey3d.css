@@ -22,15 +22,24 @@ html {
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.scrollContainer {
+    margin: auto;
+    max-height: 100%;
+    width: 100%;
+    overflow: auto;
 }
 
 .sidebarTab {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    height: 100%;
+    margin: auto;
     flex-direction: column;
+    overflow: auto;
 }
 
 .widthbar {
@@ -121,6 +130,7 @@ html {
 .surveyTable {
     box-sizing: border-box;
     max-width: 100%;
+    align-items: center;
 }
 
 .surveyTableRow {

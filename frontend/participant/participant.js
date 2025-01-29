@@ -285,7 +285,12 @@ function saveFieldFromEditor() {
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
 	surveyManager.currentField.vertices = vertices;
 
-	surveyManager.currentField.hotSpot = viewport.orbPosition;
+	if (viewport.orbMesh.visible) {
+		surveyManager.currentField.hotSpot = viewport.orbPosition;
+	}	
+	else {
+		surveyManager.currentField.hotSpot = {x: null, y: null, z: null};
+	}
 
 	const modelSelect = document.getElementById("modelSelect");
 	surveyManager.currentField.model = modelSelect.value;
