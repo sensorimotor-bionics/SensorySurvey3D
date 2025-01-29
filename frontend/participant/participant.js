@@ -193,22 +193,11 @@ function openList() {
 	document.getElementById("orbitButton").dispatchEvent(
 		new Event("pointerup"));
 	surveyManager.survey.renameFields();
-	surveyTable.update(surveyManager.survey);
+	let idx = surveyManager.survey.projectedFields.indexOf(
+		surveyManager.currentField
+	);
+	surveyTable.update(surveyManager.survey, idx);
 	toggleUndoRedo(false);
-	
-	const eyeButtons = document.getElementsByClassName("eyeButton");
-	if (surveyManager.currentField) {
-		
-		let idx = surveyManager.survey.projectedFields.indexOf(
-			surveyManager.currentField
-		);
-		if (eyeButtons[idx]) {
-			eyeButtons[idx].dispatchEvent(new Event("pointerup"));
-		}
-	}
-	else if (eyeButtons[0]) {
-		eyeButtons[0].dispatchEvent(new Event("pointerup"));
-	}
 	
 	COM.openSidebarTab("listTab");
 }
@@ -244,21 +233,29 @@ function populateFieldEditor(field) {
 	const modelSelect = document.getElementById("modelSelect");
 	if (field.model) {
 		modelSelect.value = field.model;
-		modelSelect.dispatchEvent(new Event("change"));
-	}
+		viewport.replaceCurrentMesh(
+			surveyManager.survey.config.models[modelSelect.value],
+			field.vertices,
+			new THREE.Color("#abcabc")
+		).then(function() {
+			viewport.orbMesh.visible = false;
+			cameraController.reset();
+			document.getElementById("modelSelect").disabled = false;
 
-	if (field.hotSpot.x) {
-		viewport.orbMesh.position.copy(
-			new THREE.Vector3(
-				field.hotSpot.x,
-				field.hotSpot.y,
-				field.hotSpot.z
-		));
-		viewport.orbMesh.visible = true;
-	}
-	else {
-		viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
-		viewport.orbMesh.visible = false;
+			if (field.hotSpot.x) {
+				viewport.orbMesh.position.copy(
+					new THREE.Vector3(
+						field.hotSpot.x,
+						field.hotSpot.y,
+						field.hotSpot.z
+				));
+				viewport.orbMesh.visible = true;
+			}
+			else {
+				viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
+				viewport.orbMesh.visible = false;
+			}
+		}.bind(this));
 	}
 
 	const naturalnessSlider = document.getElementById("naturalnessSlider");
