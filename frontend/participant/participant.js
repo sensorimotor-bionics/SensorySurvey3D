@@ -371,7 +371,6 @@ function startWaiting() {
  */
 function endWaiting() {
 	waitingInterval = clearInterval(waitingInterval);
-	console.log(waitingInterval);
 	COM.openSidebarTab("listTab");
 }
 
@@ -558,7 +557,6 @@ function fieldDoneCallback() {
  * main menu
  */
 function qualifyDoneCallback() {
-	console.log(surveyManager.currentQuality.depth.length);
 	if (
 		!document.getElementById("belowSkinCheck").checked
 		&& !document.getElementById("atSkinCheck").checked
@@ -592,7 +590,6 @@ function cancelCallback() {
  * Delete the currentField from the current survey
  */
 function fieldDeleteCallback() {
-	console.log("yah!");
 	const deleteNoFunction = function() {
 		openFieldEditor();
 	}
