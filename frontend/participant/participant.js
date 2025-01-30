@@ -230,43 +230,45 @@ function populateSelect(selectElement, optionList) {
  * 		be displayed
  */
 function populateFieldEditor(field) {
-	const modelSelect = document.getElementById("modelSelect");
-	if (field.model) {
-		modelSelect.value = field.model;
-		viewport.replaceCurrentMesh(
-			surveyManager.survey.config.models[modelSelect.value],
-			field.vertices,
-			new THREE.Color("#abcabc")
-		).then(function() {
-			viewport.orbMesh.visible = false;
-			cameraController.reset();
-			document.getElementById("modelSelect").disabled = false;
-
-			if (field.hotSpot.x) {
-				viewport.orbMesh.position.copy(
-					new THREE.Vector3(
-						field.hotSpot.x,
-						field.hotSpot.y,
-						field.hotSpot.z
-				));
-				viewport.orbMesh.visible = true;
-			}
-			else {
-				viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
+	if (field != surveyManager.currentField) {
+		const modelSelect = document.getElementById("modelSelect");
+		if (field.model) {
+			modelSelect.value = field.model;
+			viewport.replaceCurrentMesh(
+				surveyManager.survey.config.models[modelSelect.value],
+				field.vertices,
+				new THREE.Color("#abcabc")
+			).then(function() {
 				viewport.orbMesh.visible = false;
-			}
-		}.bind(this));
+				cameraController.reset();
+				document.getElementById("modelSelect").disabled = false;
+
+				if (field.hotSpot.x) {
+					viewport.orbMesh.position.copy(
+						new THREE.Vector3(
+							field.hotSpot.x,
+							field.hotSpot.y,
+							field.hotSpot.z
+					));
+					viewport.orbMesh.visible = true;
+				}
+				else {
+					viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
+					viewport.orbMesh.visible = false;
+				}
+			}.bind(this));
+		}
+
+		const naturalnessSlider = document.getElementById("naturalnessSlider");
+		naturalnessSlider.value = field.naturalness;
+		naturalnessSlider.dispatchEvent(new Event("input"));
+
+		const painSlider = document.getElementById("painSlider");
+		painSlider.value = field.pain;
+		painSlider.dispatchEvent(new Event("input"));
+
+		surveyManager.currentField = field;
 	}
-
-	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	naturalnessSlider.value = field.naturalness;
-	naturalnessSlider.dispatchEvent(new Event("input"));
-
-	const painSlider = document.getElementById("painSlider");
-	painSlider.value = field.pain;
-	painSlider.dispatchEvent(new Event("input"));
-
-	surveyManager.currentField = field;
 }
 
 /**
@@ -528,7 +530,6 @@ function fieldDoneCallback() {
 		const continueFunction = function() {
 			saveFieldFromEditor();
 			openList();
-			surveyManager.currentField = null;
 		}
 		
 		openAlert(
@@ -540,7 +541,6 @@ function fieldDoneCallback() {
 	else { 
 		saveFieldFromEditor();  
 		openList();
-		surveyManager.currentField = null;
 	}
 }
 
@@ -566,7 +566,6 @@ function qualifyDoneCallback() {
 	}
 	else {
 		saveQualityFromEditor();
-		surveyManager.currentQuality = null;
 		openList();
 	}	
 }

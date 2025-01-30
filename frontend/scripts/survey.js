@@ -331,6 +331,8 @@ export class SurveyManager {
 
         if (socket.readyState == WebSocket.OPEN) {
             socket.send(JSON.stringify(msg));
+            this.currentField = null;
+            this.currentQuality = null;
             return true;
         }
         else {
