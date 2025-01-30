@@ -744,10 +744,10 @@ export class SurveyViewport {
      */
     replaceCurrentMesh(filename, colorVertices = null, color = null) {
         return new Promise(function(resolve, reject) {
-            if (this.currentMesh) {
-                this.unloadCurrentMesh();
-            }
             if (filename != this.currentModelFile) {
+                if (this.currentMesh) {
+                    this.unloadCurrentMesh();
+                }
                 const loadResult = this.loadModel(filename).then(
                     function(value) {
                         if (value) {
@@ -779,10 +779,16 @@ export class SurveyViewport {
                 );
             }
             else {
-                this.populateColor(this.defaultColor, this.currentMesh);
+                this.populateColor(
+                    this.defaultColor, 
+                    this.currentMesh
+                );
                 if (colorVertices && color) {
-                    this.populateColorOnVertices(color, this.currentMesh, 
-                        colorVertices);
+                    this.populateColorOnVertices(
+                        color, 
+                        this.currentMesh, 
+                        colorVertices
+                    );
                 }
                 resolve(false);
             }
