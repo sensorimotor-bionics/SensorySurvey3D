@@ -64,7 +64,7 @@ export class ProjectedField {
      */
     constructor(
         model = "", 
-        name = "", 
+        name = "Unnamed", 
         vertices = new Set([]), 
         hotSpot = {x: null, y: null, z: null}, 
         naturalness = 5.0,

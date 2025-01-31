@@ -53,17 +53,16 @@ function socketConnect() {
 				// If the survey has projected fields, fill the survey table
 				// and click the first "view" button
 				if (surveyManager.survey.projectedFields) {
-					surveyTable.update(surveyManager.survey);
-					const eyeButtons = 
-						document.getElementsByClassName("eyeButton");
-					if (eyeButtons[0]) {
-						eyeButtons[0].dispatchEvent(new Event("pointerup"));
-					}
+					surveyTable.update(surveyManager.survey, 0);
+					let field = surveyManager.survey.projectedFields[0];
+					performModelReplacement(
+						surveyManager.survey.config.models[field.model],
+						field.vertices,
+						new THREE.Color("#abcabc"),
+						field.hotSpot
+					);
 				}
-				else {
-					viewport.replaceCurrentMesh(surveyManager.survey.config.
-						models[modelSelect.value]);
-				}
+
 				// If the config has hidden scale values, hide them
 				if (surveyManager.survey.config.hideScaleValues) {
 					document.getElementById("intensityValue").innerHTML = "";
@@ -171,6 +170,48 @@ function openAlert(message, buttonNames, buttonFunctions) {
 }	
 
 /**
+ * Calls for the viewport to replace the current mesh, and in the process
+ * disallows the user from requesting another model change
+ * @param {string} filename - the name of the model file to be loaded
+ * @param {Iterable} colorVertices - the vertices to have color
+ * @param {THREE.Color} color - the color to be populated onto the colorVertices
+ * @param {JSON} hotSpot - a JSON with an x, y, and z property
+ */
+function performModelReplacement(
+	filename, 
+	colorVertices = null, 
+	color = null,
+	hotSpot = null
+) {
+	viewport.orbMesh.visible = false;
+	document.getElementById("modelSelect").disabled = true;
+	viewport.replaceCurrentMesh(
+		filename,
+		colorVertices,
+		color
+	).then(function() {
+			viewport.orbMesh.visible = false;
+			cameraController.reset();
+			document.getElementById("modelSelect").disabled = false;
+
+			if (hotSpot.x) {
+				viewport.orbMesh.position.copy(
+					new THREE.Vector3(
+						hotSpot.x,
+						hotSpot.y,
+						hotSpot.z
+				));
+				viewport.orbMesh.visible = true;
+			}
+			else {
+				viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
+				viewport.orbMesh.visible = false;
+			}
+		}.bind(hotSpot)
+	);
+}
+
+/**
  * Display the projected field editor menu
  */
 function openFieldEditor() {
@@ -233,30 +274,13 @@ function populateFieldEditor(field) {
 	if (field != surveyManager.currentField) {
 		const modelSelect = document.getElementById("modelSelect");
 		if (field.model) {
-			modelSelect.value = field.model;
-			viewport.replaceCurrentMesh(
+			performModelReplacement(
 				surveyManager.survey.config.models[modelSelect.value],
 				field.vertices,
-				new THREE.Color("#abcabc")
-			).then(function() {
-				viewport.orbMesh.visible = false;
-				cameraController.reset();
-				document.getElementById("modelSelect").disabled = false;
-
-				if (field.hotSpot.x) {
-					viewport.orbMesh.position.copy(
-						new THREE.Vector3(
-							field.hotSpot.x,
-							field.hotSpot.y,
-							field.hotSpot.z
-					));
-					viewport.orbMesh.visible = true;
-				}
-				else {
-					viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
-					viewport.orbMesh.visible = false;
-				}
-			}.bind(this));
+				new THREE.Color("#abcabc"),
+				field.hotSpot
+			);
+			modelSelect.value = field.model;
 		}
 
 		const naturalnessSlider = document.getElementById("naturalnessSlider");
@@ -625,14 +649,9 @@ function qualifyDeleteCallback() {
  */
 function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
-	modelSelect.disabled = true;
-	const value = viewport.replaceCurrentMesh(
+	performModelReplacement(
 		surveyManager.survey.config.models[modelSelect.value]
-	).then(function() {
-		viewport.orbMesh.visible = false;
-		cameraController.reset();
-		document.getElementById("modelSelect").disabled = false;
-	}.bind(this));
+	);
 }
 
 /**
