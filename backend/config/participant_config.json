@@ -15,7 +15,8 @@
             "Right Hand" : "hand_r.gltf",
             "Chest" : "chest.glb"
         },
-        "typeList" : ["pressure", "poke", "sparkle"]
+        "typeList" : ["pressure", "poke", "sparkle"],
+        "hideScaleValues" : false
     },
     "test2" : {
         "models" : {
@@ -28,6 +29,7 @@
             "7" : "Male_Torso.gltf",
             "8" : "Female_Head.gltf"
         },
-        "typeList" : ["sorrow", "elation", "jubilance", "ennui", "maleficence"]
+        "typeList" : ["sorrow", "elation", "jubilance", "ennui", "maleficence"],
+        "hideScaleValues" : true
     }
 }

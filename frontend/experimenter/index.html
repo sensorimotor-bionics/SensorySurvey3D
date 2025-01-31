@@ -6,19 +6,21 @@
     <body>
 
         <div class="sidebar">
-            <div id="newSurveyTab" class="sidebarTab">
-                <select id="participantSelect" style="width:70%"></select>
-                <button id="newSurvey">New Survey</button>
-            </div>
-
-            <div id="currentSurveyTab" class="sidebarTab">
-                <table style="width:100%" id="senseTable"></table>
+            <div class="scrollContainer">
+                <div id="newSurveyTab" class="sidebarTab">
+                    <select id="participantSelect" style="width:70%"></select>
+                    <button id="newSurvey">New Survey</button>
+                </div>
+    
+                <div id="currentSurveyTab" class="sidebarTab">
+                    <div id="fieldListParent"></div>
+                </div>
             </div>
         </div>
 
         <div class="widthbar">
             <p>Zoom</p>
-            <div id="zoomSliderContainer" style="display:inherit;justify-content:inherit;align-items:inherit">
+            <div id="cameraControlContainer" style="display:inherit;justify-content:inherit;align-items:inherit">
             </div>
         </div>
 

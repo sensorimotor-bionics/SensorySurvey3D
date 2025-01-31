@@ -19,22 +19,23 @@ var lastClickedView = null;
 const socketURL = COM.socketURL + "experimenter-ws";
 var socket;
 
-/*  socketConnect
-	Connects to the survey's backend via websocket to enable data transfer. 
-	Surveys are unable to start unless the backend is connected as the survey 
-	begins. Attempts to reconnect every second if not connected.
-*/
-
+/**
+ * Connect to the survey's backend via websocket to enable data transfer. 
+ * Surveys are unable to start unless the backend is connected as the survey 
+ * begins. Attempts to reconnect every second if not connected.
+ */
 function socketConnect() {
     socket = new WebSocket(socketURL);
 
 	socket.onopen = function() {
         console.log("Socket connected!");
         socket.send(JSON.stringify({"type" : "requestConfig"}));
-		updateSurveyInterval = setInterval(function() {
-			const msg = { type: "requestSurvey" }
-			socket.send(JSON.stringify(msg));
-		}, 1000)
+		if (!updateSurveyInterval) {
+			updateSurveyInterval = setInterval(function() {
+				const msg = { type: "requestSurvey" }
+				socket.send(JSON.stringify(msg));
+			}, 1000);
+		}
     }
 
 	socket.onmessage = function(event) {
@@ -42,21 +43,10 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "survey":
-				surveyManager.survey = new SVY.Survey(
-					msg.survey.participant,
-					msg.survey.config,
-					msg.survey.date,
-					msg.survey.startTime,
-					msg.survey.endTime,
-					msg.survey.percepts
-				);
-				surveyTable.update(surveyManager.survey);
-				if (lastClickedView) {
-					document.getElementById(lastClickedView)
-						.getElementsByClassName("eyeButton")[0]
-						.dispatchEvent(new Event("pointerup"));
-				}
-				else {
+				surveyManager.survey = new SVY.Survey();
+				surveyManager.survey.fromJSON(msg.survey);
+				surveyTable.update(surveyManager.survey, lastClickedView);
+				if (lastClickedView === null) {
 					const eyeButtons = 
 						document.getElementsByClassName("eyeButton");
 					if (eyeButtons[0]) {
@@ -104,9 +94,10 @@ function socketConnect() {
 
 /* BUTTON CALLBACKS */
 
-/* newSurveyCallback
-    Tells the websocket to start a new survey
-*/
+/**
+ * Tell the server to start a new survey for the subject selected in the
+ * dropdown
+ */
 function newSurveyCallback() {
     const dropdown = document.getElementById("participantSelect");
 
@@ -118,22 +109,37 @@ function newSurveyCallback() {
     socket.send(JSON.stringify(msg));
 }
 
-/*  viewPerceptCallback
-    Update the viewport to display the given percept
-
-	Inputs: 
-		percept: Percept
-			The percept that will be viewed
-*/
-function viewPerceptCallback(percept) {
-	if (viewport.replaceCurrentMesh(
-		surveyManager.survey.config.models[percept.model],
-		percept.vertices, new THREE.Color("#abcabc"))) {
-		cameraController.reset();
+/**
+ * Change the current model to the model of the given field, then colors the
+ * field's vertices on that model
+ * @param {ProjectedField} field 
+ */
+function viewFieldCallback(field) {
+	if (field.model) {
+		if (viewport.replaceCurrentMesh(
+			surveyManager.survey.config.models[field.model],
+			field.vertices, 
+			new THREE.Color("#abcabc"))) {
+			cameraController.reset();
+		}
 	}
-	surveyManager.currentPercept = percept;
 
-	lastClickedView = percept.name;
+	if (field.hotSpot.x) {
+		viewport.orbMesh.position.copy(
+			new THREE.Vector3(
+				field.hotSpot.x,
+				field.hotSpot.y,
+				field.hotSpot.z
+		));
+		viewport.orbMesh.visible = true;
+	}
+	else {
+		viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
+		viewport.orbMesh.visible = false;
+	}
+
+	surveyManager.currentField = field;
+	lastClickedView = surveyManager.survey.projectedFields.indexOf(field);
 }
 
 /* STARTUP CODE */
@@ -148,12 +154,20 @@ window.onload = function() {
 	cameraController = new VP.CameraController(viewport.controls, 
 		viewport.renderer.domElement, 2, 20);
 	cameraController.createZoomSlider(document.getElementById(
-		"zoomSliderContainer"));
+		"cameraControlContainer"));
+	cameraController.createCameraReset(document.getElementById(
+		"cameraControlContainer"));
 
     surveyManager = new SVY.SurveyManager();
 
-	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), 
-										false, viewPerceptCallback, null);
+	surveyTable = new SVY.SurveyTable(
+		document.getElementById("fieldListParent"), 
+		false, 
+		viewFieldCallback, 
+		null,
+		null,
+		null
+	);
 
     // Start the websocket
     socketConnect();
