@@ -9,21 +9,16 @@ export const uiPositions = Object.freeze({
     RIGHT: 3
 });
 
-/*  placeUI
-    Places the side and width bars on the right or left, and top or bottom 
-    respectively. Parameters can be changed to accomodate for handedness of 
-    participant.
-
-    Inputs:
-        rightleft: UI_POSITIONS
-            Determines if the sidebar will be on the right or left side of the screen.
-        topbottom: UI_POSITIONS
-            Determines if the widthbar will be on the top or bottom of the screen.
-
-    Outputs:
-        boolean
-            True if function is successful, false if failed
-*/
+/**
+ * Place the side and width bars on the right or left, and top or bottom 
+ * respectively. Parameters can be changed to accomodate for handedness of 
+ * participant
+ * @param {number} rightleft - Determines if the sidebar will be on the right or 
+ *      left side of the screen; 2 for left, 3 for right
+ * @param {number} topbottom - Determines if the sidebar will be on the top or
+ *      bottom of the screen; 0 for top, 1 for bottom
+ * @returns {boolean}
+ */
 export function placeUI(rightleft, topbottom) {
     const sidebars = document.getElementsByClassName("sidebar");
     const widthbars = document.getElementsByClassName("widthbar");
@@ -67,37 +62,33 @@ export function placeUI(rightleft, topbottom) {
     return true;
 }
 
-/*  openSidebarTab
-	Gets the element with the given ID, sets its display to "flex", then sets the
-	displays of all sidebarTab elements to "none". Enables switching between tabs.
-
-	Inputs:
-		tabID: str
-			The ID of the element you want to switch to; should be a sidebarTab 
-            element
-*/
+/**
+ * Gets the element with the given ID, sets its display to "flex", then sets the
+ * displays of all sidebarTab elements to "none". Enables switching between 
+ * tabs.
+ * @param {string} tabID - The ID of the element you want to switch to; 
+ *      should be a sidebarTab element
+ */
 export function openSidebarTab(tabID) {
 	var tab = document.getElementById(tabID);
     var tabContent = document.getElementsByClassName("sidebarTab");
-    for (var i = 0; i < tabContent.length; i++) {
+    for (let i = 0; i < tabContent.length; i++) {
         tabContent[i].style.display = "none";
     }
     tab.style.display = "flex";
 }
 
-/*  activatePaletteButton
-    Palette buttons are elements intended to change the behavior of the viewport
-    controls; this function changes the style of the palette button to reflect
-    that it is the one that is "active", while making every other button
-    "inactive"
-
-    Inputs:
-        buttonID: str
-            The ID of the palette button element to be activated
-*/
+/**
+ * Palette buttons are elements intended to change the behavior of the viewport
+ * controls; this function changes the style of the palette button to reflect
+ * that it is the one that is "active", while making every other button
+ * "inactive"
+ * @param {string} buttonID - The ID of the palette button element to be 
+ *      activated
+ */
 export function activatePaletteButton(buttonID) {
     var imageButtons = document.getElementsByClassName("paletteButton");
-	for (var i = 0; i < imageButtons.length; i++) {
+	for (let i = 0; i < imageButtons.length; i++) {
         imageButtons[i].classList.remove("active")
     }
 	document.getElementById(buttonID).classList.add("active");

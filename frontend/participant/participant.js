@@ -19,21 +19,18 @@ var updateServerInterval;
 const socketURL = COM.socketURL + "participant-ws";
 var socket;
 
-/*  socketConnect
-	Connects to the survey's backend via websocket to enable data transfer. 
-	Surveys are unable to start unless the backend is connected as the survey 
-	begins. Attempts to reconnect every second if not connected.
-*/
-
+/**
+ * Connect to the survey's backend via websocket to enable data transfer. 
+ * Surveys are unable to start unless the backend is connected as the 
+ * survey begins. Attempts to reconnect every second if not connected.
+ */
 function socketConnect() {
     socket = new WebSocket(socketURL);
 
 	socket.onopen = function() { 
 		console.log("Socket connected!") 
 		updateServerInterval = setInterval(function() {
-			if (surveyManager.survey) {
-				surveyManager.updateSurveyOnServer(socket);
-			}
+			surveyManager.updateSurveyOnServer(socket);
 		}, 1000);
 	};
 
@@ -42,45 +39,38 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "survey":
-				const percepts = []
-				for (let i = 0; i < msg.survey.percepts.length; i++) {
-					var percept = msg.survey.percepts[i];
-					percept = new SVY.Percept(percept.vertices, percept.model,
-						percept.intensity, percept.naturalness,
-						percept.pain, percept.type, percept.name);
-					percepts.push(percept);
+				// Initialize a survey using the received data
+				surveyManager.survey = new SVY.Survey();
+				surveyManager.survey.fromJSON(msg.survey);
+				const modelSelect = document.getElementById("modelSelect");
+				// Set the UI to defaults
+				populateSelect(modelSelect, 
+								Object.keys(msg.survey.config.models));
+				populateSelect(document.getElementById("typeSelect"), 
+								msg.survey.config.typeList);
+				
+				cameraController.reset();
+				// If the survey has projected fields, fill the survey table
+				// and click the first "view" button
+				if (surveyManager.survey.projectedFields) {
+					surveyTable.update(surveyManager.survey, 0);
+					let field = surveyManager.survey.projectedFields[0];
+					performModelReplacement(
+						surveyManager.survey.config.models[field.model],
+						field.vertices,
+						new THREE.Color("#abcabc"),
+						field.hotSpot
+					);
 				}
-				surveyManager.survey = new SVY.Survey(
-					msg.survey.participant,
-					msg.survey.config,
-					msg.survey.date,
-					msg.survey.startTime,
-					msg.survey.endTime,
-					percepts
-				);
+
+				// If the config has hidden scale values, hide them
 				if (surveyManager.survey.config.hideScaleValues) {
 					document.getElementById("intensityValue").innerHTML = "";
 					document.getElementById("naturalnessValue").innerHTML = "";
 					document.getElementById("painValue").innerHTML = "";
 				}
-				if (waitingInterval) {
-					const modelSelect = document.getElementById("modelSelect");
-					populateSelect(modelSelect, 
-									Object.keys(msg.survey.config.models));
-					populateSelect(document.getElementById("typeSelect"), 
-									msg.survey.config.typeList);
-					viewport.replaceCurrentMesh(surveyManager.survey.config.
-										models[modelSelect.value]);
-					cameraController.reset();
-					endWaiting();
-					if (percepts) {
-						surveyTable.update(surveyManager.survey);
-						const eyeButtons = 
-							document.getElementsByClassName("eyeButton");
-						if (eyeButtons[0]) {
-							eyeButtons[0].dispatchEvent(new Event("pointerup"));
-						}
-					}
+				if (waitingInterval) { 
+					endWaiting(); 
 				}
 				break;
 			case "submitResponse":
@@ -88,14 +78,16 @@ function socketConnect() {
 					surveyManager.clearSurvey();
 					surveyTable.clear();
 					viewport.unloadCurrentMesh();
-					startWaiting();
+					viewport.orbMesh.visible = false;
 					endSubmissionTimeout(msg.success);
 				}
 				else if (submissionTimeoutInterval) {
 					endSubmissionTimeout(msg.success);
 				}
 				else {
-					alert("Received submitSuccess without making a submission!");
+					alert(
+						"Received submitSuccess without making a submission!"
+					);
 				}
 				break;
 		}
@@ -118,38 +110,17 @@ function socketConnect() {
 
 /* USER INTERFACE */
 
-/*  toggleEditorTabs
-	Reveals or hides the "Draw" and "Qualify" tabs at the top of the sidebar,
-	depending on input
-
-	Inputs:
-		truefalse: bool
-			If true then show tabs, if false hide them
-*/
-function toggleEditorTabs(truefalse) {
-	var editorTabs = document.getElementById("tabSelector");
-	if (truefalse) {
-		editorTabs.style.display = "flex";
-	}
-	else {
-		editorTabs.style.display = "none";
-	}
-}
-
-/*  toggleButtons
-	Find all button elements and enable or disable them, depending on input
-
-	Inputs:
-		truefalse: bool
-			If true disable buttons, if false enable them
-*/
-function toggleButtons(truefalse) {
+/**
+ * Find all button elements and enable or disable them, depending on input
+ * @param {boolean} enabled - Determines if the buttons are enabled
+ */
+function toggleButtons(enabled) {
 	const sidebar = document.getElementById("sidebar");
 
 	var buttons = sidebar.querySelectorAll("button");
-	for (var i = 0; i < buttons.length; i++) {
-		buttons[i].disabled = truefalse;
-		if (truefalse) {
+	for (let i = 0; i < buttons.length; i++) {
+		buttons[i].disabled = !enabled;
+		if (!enabled) {
 			buttons[i].style.pointerEvents = "none";
 		}
 		else {
@@ -158,55 +129,133 @@ function toggleButtons(truefalse) {
 	}
 }
 
-/*  toggleUndoRedo
-	Enables or disables the undo and redo buttons depending on input
-
-	Inputs:
-		truefalse: bool
-			If true disable buttons, if false enable them
-*/
-function toggleUndoRedo(truefalse) {
-	document.getElementById("undoButton").disabled = truefalse;
-	document.getElementById("redoButton").disabled = truefalse;
+/**
+ * Enables or disables the undo and redo buttons depending on input
+ * @param {boolean} enabled - Determines if the buttons are enabled
+ */
+function toggleUndoRedo(enabled) {
+	document.getElementById("undoButton").disabled = !enabled;
+	document.getElementById("redoButton").disabled = !enabled;
 }
 
-/*  openEditor
-	Displays the editor menu
-*/
-function openEditor() {
-	toggleEditorTabs(true);
-	toggleUndoRedo(false);
-	document.getElementById("drawTabButton").dispatchEvent(
-		new Event("pointerup"));
+/**
+ * Open the alert tab, displaying the given message and creating buttons 
+ * displaying the given names and with the given functions as their callbacks
+ * @param {string} message - the message to be displayed with the alert
+ * @param {string[]} buttonNames - the names of the buttons, to be displayed
+ * @param {function[]} buttonFunctions - the functions to be used as callbacks
+ * 		for each button, 
+ */
+function openAlert(message, buttonNames, buttonFunctions) {
+	const alertTab = document.getElementById("alertTab");
+	alertTab.innerHTML = "";
+
+	const messageParagraph = document.createElement("p");
+	messageParagraph.style.textAlign = "center";
+	messageParagraph.innerHTML = message;
+
+	const buttonRow = document.createElement("div");
+	for (let i = 0; i < buttonNames.length; i++) {
+		const name = buttonNames[i];
+		const button = document.createElement("button");
+		button.innerHTML = name;
+		button.onpointerup = buttonFunctions[i];
+		buttonRow.appendChild(button);
+	}
+
+	alertTab.appendChild(messageParagraph);
+	alertTab.appendChild(buttonRow);
+
+	COM.openSidebarTab("alertTab");
+}	
+
+/**
+ * Calls for the viewport to replace the current mesh, and in the process
+ * disallows the user from requesting another model change
+ * @param {string} filename - the name of the model file to be loaded
+ * @param {Iterable} colorVertices - the vertices to have color
+ * @param {THREE.Color} color - the color to be populated onto the colorVertices
+ * @param {JSON} hotSpot - a JSON with an x, y, and z property
+ */
+function performModelReplacement(
+	filename, 
+	colorVertices = null, 
+	color = null,
+	hotSpot = null
+) {
+	viewport.orbMesh.visible = false;
+	document.getElementById("modelSelect").disabled = true;
+	viewport.replaceCurrentMesh(
+		filename,
+		colorVertices,
+		color
+	).then(function() {
+			viewport.orbMesh.visible = false;
+			cameraController.reset();
+			document.getElementById("modelSelect").disabled = false;
+
+			if (hotSpot.x) {
+				viewport.orbMesh.position.copy(
+					new THREE.Vector3(
+						hotSpot.x,
+						hotSpot.y,
+						hotSpot.z
+				));
+				viewport.orbMesh.visible = true;
+			}
+			else {
+				viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
+				viewport.orbMesh.visible = false;
+			}
+		}.bind(hotSpot)
+	);
 }
 
-/*  openPerceptList
-	Displays the percept menu
-*/
-function openPerceptList() {
-	document.getElementById("orbitButton").dispatchEvent(new Event("pointerup"));
-	surveyManager.survey.renamePercepts();
-	surveyTable.update(surveyManager.survey);
-	toggleEditorTabs(false);
+/**
+ * Display the projected field editor menu
+ */
+function openFieldEditor() {
 	toggleUndoRedo(true);
-	COM.openSidebarTab("perceptTab");
+	COM.openSidebarTab("fieldTab");
 }
 
-/*  populateTypeSelect
-	Clears all children of a <select> element, then takes a list and creates 
-	<option> elements for each element in the list as children of the select 
-	element 
+/**
+ * Display the quality editor menu
+ */
+function openQualityEditor() {
+	toggleUndoRedo(false);
+	COM.openSidebarTab("qualifyTab");
+}
 
-	Inputs:
-		selectElement: Element
-			The <select> element which the options should be childen of
-		optionList: list of str
-			The names of each option to be added to the selectElement
-*/
+/**
+ * Display the list menu
+ */
+function openList() {
+	document.getElementById("orbitButton").dispatchEvent(
+		new Event("pointerup"));
+	surveyManager.survey.renameFields();
+	let idx = surveyManager.survey.projectedFields.indexOf(
+		surveyManager.currentField
+	);
+	surveyTable.update(surveyManager.survey, idx);
+	toggleUndoRedo(false);
+	
+	COM.openSidebarTab("listTab");
+}
+
+/**
+ * Clear all children of a <select> element, then use a given list to create 
+ * <option> elements for each element in the list as children of the select 
+ * element 	
+ * @param {Element} selectElement - The <select> element which the options 
+ * 		should be childen of
+ * @param {string[]} optionList - The names of each option to be added to the 
+ * 		selectElement
+ */
 function populateSelect(selectElement, optionList) {
 	selectElement.innerHTML = "";
 
-	for (var i = 0; i < optionList.length; i++) {
+	for (let i = 0; i < optionList.length; i++) {
 		const newOption = document.createElement("option");
         newOption.innerHTML = (optionList[i].charAt(0).toUpperCase() 
 								+ optionList[i].slice(1));
@@ -216,90 +265,116 @@ function populateSelect(selectElement, optionList) {
 	}
 }
 
-/*  populateEditorWithPercept
-	Puts the data from the given percept into the editor UI
-
-	Inputs:
-		percept: Percept
-			The percept whose data should be displayed
-*/
-function populateEditorWithPercept(percept) {
-
-	const intensitySlider = document.getElementById("intensitySlider");
-	intensitySlider.value = percept.intensity;
-	intensitySlider.dispatchEvent(new Event("input"));
-
-	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	naturalnessSlider.value = percept.naturalness;
-	naturalnessSlider.dispatchEvent(new Event("input"));
-
-	const painSlider = document.getElementById("painSlider");
-	painSlider.value = percept.pain;
-	painSlider.dispatchEvent(new Event("input"));
-
-	const modelSelect = document.getElementById("modelSelect");
-	if (percept.model) {
-		modelSelect.value = percept.model;
-		if (viewport.replaceCurrentMesh(
-			surveyManager.survey.config.models[modelSelect.value],
-			percept.vertices, new THREE.Color("#abcabc"))) {
-			cameraController.reset();
+/**
+ * Put the data from the given projected field into the editor UI
+ * @param {ProjectedField} field - the ProjectedField whose data is to
+ * 		be displayed
+ */
+function populateFieldEditor(field) {
+	if (field != surveyManager.currentField) {
+		const modelSelect = document.getElementById("modelSelect");
+		if (field.model) {
+			performModelReplacement(
+				surveyManager.survey.config.models[modelSelect.value],
+				field.vertices,
+				new THREE.Color("#abcabc"),
+				field.hotSpot
+			);
+			modelSelect.value = field.model;
 		}
-	}
 
-	const typeSelect = document.getElementById("typeSelect");
-	if (percept.type) {
-		typeSelect.value = percept.type;
-	}
+		const naturalnessSlider = document.getElementById("naturalnessSlider");
+		naturalnessSlider.value = field.naturalness;
+		naturalnessSlider.dispatchEvent(new Event("input"));
 
-	switch(percept.depth) {
-		case "belowSkin":
-			document.getElementById("belowSkinRadio").checked = true;
-			break;
-		case "atSkin":
-			document.getElementById("atSkinRadio").checked = true;
-			break;
-		case "aboveSkin":
-			document.getElementById("aboveSkinRadio").checked = true;
-			break;
-	}
+		const painSlider = document.getElementById("painSlider");
+		painSlider.value = field.pain;
+		painSlider.dispatchEvent(new Event("input"));
 
-	surveyManager.currentPercept = percept;
+		surveyManager.currentField = field;
+	}
 }
 
-/*  savePerceptFromEditor
-	Takes the values in the relevant editor elements and saves them to the
-	corresponding fields in the surveyManager's currentPercept
-*/
-function savePerceptFromEditor() {
-	const intensitySlider = document.getElementById("intensitySlider");
-	surveyManager.currentPercept.intensity = parseFloat(intensitySlider.value);
+/**
+ * Take the values in the relevant editor elements and save them to the
+ * corresponding fields in the surveyManager's currentField
+ */
+function saveFieldFromEditor() {
+	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
+	surveyManager.currentField.vertices = vertices;
+
+	if (viewport.orbMesh.visible) {
+		surveyManager.currentField.hotSpot = viewport.orbPosition;
+	}	
+	else {
+		surveyManager.currentField.hotSpot = {x: null, y: null, z: null};
+	}
+
+	const modelSelect = document.getElementById("modelSelect");
+	surveyManager.currentField.model = modelSelect.value;
 
 	const naturalnessSlider = document.getElementById("naturalnessSlider");
-	surveyManager.currentPercept.naturalness = parseFloat(
+	surveyManager.currentField.naturalness = parseFloat(
 		naturalnessSlider.value);
 
 	const painSlider = document.getElementById("painSlider");
-	surveyManager.currentPercept.pain = parseFloat(painSlider.value);
-
-	const depthSelected = 
-		document.querySelector("input[name=\"skinLevelRadioSet\"]:checked");
-	surveyManager.currentPercept.depth = depthSelected.value;
-
-	const modelSelect = document.getElementById("modelSelect");
-	surveyManager.currentPercept.model = modelSelect.value;
-
-	const typeSelect = document.getElementById("typeSelect");
-	surveyManager.currentPercept.type = typeSelect.value;
-
-	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
-	surveyManager.currentPercept.vertices = vertices;
+	surveyManager.currentField.pain = parseFloat(painSlider.value);
 }
 
-/*  startWaiting
-	Sets the waitingInterval variable to a new interval which polls the
-	websocket for a new survey. Also opens the waitingTab
-*/
+/**
+ * Take a Quality and populate its data in the quality editor
+ * @param {Quality} quality - the quality whose data will be populated in the
+ * 		editor
+ */
+function populateQualityEditor(field, quality) {
+	const typeSelect = document.getElementById("typeSelect");
+	if (quality.type) {
+		typeSelect.value = quality.type;
+	}
+
+	var belowSkinCheck = document.getElementById("belowSkinCheck");
+	if (quality.depth.includes('belowSkin')) { belowSkinCheck.checked = true }
+	else { belowSkinCheck.checked = false }
+
+	var atSkinCheck = document.getElementById("atSkinCheck");
+	if (quality.depth.includes('atSkin')) { atSkinCheck.checked = true }
+	else { atSkinCheck.checked = false }
+
+	var aboveSkinCheck = document.getElementById("aboveSkinCheck");
+	if (quality.depth.includes('aboveSkin')) { aboveSkinCheck.checked = true }
+	else { aboveSkinCheck.checked = false }
+
+	const intensitySlider = document.getElementById("intensitySlider");
+	intensitySlider.value = quality.intensity;
+	intensitySlider.dispatchEvent(new Event("input"));
+
+	surveyManager.currentField = field;
+	surveyManager.currentQuality = quality;
+}
+
+/**
+ * Take the values in the relevant editor elements and save them to the
+ * corresponding fields in the surveyManager's currentQuality
+ */
+function saveQualityFromEditor() {
+	const intensitySlider = document.getElementById("intensitySlider");
+	surveyManager.currentQuality.intensity = parseFloat(intensitySlider.value);
+
+	const depthSelected = 
+		document.querySelectorAll("input[name=\"skinLevelCheckSet\"]:checked");
+	surveyManager.currentQuality.depth = [];
+	for (let i = 0; i < depthSelected.length; i++) {
+		surveyManager.currentQuality.depth.push(depthSelected[i].value);
+	}
+
+	const typeSelect = document.getElementById("typeSelect");
+	surveyManager.currentQuality.type = typeSelect.value;
+}
+
+/**
+ * Sets the waitingInterval variable to a new interval which polls the websocket
+ * for a new survey. Also opens the waitingTab
+ */
 function startWaiting() {
 	waitingInterval = setInterval(function() {
 		if (socket.readyState == WebSocket.OPEN) {
@@ -309,18 +384,18 @@ function startWaiting() {
 	COM.openSidebarTab("waitingTab");
 }
 
-/*  endWaiting
-	Clears the waitingInterval, and opens the tab for the new survey
-*/
+/**
+ * Clear the waitingInterval, and opens the tab for the new survey
+ */
 function endWaiting() {
 	waitingInterval = clearInterval(waitingInterval);
-	COM.openSidebarTab("perceptTab");
+	COM.openSidebarTab("listTab");
 }
 
-/*  startSubmissionTimeout
-	Sets an interval which times out after 5 seconds, alerting the user
-	that the submission did not go through
-*/
+/**
+ * Set an interval which times out after 5 seconds, alerting the user that the 
+ * submission did not go through
+ */
 function startSubmissionTimeout() {
 	var timeoutCount = 0;
 	submissionTimeoutInterval = setInterval(function() {
@@ -331,142 +406,272 @@ function startSubmissionTimeout() {
 	}.bind(timeoutCount), 500);
 }
 
-/*  endSubmissionTimeout
-	Clears the timeout interval, displays a successful or unsuccessful
-	alert for the user, and restores button functionality
-
-	Inputs:
-		success: bool
-			A boolean representing if the submission was a success, determines
-			which alert is displayed
-*/
+/**
+ * Clears the timeout interval, displays a successful or unsuccessful alert for 
+ * the user, and restores button functionality
+ * @param {boolean} success - A boolean representing if the submission was a 
+ * 		success, determines which alert is displayed
+ */
 function endSubmissionTimeout(success) {
 	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
 
 	if (success) {
-		alert("Submission was successful!")
+		openAlert(
+			"Submission was successful!",
+			["Ok"],
+			[startWaiting]
+		);
 	}
 	else {
-		alert("Submission failed!");
+		const toListFunction = function() {
+			COM.openSidebarTab("listTab");
+		}
+
+		openAlert(
+			"Submission failed - please notify the experimenter!",
+			["Ok"],
+			[toListFunction]
+		);
 	}
 
-	toggleButtons(false);
+	toggleButtons(true);
 }
 
 /* BUTTON CALLBACKS */
 
-/*  submitCallback
-	Requests the current survey from the surveyManager and sends it along the 
-	websocket. Resets the interface and starts the wait for a new survey to 
-	begin.
-*/
+/**
+ * Request the surveyManager to submit the survey. Resets the interface and 
+ * starts the wait for a new survey to begin.
+ */
 function submitCallback() {
-	if (surveyManager.submitSurveyToServer(socket)) {
-		toggleButtons(true);
-		startSubmissionTimeout();
+	const surveyValidityError = surveyManager.validateSurvey();
+	if (!surveyValidityError) {
+		if (surveyManager.submitSurveyToServer(socket)) {
+			toggleButtons(false);
+			startSubmissionTimeout();
+		}
+		else {
+			toggleButtons(true);
+			alert("Survey submission failed -- socket is not connected!");
+		}
 	}
 	else {
-		alert("Survey submission failed -- socket is not connected!");
+		var goBackButton = function() {
+			openList();
+		}
+
+		openAlert(
+			`Cannot submit survey.<br><br>` + surveyValidityError,
+			["Go Back"],
+			[goBackButton]
+		)
 	}
 }
 
-/*  editPerceptCallback
-	Loads a given percept and opens the menu for it to be edited.
-
-	Inputs: 
-		percept: Percept
-			The percept that will be edited
-*/
-function editPerceptCallback(percept) {
-	populateEditorWithPercept(percept);
-	openEditor();
+/**
+ * Loads a given field and opens the tab for it to be edited
+ * @param {ProjectedField} field - the field to be edited
+ */
+function editFieldCallback(field) {
+	populateFieldEditor(field);
+	openFieldEditor();
 }
 
-/*  viewPerceptCallback
-    Update the viewport to display the given percept
-
-	Inputs: 
-		percept: Percept
-			The percept that will be viewed
-*/
-function viewPerceptCallback(percept) {
-	populateEditorWithPercept(percept);
+/**
+ * Loads a given field, allowing it to be viewed in the viewport
+ * @param {ProjectedField} field - the field to be viewed
+ */
+function viewFieldCallback(field) {
+	populateFieldEditor(field);
 }
 
-/*  newPercept
-	Add a new percept, then open the edit menu for that percept. Set the model
-	and type values using whatever values were previously selected
-*/
-function newPerceptCallback() {
-	surveyManager.survey.addPercept();
-	const percepts = surveyManager.survey.percepts;
-	const newPercept = percepts[percepts.length - 1];
+/**
+ * Populates the quality editor with a given Quality's data, then opens the 
+ * quality editor menu
+ * @param {ProjectedField} field - the projected field which has the quality to 
+ * 		be edited as one of its "qualities"
+ * @param {Quality} quality - the quality to be edited 
+ */
+function editQualityCallback(field, quality) {
+	viewFieldCallback(field);
+	populateQualityEditor(field, quality);
+	openQualityEditor();
+}
+
+/**
+ * Add a quality to the given field, then open the quality editor to edit
+ * that new quality
+ * @param {ProjectedField} field 
+ */
+function addQualityCallback(field) {
+	var newQuality = field.addQuality();
+	const typeSelect = document.getElementById("typeSelect");
+	newQuality.type = typeSelect.value;
+	editQualityCallback(field, newQuality);
+}
+
+/**
+ * Add a new ProjectedField, then open the edit menu for that field. Set the 
+ * model and type values using whatever values were previously selected
+ */
+function addFieldCallback() {
+	surveyManager.survey.addField();
+	const fields = surveyManager.survey.projectedFields;
+	const newField = fields[fields.length - 1];
 
 	const modelSelect = document.getElementById("modelSelect");
-	newPercept.model = modelSelect.value;
+	newField.model = modelSelect.value;
 
 	const typeSelect = document.getElementById("typeSelect");
-	newPercept.type = typeSelect.value; 
+	newField.type = typeSelect.value; 
 
-	editPerceptCallback(newPercept);
+	editFieldCallback(newField);
 }
 
-/* 	perceptDoneCallback
-   	Finish working with the surveyManager's currentPercept and return to the 
-	main menu
-*/
-function perceptDoneCallback() {
-	savePerceptFromEditor();
-	surveyManager.currentPercept = null;
-	openPerceptList();
+/**
+ * Finish working with the surveyManager's currentField and return to the 
+ * main menu
+ */
+function fieldDoneCallback() {
+	var alertMessage = "";
+	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
+	if (vertices.size <= 0) {
+		alertMessage = 
+			`Are you sure you're done with this projected field?<br><br>
+			The current projected field is missing a drawing.`;
+	}
+	else if (!viewport.orbMesh.visible) {
+		alertMessage = 
+				`Are you sure you're done with this projected field?<br><br>
+				The current projected field is missing a hot spot.`;
+	}
+
+	if (alertMessage) {
+		const goBackFunction = function() {
+			openFieldEditor();
+		}
+
+		const continueFunction = function() {
+			saveFieldFromEditor();
+			openList();
+		}
+		
+		openAlert(
+			alertMessage,
+			["Go Back", "Continue"],
+			[goBackFunction, continueFunction]
+		); 
+	}
+	else { 
+		saveFieldFromEditor();  
+		openList();
+	}
 }
 
-/*  perceptCancelCallback
-	Return to the percept list without saving changes to the currentPercept
-*/
-function perceptCancelCallback() {
-	openPerceptList();
+/**
+ * Finish working with the surveyManager's currentField and return to the 
+ * main menu
+ */
+function qualifyDoneCallback() {
+	if (
+		!document.getElementById("belowSkinCheck").checked
+		&& !document.getElementById("atSkinCheck").checked
+		&& !document.getElementById("aboveSkinCheck").checked
+	) {
+		const okFunction = function() {
+			openQualityEditor();
+		}
+		
+		openAlert(
+			"You must select at least one depth before continuing.",
+			["Go Back"],
+			[okFunction]
+		); 
+	}
+	else {
+		saveQualityFromEditor();
+		openList();
+	}	
 }
 
-/*  perceptDeleteCallback
-	Delete the currentPercept from the current survey
-*/
-function perceptDeleteCallback() {
-	// TODO - maybe add a confirm dialogue to this step?
-	surveyManager.survey.deletePercept(surveyManager.currentPercept);
-	openPerceptList();
+/**
+ * Return to the list without saving changes from the current editor
+ */
+function cancelCallback() {
+	openList();
 }
 
-/*  modelSelectChangeCallback
-	Calls for the model corresponding to the newly selected option to be loaded
-*/
+/**
+ * Delete the currentField from the current survey
+ */
+function fieldDeleteCallback() {
+	const deleteNoFunction = function() {
+		openFieldEditor();
+	}
+
+	const deleteYesFunction = function() {
+		surveyManager.survey.deleteField(surveyManager.currentField);
+		surveyManager.currentField = null;
+		viewport.populateColor(viewport.defaultColor, viewport.currentMesh);
+		openList();
+	}
+
+	openAlert(
+		"Are you sure you want to delete this projected field?",
+		["No", "Yes"],
+		[deleteNoFunction, deleteYesFunction]
+	);
+}
+
+/**
+ * Delete the currentField from the current survey
+ */
+function qualifyDeleteCallback() {
+	const deleteNoFunction = function() {
+		openQualityEditor();
+	}
+
+	const deleteYesFunction = function() {
+		surveyManager.currentField.deleteQuality(
+			surveyManager.currentQuality);
+		openList();
+	}
+
+	openAlert(
+		"Are you sure you want to delete this quality?",
+		["No", "Yes"],
+		[deleteNoFunction, deleteYesFunction]
+	);
+}
+
+/**
+ * Call for the model corresponding to the selected option to be loaded
+ */
 function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
-	viewport.replaceCurrentMesh(
-		surveyManager.survey.config.models[modelSelect.value]);
-	cameraController.reset();
+	performModelReplacement(
+		surveyManager.survey.config.models[modelSelect.value]
+	);
 }
 
-/*  typeSelectChangeCallback
-	Updates the drawing color on the mesh to reflect the newly selected type
-*/
-function typeSelectChangeCallback() {
-	const typeSelect = document.getElementById("typeSelect");
-	// TODO - take the value of typeSelect and use it to change the color on the mesh
+/**
+ * Call for the viewport to "undo" the last action
+ * @param {Event} event - the event which triggered the callback
+ */
+function undoCallback(event) {
+	if (!event.target.disabled) {
+		viewport.undo();
+	}
 }
 
-/*  undoCallback
-	Calls for the viewport to "undo" the last action
-*/
-function undoCallback() {
-	viewport.undo();
-}
-
-/*  redoCallback
-	Calls for the viewport to "redo" the next action
-*/
-function redoCallback() {
-	viewport.redo();
+/**
+ * Call for the viewport to "redo" the next action
+ * @param {Event} event - the event which triggered the callback
+ */
+function redoCallback(event) {
+	if (!event.target.disabled) {
+		viewport.redo();
+	}
 }
 
 /* STARTUP CODE */
@@ -475,7 +680,7 @@ window.onload = function() {
     // Initialize required classes
     viewport = new VP.SurveyViewport(document.getElementById("3dContainer"),
 										new THREE.Color(0xffffff),
-										new THREE.Color(0x535353),
+										new THREE.Color(0x424242),
 										20);
 
 	cameraController = new VP.CameraController(viewport.controls, 
@@ -487,9 +692,14 @@ window.onload = function() {
 
     surveyManager = new SVY.SurveyManager(); 
 
-	surveyTable = new SVY.SurveyTable(document.getElementById("senseTable"), 
-										true, viewPerceptCallback, 
-										editPerceptCallback)
+	surveyTable = new SVY.SurveyTable(
+		document.getElementById("fieldListParent"), 
+		true, 
+		viewFieldCallback, 
+		editFieldCallback,
+		editQualityCallback,
+		addQualityCallback
+	);
 
     // Start the websocket
     socketConnect();
@@ -497,11 +707,10 @@ window.onload = function() {
 
 	/* ARRANGE USER INTERFACE */
 	COM.placeUI(COM.uiPositions.LEFT, COM.uiPositions.TOP);
-	toggleEditorTabs();
 
     /* EVENT LISTENERS */
-	const newPerceptButton = document.getElementById("newPerceptButton");
-	newPerceptButton.onpointerup = newPerceptCallback;
+	const newFieldButton = document.getElementById("newFieldButton");
+	newFieldButton.onpointerup = addFieldCallback;
 
 	const submitButton = document.getElementById("submitButton");
 	submitButton.onpointerup = submitCallback;
@@ -530,41 +739,40 @@ window.onload = function() {
 		COM.activatePaletteButton("eraseButton");
 	}
 
+	const hotSpotButton = document.getElementById("hotSpotButton");
+	hotSpotButton.onpointerup = function() {
+		viewport.toOrbPlace();
+		COM.activatePaletteButton("hotSpotButton");
+	}
+
 	const brushSizeSlider = document.getElementById("brushSizeSlider");
 	brushSizeSlider.oninput = function() {
 		document.getElementById("brushSizeValue").innerHTML = 
-			brushSizeSlider.value;
+		(brushSizeSlider.value / brushSizeSlider.max).toFixed(2);
 		viewport.brushSize = brushSizeSlider.value;
 	}
 	brushSizeSlider.dispatchEvent(new Event("input"));
 
-	const drawTabButton = document.getElementById("drawTabButton");
-	const qualifyTabButton = document.getElementById("qualifyTabButton");
-	drawTabButton.onpointerup = function() {
-		COM.openSidebarTab("drawTab");
-		drawTabButton.classList.add('active');
-		qualifyTabButton.classList.remove('active');
-	}
-	qualifyTabButton.onpointerup = function() {
-		COM.openSidebarTab("qualifyTab");
-		drawTabButton.classList.remove('active');
-		qualifyTabButton.classList.add('active');
-	}
+	const fieldDoneButton = document.getElementById("fieldDoneButton");
+	fieldDoneButton.onpointerup = fieldDoneCallback;
 
-	const perceptDoneButton = document.getElementById("perceptDoneButton");
-	perceptDoneButton.onpointerup = perceptDoneCallback;
+	const fieldCancelButton = document.getElementById("fieldCancelButton");
+	fieldCancelButton.onpointerup = cancelCallback;
 
-	const perceptCancelButton = document.getElementById("perceptCancelButton");
-	perceptCancelButton.onpointerup = perceptCancelCallback;
+	const fieldDeleteButton = document.getElementById("fieldDeleteButton");
+	fieldDeleteButton.onpointerup = fieldDeleteCallback;
 
-	const perceptDeleteButton = document.getElementById("perceptDeleteButton");
-	perceptDeleteButton.onpointerup = perceptDeleteCallback;
+	const qualifyDoneButton = document.getElementById("qualifyDoneButton");
+	qualifyDoneButton.onpointerup = qualifyDoneCallback;
+
+	const qualifyCancelButton = document.getElementById("qualifyCancelButton");
+	qualifyCancelButton.onpointerup = cancelCallback;
+
+	const qualifyDeleteButton = document.getElementById("qualifyDeleteButton");
+	qualifyDeleteButton.onpointerup = qualifyDeleteCallback;
 
 	const modelSelect = document.getElementById("modelSelect");
 	modelSelect.onchange = modelSelectChangeCallback;
-
-	const typeSelect = document.getElementById("typeSelect");
-	typeSelect.onchange = typeSelectChangeCallback;
 
 	const undoButton = document.getElementById("undoButton");
 	undoButton.onpointerup = undoCallback;
@@ -602,6 +810,6 @@ window.onload = function() {
 	}
 	painSlider.dispatchEvent(new Event("input"));
 
-	toggleUndoRedo(true);
+	toggleUndoRedo(false);
 	viewport.animate();
 }

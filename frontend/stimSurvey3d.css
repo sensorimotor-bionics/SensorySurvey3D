@@ -10,6 +10,7 @@
 html {
     color: white;
     font-family: sans-serif;
+    font-size: 2.4vh;
 }
 
 .sidebar {
@@ -21,15 +22,24 @@ html {
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.scrollContainer {
+    margin: auto;
+    max-height: 100%;
+    width: 100%;
+    overflow: auto;
 }
 
 .sidebarTab {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    height: 100%;
+    margin: auto;
     flex-direction: column;
+    overflow: auto;
 }
 
 .widthbar {
@@ -44,36 +54,6 @@ html {
     flex-direction: row;
     justify-content: left;
     align-items: center;
-}
-
-.tabSelector {
-    overflow: hidden;
-    background-color: var(--buttonColor);
-    height: var(--widthbarHeight);
-}
-
-.tabSelector button {
-    background-color: inherit;
-    float: left;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    border-radius: 0px;
-    margin: 0px 0px;
-    width: 50%;
-    height: var(--widthbarHeight);
-}
-
-.tabSelector button.active {
-    background-color: var(--buttonActiveColor);
-}
-
-.tabSelector button:hover {
-    background-color: var(--uiElementContrast);
-}
-
-.tabSelector button:disabled {
-    background-color: var(--uiElementContrast);
 }
 
 .threeDContainer {
@@ -136,25 +116,38 @@ html {
     position: fixed;
     justify-content: center;
     align-items: center;
-    font-size: 72px;
+    font-size: 6.66vh;
     top: 0;
     left: 0;
 }
 
-.rangeContainer {
-    display:flex; 
-    flex-direction:row; 
+.rowContainer {
+    display: flex; 
+    flex-direction: row; 
     align-items: center;
 }
 
+.surveyTable {
+    box-sizing: border-box;
+    max-width: 100%;
+    align-items: center;
+}
+
+.surveyTableRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
 p {
-    font-size: 24px;
+    font-size: 2.4vh;
     color: white;
-    margin: 8px 8px;
 }
 
 label {
-    font-size: 24px;
+    font-size: 2.4vh;
     color: white;
     margin: 8px 8px;
 }
@@ -167,11 +160,11 @@ button {
     text-align: center;
     text-decoration: none;
     display: block;
-    font-size: 24px;
     margin: 4px 8px;
     cursor: pointer;
     float: left;
     border-radius: 5px;
+    font-size: 2.4vh;
 }
 
 button:hover {
@@ -247,23 +240,32 @@ input[type="radio"]:not(:disabled):checked {
     )   
 }
 
+input[type="checkbox"] {
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--uiElementContrast);
+    appearance: none;
+    background-color: var(--uiElementColor);
+}
+
+input[type="checkbox"]:not(:disabled):checked {
+    background-color: var(--buttonColor);
+    background-clip: content-box;
+    padding: 2px;
+    background-image: linear-gradient(
+        to right,
+        var(--buttonColor) 0%,
+        var(--buttonColor) 50%,
+    )   
+}
+
 select {
     height: 32px;
-    font-size: 16px;
+    font-size: 1.5vh;
     width:   75%;
     margin-top: 8px;
     margin-bottom: 8px;
-}
-
-table {
-    font-family: sans-serif;
-    font-weight: normal;
-    color: white;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    table-layout: fixed;
-}
-
-th, td {
-    padding: 4px;
 }

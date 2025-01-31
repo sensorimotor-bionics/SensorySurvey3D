@@ -13,14 +13,15 @@ const controlStates = Object.freeze({
     ORBIT: 0,
     PAN: 1,
     PAINT: 2,
-    ERASE: 3
+    ERASE: 3,
+    ORB_PLACE: 4
 });
 
 const meshMaterial = new THREE.MeshPhongMaterial({
     color: 0xffffff,
     flatShading: true,
     vertexColors: true,
-    shininess: 0,
+    shininess: 20,
     side: THREE.DoubleSide
 });
 
@@ -35,29 +36,39 @@ const brushMaterial = new THREE.MeshStandardMaterial( {
     emissiveIntensity: 0.5,
 } );
 
-class ViewportEvent {
-    /*  constructor
-        A ViewportEvent is a structure which keeps track of what controlState
-        restulted in a particular colorState of a mesh
+const orbMaterial = new THREE.MeshStandardMaterial( {
+    color: 0xE97A16,
+    roughness: 0.75,
+    metalness: 0,
+    transparent: true,
+    opacity: 0.5,
+    premultipliedAlpha: true,
+    emissive: 0xE97A16,
+    emissiveIntensity: 0.5,
+} );
 
-        Inputs:
-            controlState: int from controlStates
-                The control state which affected the vertices
-    */
+/**
+ * A structure which keeps track of what controlState restulted in a particular 
+ * colorState of a mesh
+ */
+class ViewportEvent {
+    /**
+     * Constructs a ViewportEvent object
+     * @param {number} controlState - The control state which affected the 
+     *      vertices
+     */
     constructor(controlState) {
         this.controlState = controlState;
         this.mesh = null;
         this.colorState = null;
     }
 
-    /*  updateColorStateFromMesh
-        Takes a mesh and pulls the color attribute from its BufferGeometry,
-        saving 
-
-        Inputs:
-            mesh: THREE.Mesh
-                The mesh from which the color state should be pulled
-    */
+    /**
+     * Takes a mesh and pulls the color attribute from its BufferGeometry,
+     * saving 
+     * @param {THREE.Mesh} mesh - the mesh from which the color state should be
+     *      pulled
+     */
     updateColorStateFromMesh(mesh) {
         const colorAttr = mesh.geometry.attributes.color;
         this.mesh = mesh;
@@ -65,13 +76,16 @@ class ViewportEvent {
     }
 }
 
+/**
+ * An object which organizes ViewportEvents in chronological order, allowing
+ * a user to "undo" or "redo" actions in the proper order and giving access to
+ * the state of the mesh after a particular action
+ */
 class ViewportEventQueue {
-    /*  constructor
-        Sets up the objects needed to operate the queue
-
-        Inputs:
-            queueLength: int
-                The maximum number of events to be kept in the queue
+   /**
+    * Construct a ViewportEventQueue object
+    * @param {number} queueLength - the number of elements to be stored in the 
+    *       queue
     */
     constructor(queueLength) {
         this.queueLength = queueLength;
@@ -79,15 +93,12 @@ class ViewportEventQueue {
         this.queue = [];
     }
 
-    /*  push
-        Pushes a new event onto the queue, removing all elements after
-        the current queuePosition. Culls events off of the front
-        if the length of the queue exceeds the queueLength
-
-        Inputs:
-            event: ViewportEvent
-                The event to be added to the queue
-    */
+    /**
+     * Pushes a new event onto the queue, removing all elements after the 
+     * current queuePosition. Culls events off of the front if the length of the
+     * queue exceeds the queueLength
+     * @param {ViewportEvent} event - The event to be added to the queue
+     */
     push(event) {
         this.queue.splice(this.queuePosition);
         this.queue.push(event);
@@ -99,13 +110,11 @@ class ViewportEventQueue {
         }
     }
 
-    /*  previous
-        Gives the user the event at the queuePosition, then, if possible,
-        moves the queuePosition back 1
-
-        Outputs:
-            output: ViewportEvent
-    */
+    /**
+     * Gives the user the event at the queuePosition, then, if possible,
+     * moves the queuePosition back 1
+     * @returns {ViewportEvent}
+     */
     previous() {
         if (this.queue.length > 0 
             && this.queuePosition - 1 > 0
@@ -117,13 +126,11 @@ class ViewportEventQueue {
         return null;
     }
 
-    /*  next
-        Moves the queuePosition forward one if possible, returning the event
-        at that new position
-
-        Outputs:
-            output: ViewportEvent
-    */
+    /**
+     * Moves the queuePosition forward one if possible, returning the event at 
+     * that new position
+     * @returns {ViewportEvent}
+     */
     next() {
         if (this.queue.length > 0 
             && this.queuePosition + 1 <= this.queueLength
@@ -135,29 +142,29 @@ class ViewportEventQueue {
         return null;
     }
 
-    /*  reset
-        Resets the queuePosition and queue
-    */
+    /**
+     * Resets the queuePosition and queue
+     */
     reset() {
         this.queuePosition = 1;
         this.queue = [];
     }
 }
 
+/**
+ * Manipulates a three.js camera object and creates GUI elements such that users
+ * can do the same
+ */
 export class CameraController {
-    /*  constructor
-        Takes a controls object to allow the camera controller to manipulate it
-
-        Inputs:
-            controls: THREE.OrbitControls
-                The controller object to be manipulated by the controller
-            rendererElement:
-                The renderer element of the SurveyViewport object
-            minZoom: int
-                The minimum zoom level
-            maxZoom: int
-                The maximum zoom level
-    */
+    /**
+     * Constructor for a CameraController object
+     * @param {THREE.OrbitControls} controls - The controller object to be 
+     *      manipulated
+     * @param {Element} rendererElement - The renderer element of the 
+     *      SurveyViewport object
+     * @param {*} minZoom - The minimum zoom level
+     * @param {*} maxZoom - The maximum zoom level
+     */
     constructor(controls, rendererElement, minZoom, maxZoom) {
         this.controls = controls;
         this.camera = controls.object;
@@ -185,23 +192,22 @@ export class CameraController {
         this.reset();
     }
 
-    /*  capZoom
-        Checks the current zoom value against the min and max, and sets the
-        value to be within bounds if outside
-    */
+
+    /**
+     * Checks the current zoom value against the min and max, and sets the
+     * value to be within bounds if outside
+     */
     capZoom() {
         this.camera.zoom = Math.min(Math.max(parseInt(this.camera.zoom), 
                                     this.minZoom), 
                                     this.maxZoom);
     }
 
-    /*  incrementZoom
-        Increments the zoom value by 1, then updates the screen
-
-        Outputs:
-            this.camera.zoom: int
-                The current zoom value
-    */
+    /**
+     * Increments the zoom value by 1, updates the screen, and returns the 
+     * current zoom value
+     * @returns {number}
+     */
     incrementZoom() {
         this.camera.zoom += 1;
         this.capZoom();
@@ -210,12 +216,17 @@ export class CameraController {
     }
     
     /*  decrementZoom
-        Decrements the zoom value by 1, then updates the screen
+        
 
         Outputs:
             this.camera.zoom: int
                 The current zoom value
     */
+    /**
+     * Decrements the zoom value by 1, updates the screen, and returns the 
+     * current zoom value
+     * @returns {number}
+     */
     decrementZoom() {
         this.camera.zoom -= 1;
         this.capZoom();
@@ -224,16 +235,22 @@ export class CameraController {
     }
 
     /*  setZoom
-        Sets the zoom to a given value, then updates the screen
+        
 
         Inputs:
             value: int
-                The value the zoom should be set to
+                
 
         Outputs:
             this.camera.zoom: int
                 The current zoom value
     */
+    /**
+     * Sets the zoom to a given value, updates the screen, and returns the
+     * current zoom value
+     * @param {int} value - The value the zoom should be set to
+     * @returns {number}
+     */
     setZoom(value) {
         this.camera.zoom = value;
         this.capZoom();
@@ -246,28 +263,24 @@ export class CameraController {
         return this.camera.zoom;
     }
 
-    /*  reset
-        Resets the camera value to the minZoom value, then updates the screen
-
-        Outputs:
-            this.camera.zoom: int
-                The current zoom value
-    */
+    /**
+     * Resets the camera value to the minZoom value, updates the screen, and
+     * returns the current zoom value
+     * @returns {number}
+     */
     reset() {
         this.controls.reset();
         this.setZoom(this.minZoom);
         return this.camera.zoom;
     }
 
-    /*  createZoomSlider
-        Appends two buttons and a slider as children to a given parentElement
-        and assigns them behvior allowing the user to increment and
-        decrement the zoom
-
-        Inputs:
-            parentElement: element
-                The element to which the children will be appended
-    */
+    /**
+     * Appends two buttons and a slider as children to a given parentElement and
+     * assigns them behvior allowing the user to increment and decrement the 
+     * zoom
+     * @param {Element} parentElement - the element to be parent to the zoom
+     *      slider 
+     */
     createZoomSlider(parentElement) {
         const zoomOut = document.createElement("button");
         zoomOut.id = "zoomOut";
@@ -305,13 +318,11 @@ export class CameraController {
         this.sliderElement = zoomSlider;
     }
 
-    /*  createCameraReset
-        Creates a button which can be clicked to reset the camera
-
-        Inputs:
-            parentElement: element
-                The element to which the children will be appended
-    */
+    /**
+     * Creates a button which can be clicked to reset the camera
+     * @param {Element} parentElement - the element to serve as parent to the
+     *      reset button
+     */
     createCameraReset(parentElement) {
         const cameraResetButton = document.createElement("button");
         cameraResetButton.id = "cameraResetButton";
@@ -323,19 +334,27 @@ export class CameraController {
     }
 }
 
+/**
+ * The manager of objects needed to operate the 3D environment of the survey
+ */
 export class SurveyViewport {
     /* SETUP */
 
-    /*  constructor
-        Sets up classes needed to operate the 3D environment of the survey.
-
-        Inputs:
-            parentElement: Element
-                The element you want to parent the viewport
-            defaultModelFilename: string
-                The name of the gltf file that is to be loaded by default
-    */
-    constructor(parentElement, backgroundColor, defaultColor, eventQueueLength) {
+    /**
+     * Constructor for a SurveyViewport object
+     * @param {Element} parentElement - the element you want to parent the 
+     *      viewport
+     * @param {THREE.Color} backgroundColor - the color of the 3D environment's
+     *      background
+     * @param {THREE.Color} defaultColor - the default color of the mesh
+     * @param {number} eventQueueLength - the length of the event queue
+     */
+    constructor(
+        parentElement, 
+        backgroundColor, 
+        defaultColor, 
+        eventQueueLength
+    ) {
         // Create the scene
         this.scene = new THREE.Scene();
         this.scene.background = backgroundColor;
@@ -398,6 +417,12 @@ export class SurveyViewport {
                                         brushMaterial);
         this.scene.add(this.brushMesh);
 
+        this.orbMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 40),
+                            orbMaterial);
+        this.orbMesh.scale.setScalar(0.003); //TODO - make dynamic?
+        this.orbMesh.visible = false;
+        this.scene.add(this.orbMesh);
+
         this.eventQueue = new ViewportEventQueue(eventQueueLength);
 
         this.pointerDownViewport = true;
@@ -410,10 +435,10 @@ export class SurveyViewport {
             this.onPointerDownViewport.bind(this);
     }
 
-    /*  animate
-        Queues the next frame and handles control inputs depending on the 
-        current controlState. Must be called once to begin animating the scene.
-    */
+    /**
+     * Queues the next frame and handles control inputs depending on the current
+     * controlState. Must be called once to begin animating the scene.
+     */
     animate() {
         // Queue the next frame
         requestAnimationFrame(this.animate.bind(this));
@@ -453,7 +478,7 @@ export class SurveyViewport {
 
                             // If the pointer is down, draw
                             if (this.pointerDownViewport) {
-                                for (var i = 0; i < indices.length; i++) {
+                                for (let i = 0; i < indices.length; i++) {
                                     const vertex = indexAttr.getX(indices[i]);
                                     this.populateColorOnVertex(new THREE.Color(
                                         "#abcabc"), this.currentMesh, vertex);
@@ -492,7 +517,7 @@ export class SurveyViewport {
 
                             // If the pointer is down, draw
                             if (this.pointerDownViewport) {
-                                for (var i = 0; i < indices.length; i++) {
+                                for (let i = 0; i < indices.length; i++) {
                                     const vertex = indexAttr.getX(indices[i]);
                                     this.populateColorOnVertex(this.defaultColor, 
                                         this.currentMesh, vertex);
@@ -512,6 +537,19 @@ export class SurveyViewport {
                         this.brushMesh.visible = false;
                     }
                     break;
+                case controlStates.ORB_PLACE:
+                    if (this.pointerDownViewport) {
+                        this.raycaster.setFromCamera(this.pointer, this.camera);
+                        const res = this.raycaster.intersectObject(
+                            this.currentMesh, true);
+                        
+                        // If the raycaster hits anything
+                        if (res.length) {
+                            this.orbMesh.position.copy(res[0].point);
+                            this.orbMesh.visible = true;
+                        }
+                    }
+                    break;
             }
         }
         
@@ -522,11 +560,11 @@ export class SurveyViewport {
 
     /* CONTROLS */
 
-    /*  toOrbit
-        Configures the control object to allow the user to rotate the camera
-        with the left mouse button or a single-finger touch. Also updates the 
-        controlState object to "camera".
-    */
+    /**
+     * Configures the control object to allow the user to rotate the camera with 
+     * the left mouse button or a single-finger touch. Also updates the 
+     * controlState object to "camera".
+     */
     toOrbit() {
         this.controlState = controlStates.ORBIT;
 		this.controls.enabled = true;
@@ -540,11 +578,11 @@ export class SurveyViewport {
         }
     }
 
-    /*  toPan
-        Configures the control object to allow the user to pan the camera with 
-        the left mouse button or a single-finger touch. Also updates the 
-        controlState object to "panning".
-    */
+    /**
+     * Configures the control object to allow the user to pan the camera with 
+     * the left mouse button or a single-finger touch. Also updates the 
+     * controlState object to "panning".
+     */
     toPan() {
         this.controlState = controlStates.PAN;
 		this.controls.enabled = true;
@@ -558,30 +596,32 @@ export class SurveyViewport {
         }
     }
 
-    /*  toPaint
-        Updates the controlState object to the "painting" state.
-    */
+    /**
+     * Updates the controlState object to the "painting" state.
+     */
     toPaint() {
         this.controlState = controlStates.PAINT;
         this.controls.enabled = false;
     }
 
-    /*  toErase
-        Updates the controlState object to the "erasing" state.
-    */
+    /**
+     * Updates the controlState object to the "erasing" state.
+     */
     toErase() {
         this.controlState = controlStates.ERASE;
         this.controls.enabled = false;
     }
+    
+    toOrbPlace() {
+        this.controlState = controlStates.ORB_PLACE;
+        this.controls.enabled = false;
+    }
 
-    /*  onPointerMove
-        Behavior for when the user's pointer object moves; sets values important
-        for raycasting
-
-        Inputs:
-            event: Event
-                The input event from which data can be extracted
-    */
+    /**
+     * Behavior for when the user's pointer object moves; sets values important
+     * for raycasting
+     * @param {Event} event 
+     */
     onPointerMove(event) {
         var style = window.getComputedStyle(this.parentElement, null);
         var rect = this.parentElement.getBoundingClientRect();
@@ -595,17 +635,19 @@ export class SurveyViewport {
         this.brushActive = true;
     }
 
-    /*  onPointerDownViewport
-        Behavior for when the user's pointer goes down on the viewport
-    */
+    /**
+     * Behavior for when the user's pointer goes down on the viewport
+     */
     onPointerDownViewport() {
         this.pointerDownViewport = true;
         this.brushActive = true;
     }
 
-    /*  onPointerUp
-        Behavior for when the user's pointer goes up anywhere on the document
-    */
+    /**
+     * Behavior for when the user's pointer goes up anywhere on the document
+     * @param {Event} e - the event whose data will inform the pointer up 
+     *      behavior
+     */
     onPointerUp(e) { 
         this.pointerDownViewport = false;
 
@@ -622,10 +664,10 @@ export class SurveyViewport {
 
     /* 3D SPACE */
 
-    /*  onWindowResize
-        Behavior for the viewport when the window is resized; makes the viewport
-        fit within the new 3D container dimensions
-    */
+    /**
+     * Behavior for the viewport when the window is resized; makes the viewport
+     * fit within the new 3D container dimensions
+     */
     onWindowResize() {
         var style = window.getComputedStyle(this.parentElement, null);
         var width = parseInt(style.getPropertyValue("width"));
@@ -637,36 +679,35 @@ export class SurveyViewport {
         this.renderer.setSize(width, height);
     }
 
-    /*  unloadModels
-        Unloads all THREE.Mesh objects in the scene
-    */
+    /**
+     * Unloads all THREE.Mesh objects in the scene
+     */
     unloadModels() {
         var meshes = this.scene.getObjectsByProperty("isMesh", true);
     
-        for (var i = 0; i < meshes.length; i++) {
+        for (let i = 0; i < meshes.length; i++) {
             this.scene.remove(meshes[i]);
         }
 
         this.currentModelFile = null;
     }
 
-    /*  unloadCurrentMesh
-        Unloads the current mesh
-    */
+    /**
+     * Unloads the current mesh
+     */
     unloadCurrentMesh() {
         this.scene.remove(this.currentMesh);
         this.currentModelFile = null;
     }
 
-    /*  loadModel
-        Loads a given model from a given .gltf file in /public/3dmodels, and
-        returns a mesh with the given model's geometry
-
-        Inputs:
-            filename: str
-                The name of the .gltf file you want to load in (should include 
-                ".gltf" or ".glb" at the end)
-    */
+    /**
+     * Loads a given model from a given .gltf file in /public/3dmodels, and
+     * returns a Promise which will produce a mesh with the given model's 
+     * geometry
+     * @param {string} filename - The name of the .gltf file you want to load in
+     *      should include ".gltf" or ".glb" at the end)
+     * @returns {Promise}
+     */
     loadModel(filename) {
         return new Promise(function(resolve, reject) {
             var modelPath = "/3dmodels/" + filename;
@@ -691,73 +732,79 @@ export class SurveyViewport {
         });
     }
 
-    /*  replaceCurrentMesh
-        Replaces the current mesh object with a new mesh
-
-        Inputs:
-            filename: str
-                The name of the .gltf file you want to load in (should include 
-                ".gltf" or ".glb" at the end) 
-            colorVertices: list of int 
-            color: THREE.Color
-                The color to be populated on the given vertices
-        
-        Outputs:
-            bool
-                True if a new mesh needed to be loaded, false if not
-    */
+    /**
+     * Replaces the current mesh object with a new mesh
+     * @param {string} filename - the name of the .gltf file you want to load in
+     *      (should include ".gltf" or ".glb" at the end) 
+     * @param {Iterable} colorVertices - The vertices onto which the color will
+     *      be populated
+     * @param {THREE.Color} color - The color to be populated on the given
+     *      vertices
+     * @returns {Promise}
+     */
     replaceCurrentMesh(filename, colorVertices = null, color = null) {
-        if (filename != this.currentModelFile) {
-            const loadResult = this.loadModel(filename).then(function(value) {
-                if (value) {
-                    if (this.currentMesh) {
-                        this.unloadCurrentMesh();
-                    }
-                    this.currentMesh = value;
-                    this.currentModelFile = filename;
-                    this.scene.add(this.currentMesh);
-                    this.populateColor(this.defaultColor, this.currentMesh);
-                    if (colorVertices && color) {
-                        this.populateColorOnVertices(color, this.currentMesh, 
-                            colorVertices);
-                    }
-                    this.eventQueue.reset();
-                    var defaultEvent = new ViewportEvent(controlStates.PAINT);
-                    defaultEvent.updateColorStateFromMesh(this.currentMesh);
-                    this.eventQueue.push(defaultEvent);
+        return new Promise(function(resolve, reject) {
+            if (filename != this.currentModelFile) {
+                if (this.currentMesh) {
+                    this.unloadCurrentMesh();
                 }
-            }.bind(this));
-            return true;
-        }
-        else {
-            this.populateColor(this.defaultColor, this.currentMesh);
-            if (colorVertices && color) {
-                this.populateColorOnVertices(color, this.currentMesh, 
-                    colorVertices);
+                const loadResult = this.loadModel(filename).then(
+                    function(value) {
+                        if (value) {
+                            this.currentMesh = value;
+                            this.currentModelFile = filename;
+                            this.scene.add(this.currentMesh);
+                            this.populateColor(
+                                this.defaultColor, 
+                                this.currentMesh
+                            );
+                            if (colorVertices && color) {
+                                this.populateColorOnVertices(
+                                    color, 
+                                    this.currentMesh, 
+                                    colorVertices
+                                );
+                            }
+                            this.eventQueue.reset();
+                            var defaultEvent = new ViewportEvent(
+                                controlStates.PAINT
+                            );
+                            defaultEvent.updateColorStateFromMesh(
+                                this.currentMesh
+                            );
+                            this.eventQueue.push(defaultEvent);
+                        }
+                        resolve(true);
+                    }.bind(this)
+                );
             }
-            return false;
-        }
+            else {
+                this.populateColor(
+                    this.defaultColor, 
+                    this.currentMesh
+                );
+                if (colorVertices && color) {
+                    this.populateColorOnVertices(
+                        color, 
+                        this.currentMesh, 
+                        colorVertices
+                    );
+                }
+                resolve(false);
+            }
+        }.bind(this));
     }
 
-    /*  getMeshIndicesFromSphere
-        Draws a sphere with the given parameter then uses the given mesh's
-        bounds tree to quickly find what vertex indices exist within the
-        generated sphere
-
-        Adapted from https://github.com/gkjohnson/three-mesh-bvh/blob/master/example/collectTriangles.js
-
-        Inptus:
-            sphereCenter: THREE.Vector3
-                The center of the desired sphere
-            sphereSize: float
-                The size of the sphere
-            mesh: THREE.Mesh
-                The mesh against with the sphere should be checked
-
-        Outputs:
-            indices: list of int
-                The indices of the vertices hit by the sphere
-    */
+    /**
+     * Draws a sphere with the given parameter then uses the given mesh's
+     * bounds tree to quickly find what vertex indices exist within the
+     * generated sphere
+     * Adapted from https://github.com/gkjohnson/three-mesh-bvh/blob/master/example/collectTriangles.js
+     * @param {THREE.Vector3} sphereCenter 
+     * @param {number} sphereSize 
+     * @param {THREE.Mesh} mesh 
+     * @returns {number[]}
+     */
     getMeshIndicesFromSphere(sphereCenter, sphereSize, mesh) {
         const inverseMatrix = new THREE.Matrix4();
         inverseMatrix.copy(
@@ -812,38 +859,29 @@ export class SurveyViewport {
 
     /* MESH MANIPULATION */
 
-    /*  getVerticesFromFaces
-        Iterates through a list of faces received from a raycast and returns
-        all vertices which make up those faces
-
-        Inputs:
-            faces: list of faces
-                The faces from which the vertices will be extracted
-
-        Outputs:
-            vertices: list of int
-                A list of the vertex numbers which make up the faces
-    */
+    /**
+     * Iterates through a list of faces received from a raycast and returns 
+     * an array of all vertices which make up those faces
+     * @param {Iterable} faces - The faces from which the vertices will be 
+     *      extracted
+     * @returns {Set}
+     */
     getVerticesFromFaces(faces) {
         var vertices = [];
-        for (var i = 0; i < faces.length; i++) {
+        for (let i = 0; i < faces.length; i++) {
             vertices.push(faces[i].a, faces[i].b, faces[i].c);
         }
-        return vertices;
+        return new Set(vertices);
     }
 
-    /*  populateColorOnVertex
-        Takes a color, mesh, and vertex, and gives that vertex on that mesh
-        the given color
-        
-        Inputs:
-            color: THREE.Color
-                The color to be put onto the faces
-            mesh: THREE.Mesh
-                The mesh onto which the color should be populated
-            vertex: int corresponding to vertex
-                The vertices whose colors are to be changed
-    */
+    /**
+     * Takes a color, mesh, and vertex, and gives that vertex on that mesh the 
+     * given color
+     * @param {THREE.Color} color - The color to be put onto the faces
+     * @param {THREE.Mesh} mesh - The mesh onto which the color should be 
+     *      populated
+     * @param {number} vertex - The vertices whose colors are to be changed
+     */
     populateColorOnVertex(color, mesh, vertex) {
         const geometry = mesh.geometry;
         const colors = geometry.attributes.color;
@@ -853,18 +891,15 @@ export class SurveyViewport {
         colors.needsUpdate = true;
     }
     
-    /*  populateColorOnVertices
-        Takes a color and a list of vertices, then makes those vertices the 
-        chosen color
-
-        Inputs:
-            color: THREE.Color
-                The color to be put onto the faces
-            mesh: THREE.Mesh
-                The mesh onto which the color should be populated
-            vertices: list of ints corresponding to vertices
-                The vertices whose colors are to be changed
-    */ 
+    /**
+     * Takes a color and a list of vertices, then makes those vertices the 
+     * chosen color
+     * @param {THREE.Color} color - The color to be put onto the faces
+     * @param {THREE.Mesh} mesh - The mesh onto which the color should be
+     *      populated
+     * @param {Iterable} vertices - list of vertices whose colors are to be
+     *      changed
+     */
     populateColorOnVertices(color, mesh, vertices) {
         vertices = Array.from(vertices);
         for (let i = 0; i < vertices.length; i++) {
@@ -872,15 +907,12 @@ export class SurveyViewport {
         }
     }
 
-    /*  populateColor
-        Takes a color and populates every face of the mesh with that color
-
-        Inputs:
-            color: THREE.Color
-                The color to be put onto the faces
-            mesh: THREE.Mesh
-                The mesh onto which the color should be populated
-    */
+    /**
+     * Takes a color and populates every face of the mesh with that color
+     * @param {THREE.Color} color - The color to be put onto the faces
+     * @param {THREE.Mesh} mesh - The mesh onto which the color should be 
+     *      populated
+     */
     populateColor(color, mesh) {
         const geometry = mesh.geometry;
         const positions = geometry.attributes.position;
@@ -893,13 +925,11 @@ export class SurveyViewport {
         colors.needsUpdate = true;
     }
 
-    /*  getNonDefaultVertices
-        Returns a list of all non-default color vertices on the given mesh
-
-        Inputs:
-            mesh: THREE.Mesh
-                The mesh to check against
-    */
+    /**
+     * Returns a Set of all non-default color vertices on the given mesh
+     * @param {THREE.Mesh} mesh - The mesh whose vertices will be checked
+     * @returns {Set}
+     */
     getNonDefaultVertices(mesh) {
         const geometry = mesh.geometry;
         const indexAttr = geometry.index;
@@ -923,9 +953,10 @@ export class SurveyViewport {
 
     /* VIEWPORT EVENTS */
 
-    /*  undo
-
-    */
+    /**
+     * Use information provided by the eventQueue object to restore to the
+     * "last state" in the queue
+     */
     undo() {
         const undoEvent = this.eventQueue.previous();
         if (undoEvent) {
@@ -935,15 +966,28 @@ export class SurveyViewport {
         }
     }
 
-    /*  redo
-
-    */
+    
+    /**
+     * Use information provided by the eventQueue object to restore to the
+     * "next state" in the queue
+     */
     redo() {
         const redoEvent = this.eventQueue.next();
         if (redoEvent) {
             const colorAttr = redoEvent.mesh.geometry.attributes.color;
             colorAttr.copy(redoEvent.colorState);
             colorAttr.needsUpdate = true;
+        }
+    }
+
+    /**
+     * Getter for the position of the orbMesh object
+     */
+    get orbPosition() {
+        return {
+            x: this.orbMesh.position.x,
+            y: this.orbMesh.position.y,
+            z: this.orbMesh.position.z,
         }
     }
 }
