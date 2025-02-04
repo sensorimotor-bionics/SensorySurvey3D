@@ -52,7 +52,7 @@ function socketConnect() {
 				cameraController.reset();
 				// If the survey has projected fields, fill the survey table
 				// and click the first "view" button
-				if (surveyManager.survey.projectedFields) {
+				if (surveyManager.survey.projectedFields.length > 0) {
 					surveyTable.update(surveyManager.survey, 0);
 					let field = surveyManager.survey.projectedFields[0];
 					performModelReplacement(
