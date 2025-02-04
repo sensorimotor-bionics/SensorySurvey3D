@@ -32,7 +32,7 @@ manager = SurveyManager(CONFIG_PATH)
 # Variable which controls the RTMA loop
 rtmaConnected = False
 rtmaExpectedClose = False
-client = pyrtma.Client(module_id=md.MID_COMMENT_MANAGER)
+client = pyrtma.Client(module_id=0)
 
 """
 RTMA
@@ -90,8 +90,10 @@ def RTMAConnect():
                         else:
                             print(f"Cannot start survey for {msgIn.data.subject_id}!")
                     global data_path
-                    data_path = os.path.join(str(path_tools.get_climber_path()), "data", 'OpenLoopStim', 
-                                             msgIn.data.subject_id, f"{msgIn.data.subject_id}.data.{str(msgIn.data.session_num).zfill(5)}")
+                    data_path = os.path.join(SYS_CONFIG["data_path"], 
+                                             'OpenLoopStim', 
+                                             msgIn.data.subject_id, 
+                                             f"{msgIn.data.subject_id}.data.{str(msgIn.data.session_num).zfill(5)}")
                 else:
                     print('Message not recognized')
             except Exception as e:
@@ -151,14 +153,14 @@ async def participant(websocket: WebSocket):
                 print("Saving survey...")
                 if manager.survey.startTime == data["survey"]["startTime"]:
                     manager.survey.fromDict(data["survey"])
-                    result = manager.saveSurvey()
+                    result = manager.saveSurvey(data_path=data_path)
                 else:
                     print("Cannot save survey with mismatched start time")
                     result = False
-                if client.connected:
-                    msgs = manager.getResponseMessages()
-                    for msg in msgs:
-                        client.send_message(msg)
+                # if client.connected:
+                #     msgs = manager.getResponseMessages()
+                #     for msg in msgs:
+                #         client.send_message(msg)
                 msg = {
                     "type" : "submitResponse",
                     "success" : result
