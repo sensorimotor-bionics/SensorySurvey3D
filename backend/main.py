@@ -58,7 +58,12 @@ def RTMAConnect():
                     print("RTMA closed expectedly. Goodbye!")
                     return
                 client.connect(MMM_IP)
-                client.subscribe([md.MT_ACKNOWLEDGE, md.MT_EXIT, md.MT_SET_START])
+                client.subscribe(
+                    [md.MT_ACKNOWLEDGE, 
+                     md.MT_EXIT, 
+                     md.MT_SET_START,
+                     md.MT_SAVE_MESSAGE_LOG]
+                )
                 client.send_module_ready()
                 print('Successfully connected to RTMA, waiting for messages')
             except Exception as e:
@@ -89,11 +94,9 @@ def RTMAConnect():
                             print(f"Starting survey for {msgIn.data.subject_id}.")
                         else:
                             print(f"Cannot start survey for {msgIn.data.subject_id}!")
+                elif isinstance(msgIn.data, md.MDF_SAVE_MESSAGE_LOG):
                     global data_path
-                    data_path = os.path.join(SYS_CONFIG["data_path"], 
-                                             'OpenLoopStim', 
-                                             msgIn.data.subject_id, 
-                                             f"{msgIn.data.subject_id}.data.{str(msgIn.data.session_num).zfill(5)}")
+                    data_path = os.path.join(msgIn.data.pathname)
                 else:
                     print('Message not recognized')
             except Exception as e:
