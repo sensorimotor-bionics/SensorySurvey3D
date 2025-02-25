@@ -88,12 +88,18 @@ def RTMAConnect():
                     rtmaConnected = False
                 elif isinstance(msgIn.data, md.MDF_SET_START):
                     if manager.survey:
-                        print("There is already a current survey! Cannot start new survey until current survey is complete.")
+                        print(
+                            "There is already a current survey! Cannot start "
+                            + "new survey until current survey is complete.")
                     else:
                         if manager.newSurvey(msgIn.data.subject_id):
-                            print(f"Starting survey for {msgIn.data.subject_id}.")
+                            print(f"Starting survey for "
+                                  + f"{msgIn.data.subject_id}.")
                         else:
-                            print(f"Cannot start survey for {msgIn.data.subject_id}!")
+                            print(
+                                f"Cannot start survey for "
+                                + f"{msgIn.data.subject_id}!"
+                            )
                 elif isinstance(msgIn.data, md.MDF_SAVE_MESSAGE_LOG):
                     global data_path
                     data_path = os.path.join(msgIn.data.pathname)
@@ -108,7 +114,8 @@ def RTMAConnect():
         rtmaConnected = False
 
         if not rtmaExpectedClose:
-            print("RTMA closed unexpectedly. Attempting reconnection in 5 seconds...")
+            print("RTMA closed unexpectedly. " 
+                + "Attempting reconnection in 5 seconds...")
             time.sleep(5)
         else:
             print("RTMA closed expectedly. Goodbye!")
