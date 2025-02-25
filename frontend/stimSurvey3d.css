@@ -3,6 +3,8 @@
     --uiElementContrast: #676767;
     --buttonColor: #6973AC;
     --buttonActiveColor: #4d547e;
+    --warnButtonColor: #B11818;
+    --warnButtonActiveColor: #8C1313;
     --sideWidth: 25%;
     --widthbarHeight: 64px;
 }
@@ -64,6 +66,14 @@ html {
     left: 25%;
     overflow-x: hidden;
     cursor: crosshair;
+}
+
+.warnButton {
+    background-color: var(--warnButtonColor);
+}
+
+.warnButton:active {
+    background-color: var(--warnButtonActiveColor);
 }
 
 .paletteButton {
