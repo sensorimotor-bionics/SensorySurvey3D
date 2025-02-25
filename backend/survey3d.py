@@ -179,7 +179,7 @@ class SurveyManager():
     An object which handles survey creation, deletion, and editing. Has 
     knowledge of paths which the survey object itself does not need access to
     """
-    survey: Survey = None
+    survey: Survey | None = None
     config: dict = {}
     data_path: str = ""
 
@@ -228,9 +228,16 @@ class SurveyManager():
 
         Returns: True if success, False if failure
         """
-        self.survey.endTimeNow()
-        if self.survey.saveSurvey(self.data_path):
-            self.survey = None
-            return True
+        if isinstance(self.survey, Survey):
+            self.survey.endTimeNow()
+            try:
+                if self.survey.saveSurvey(self.data_path):
+                    self.survey = None
+                    return True
+                else:
+                    return False
+            except Exception as e:
+                print(e)
+                return False
         else:
             return False
