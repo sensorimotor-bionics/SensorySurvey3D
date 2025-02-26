@@ -537,13 +537,11 @@ function fieldDoneCallback() {
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
 	if (vertices.size <= 0) {
 		alertMessage = 
-			`Are you sure you're done with this projected field?<br><br>
-			The current projected field is missing a drawing.`;
+			`The current projected field is missing a drawing.`;
 	}
 	else if (!viewport.orbMesh.visible) {
 		alertMessage = 
-				`Are you sure you're done with this projected field?<br><br>
-				The current projected field is missing a hot spot.`;
+				`The current projected field is missing a hot spot.`;
 	}
 
 	if (alertMessage) {
