@@ -308,10 +308,13 @@ export class SurveyManager {
         if (this.survey.projectedFields.length == 0) {
             return "Survey has no projected fields.";
         }
-        // Invalid if there is a projected field without any qualities
+        // Invalid if there is a projected field without any qualities,
+        // unless that field has an empty drawing
         for (let i = 0; i < this.survey.projectedFields.length; i++) {
-            if (this.survey.projectedFields[i].qualities.length <= 0) {
-                return "At least one projected field has no qualities.";
+            const field = this.survey.projectedFields[i]
+            if (field.qualities.length <= 0
+                && field.vertices > 0) {
+                return "At least one projected field needs qualities.";
             }
         }
 
