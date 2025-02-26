@@ -302,6 +302,7 @@ export class SurveyManager {
 
     /**
      * Check the current survey for missing information 
+     * @returns {string}
      */
     validateSurvey() {
         // Invalid if there are no projected fields
