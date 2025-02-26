@@ -414,12 +414,18 @@ function startSubmissionTimeout() {
  */
 function endSubmissionTimeout(success) {
 	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
-
+	
 	if (success) {
+		startWaiting()
+
+		var okFunction = function() {
+			COM.openSidebarTab("waitingTab");
+		}
+
 		openAlert(
 			"Submission was successful!",
 			["Ok"],
-			[startWaiting]
+			[okFunction]
 		);
 	}
 	else {
