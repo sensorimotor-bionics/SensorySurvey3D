@@ -230,8 +230,8 @@ export class Survey {
                     }  
                 }
     
-                field.name = model.charAt(0).toUpperCase() + model.slice(1) + " "
-                                + (priorTypeCount + 1).toString();
+                field.name = model.charAt(0).toUpperCase() + model.slice(1) 
+                    + " " + (priorTypeCount + 1).toString();
             }
         }
     }

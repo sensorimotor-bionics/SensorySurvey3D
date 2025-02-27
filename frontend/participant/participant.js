@@ -194,7 +194,7 @@ function performModelReplacement(
 			cameraController.reset();
 			document.getElementById("modelSelect").disabled = false;
 
-			if (hotSpot.x) {
+			if (hotSpot && hotSpot.x) {
 				viewport.orbMesh.position.copy(
 					new THREE.Vector3(
 						hotSpot.x,
