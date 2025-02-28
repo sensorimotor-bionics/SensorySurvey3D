@@ -22,6 +22,19 @@ class Mesh():
             "faces": self.faces
         }
     
+    def fromDict(self, dict: dict):
+        """
+        Take a dictionary and uses its fields to populate the fields of the
+        Mesh object.
+
+        Args:
+            dictionary: a dictionary with keys named for each property of a
+            Mesh
+        """
+        self.filename = dict["filename"]
+        self.vertices = dict["vertices"]
+        self.faces = dict["faces"]
+    
     def saveMesh(self, path: str):
         """
         Save this Mesh to the given path.
