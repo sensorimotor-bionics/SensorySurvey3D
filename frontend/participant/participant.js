@@ -207,6 +207,7 @@ function performModelReplacement(
 				viewport.orbMesh.position.copy(new THREE.Vector3(0, 0, 0));
 				viewport.orbMesh.visible = false;
 			}
+			viewport.getCurrentMeshParameters();
 		}.bind(hotSpot)
 	);
 }

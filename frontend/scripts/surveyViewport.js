@@ -795,6 +795,34 @@ export class SurveyViewport {
         }.bind(this));
     }
 
+    getCurrentMeshParameters() {
+        const geometry = this.currentMesh.geometry;
+
+        var vertices = [];
+        const position = geometry.getAttribute("position").array;
+        console.log(position);
+
+        for (let i = 0; i < position.length/3; i++) {
+            vertices.push([
+                position[i * 3], position[i * 3 + 1], position[i * 3 + 2]
+            ]);
+        }
+
+        var faces = [];
+        const index = geometry.index.array;
+        console.log(index);
+        for (let i = 0; i < index.length/3; i++) {
+            faces.push([
+                index[i * 3], index[i * 3 + 1], index[i * 3 + 2]
+            ]);
+        }
+
+        return {
+            "vertices": vertices,
+            "faces": faces
+        }
+    }
+
     /**
      * Draws a sphere with the given parameter then uses the given mesh's
      * bounds tree to quickly find what vertex indices exist within the

@@ -6,7 +6,7 @@ from typing import Sequence
 
 @dataclass
 class Mesh():
-    filename: str
+    filename: str = "default"
     vertices: list[Sequence[float]] = field(default_factory = list)
     faces: list[Sequence[int]] = field(default_factory = list)
 
