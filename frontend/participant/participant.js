@@ -454,7 +454,10 @@ function submitCallback() {
 	toggleButtons(false);
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
-		if (surveyManager.submitSurveyToServer(socket)) {
+		const meshParams = viewport.getStoredMeshParameters();
+		const meshParamsObject = {meshes: meshParams};
+
+		if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {
 			startSubmissionTimeout();
 		}
 		else {

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from survey3d import Survey, SurveyManager
+from survey3d import Survey, SurveyManager, Mesh
 
 # The app we are serving
 app = FastAPI()
@@ -48,6 +48,10 @@ async def participant(websocket: WebSocket):
                     if manager.survey.startTime == data["survey"]["startTime"]:
                         manager.survey.fromDict(data["survey"])
                         result = manager.saveSurvey()
+                        for mesh in data["meshes"]:
+                            obj = Mesh()
+                            obj.fromDict(data["meshes"][mesh])
+                            obj.saveMesh(manager.data_path)
                     else:
                         print("Cannot save survey with mismatched start time")
                         result = False
