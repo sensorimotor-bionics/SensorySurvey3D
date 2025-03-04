@@ -79,10 +79,10 @@ function socketConnect() {
 					surveyTable.clear();
 					viewport.unloadCurrentMesh();
 					viewport.orbMesh.visible = false;
-					endSubmissionTimeout(msg.success);
+					processSubmissionResult(msg.success);
 				}
 				else if (submissionTimeoutInterval) {
-					endSubmissionTimeout(msg.success);
+					processSubmissionResult(msg.success);
 				}
 				else {
 					alert(
@@ -400,7 +400,7 @@ function startSubmissionTimeout() {
 	var timeoutCount = 0;
 	submissionTimeoutInterval = setInterval(function() {
 		if (timeoutCount == 10) {
-			endSubmissionTimeout(false);
+			processSubmissionResult(false);
 		}
 		timeoutCount += 1;
 	}.bind(timeoutCount), 500);
@@ -412,11 +412,12 @@ function startSubmissionTimeout() {
  * @param {boolean} success - A boolean representing if the submission was a 
  * 		success, determines which alert is displayed
  */
-function endSubmissionTimeout(success) {
+function processSubmissionResult(success) {
 	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
 	
 	if (success) {
-		startWaiting()
+		startWaiting();
+		viewport.clearMeshStorage();
 
 		var okFunction = function() {
 			COM.openSidebarTab("waitingTab");
@@ -450,10 +451,10 @@ function endSubmissionTimeout(success) {
  * starts the wait for a new survey to begin.
  */
 function submitCallback() {
+	toggleButtons(false);
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
 		if (surveyManager.submitSurveyToServer(socket)) {
-			toggleButtons(false);
 			startSubmissionTimeout();
 		}
 		else {
@@ -462,6 +463,8 @@ function submitCallback() {
 		}
 	}
 	else {
+		toggleButtons(true);
+
 		var goBackButton = function() {
 			openList();
 		}

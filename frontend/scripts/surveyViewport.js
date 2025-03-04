@@ -438,6 +438,13 @@ export class SurveyViewport {
     }
 
     /**
+     * Clear all saved meshes from the meshStorage property
+     */
+    clearMeshStorage() {
+        this.meshStorage = {};
+    }
+
+    /**
      * Queues the next frame and handles control inputs depending on the current
      * controlState. Must be called once to begin animating the scene.
      */
@@ -779,7 +786,11 @@ export class SurveyViewport {
                     this.unloadCurrentMesh();
                 }
 
-                if (this.meshStorage.hasOwnProperty(filename)) {
+                if (
+                    Object.prototype.hasOwnProperty.call(
+                        this.meshStorage, filename
+                    )
+                ) {
                     console.log("Mesh in storage");
                     var mesh = this.meshStorage[filename];
                     prepareMesh(this, mesh);
@@ -818,7 +829,7 @@ export class SurveyViewport {
      * reconstruct the mesh post-hoc
      * @param {THREE.Mesh} mesh - the mesh whose parameters will be returned
      * @param {string} [filename] - the filename from which the mesh was loaded
-     * @returns {JSON}
+     * @returns {Object}
      */
     getMeshParameters(mesh, filename = "") {
         const geometry = mesh.geometry;
@@ -847,6 +858,25 @@ export class SurveyViewport {
             "vertices": vertices,
             "faces": faces
         }
+    }
+    
+    /**
+     * Return mesh parameters for each mesh in meshStorage
+     * @returns {Object}
+     */
+    getStoredMeshParameters() {
+        var result = {};
+
+        for (let prop in this.meshStorage) {
+            if (Object.prototype.hasOwnProperty.call(this.meshStorage, prop)) {
+                result[prop] = this.getMeshParameters(
+                    this.meshStorage[prop], 
+                    prop
+                );
+            }
+        }
+
+        return result;
     }
 
     /**
