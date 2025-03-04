@@ -425,6 +425,8 @@ export class SurveyViewport {
 
         this.eventQueue = new ViewportEventQueue(eventQueueLength);
 
+        this.meshStorage = {};
+
         this.pointerDownViewport = true;
 
         // Set event listeners
@@ -743,40 +745,56 @@ export class SurveyViewport {
      * @returns {Promise}
      */
     replaceCurrentMesh(filename, colorVertices = null, color = null) {
+        function prepareMesh(that, mesh) {
+            if (mesh) {
+                that.currentMesh = mesh;
+                that.currentModelFile = filename;
+                that.scene.add(that.currentMesh);
+                that.populateColor(
+                    that.defaultColor, 
+                    that.currentMesh
+                );
+                if (colorVertices && color) {
+                    that.populateColorOnVertices(
+                        color, 
+                        that.currentMesh, 
+                        colorVertices
+                    );
+                }
+                that.eventQueue.reset();
+                var defaultEvent = new ViewportEvent(
+                    controlStates.PAINT
+                );
+                defaultEvent.updateColorStateFromMesh(
+                    that.currentMesh
+                );
+                that.eventQueue.push(defaultEvent);
+            }
+        };
+
         return new Promise(function(resolve, reject) {
             if (filename != this.currentModelFile) {
+
                 if (this.currentMesh) {
                     this.unloadCurrentMesh();
                 }
-                const loadResult = this.loadModel(filename).then(
-                    function(value) {
-                        if (value) {
-                            this.currentMesh = value;
-                            this.currentModelFile = filename;
-                            this.scene.add(this.currentMesh);
-                            this.populateColor(
-                                this.defaultColor, 
-                                this.currentMesh
-                            );
-                            if (colorVertices && color) {
-                                this.populateColorOnVertices(
-                                    color, 
-                                    this.currentMesh, 
-                                    colorVertices
-                                );
-                            }
-                            this.eventQueue.reset();
-                            var defaultEvent = new ViewportEvent(
-                                controlStates.PAINT
-                            );
-                            defaultEvent.updateColorStateFromMesh(
-                                this.currentMesh
-                            );
-                            this.eventQueue.push(defaultEvent);
-                        }
-                        resolve(true);
-                    }.bind(this)
-                );
+
+                if (this.meshStorage.hasOwnProperty(filename)) {
+                    console.log("Mesh in storage");
+                    var mesh = this.meshStorage[filename];
+                    prepareMesh(this, mesh);
+                    resolve(true);
+                }
+                else {
+                    const loadResult = this.loadModel(filename).then(
+                        function(value) {
+                            prepareMesh(this, value);
+                            this.meshStorage[filename] = value;
+                            resolve(true);
+                        }.bind(this)
+                    );
+                }
+                
             }
             else {
                 this.populateColor(
@@ -795,8 +813,15 @@ export class SurveyViewport {
         }.bind(this));
     }
 
-    getCurrentMeshParameters() {
-        const geometry = this.currentMesh.geometry;
+    /**
+     * Takes a mesh, and uses its geometry to obtain data which can be used to
+     * reconstruct the mesh post-hoc
+     * @param {THREE.Mesh} mesh - the mesh whose parameters will be returned
+     * @param {string} [filename] - the filename from which the mesh was loaded
+     * @returns {JSON}
+     */
+    getMeshParameters(mesh, filename = "") {
+        const geometry = mesh.geometry;
 
         var vertices = [];
         const position = geometry.getAttribute("position").array;
@@ -818,6 +843,7 @@ export class SurveyViewport {
         }
 
         return {
+            "filename": filename,
             "vertices": vertices,
             "faces": faces
         }
