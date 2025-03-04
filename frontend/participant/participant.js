@@ -454,7 +454,9 @@ function submitCallback() {
 	toggleButtons(false);
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
-		const meshParams = viewport.getStoredMeshParameters();
+		const usedMeshes = surveyManager.survey.usedMeshFilenames;
+		console.log(usedMeshes);
+		const meshParams = viewport.getStoredMeshParameters(usedMeshes);
 		const meshParamsObject = {meshes: meshParams};
 
 		if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {

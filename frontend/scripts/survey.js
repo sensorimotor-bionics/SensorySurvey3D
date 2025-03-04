@@ -276,6 +276,18 @@ export class Survey {
             this.projectedFields.push(field);
         }
     }
+
+    /**
+     * The set of meshes used by the survey
+     * @returns {Set}
+     */
+    get usedMeshFilenames() {
+        var list = [];
+        for (let i = 0; i < this.projectedFields.length; i++) {
+            list.push(this.config.models[this.projectedFields[i].model]);
+        }
+        return new Set(list);
+    }
 }
 
 /**

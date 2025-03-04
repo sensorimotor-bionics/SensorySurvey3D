@@ -862,13 +862,16 @@ export class SurveyViewport {
     
     /**
      * Return mesh parameters for each mesh in meshStorage
+     * @param {Set} [meshes] - the meshes whose parameters should 
+     *      be retrieved
      * @returns {Object}
      */
-    getStoredMeshParameters() {
+    getStoredMeshParameters(meshes = null) {
         var result = {};
 
         for (let prop in this.meshStorage) {
-            if (Object.prototype.hasOwnProperty.call(this.meshStorage, prop)) {
+            if (Object.prototype.hasOwnProperty.call(this.meshStorage, prop)
+            && (!meshes || (meshes && meshes.has(prop)))) {
                 result[prop] = this.getMeshParameters(
                     this.meshStorage[prop], 
                     prop
