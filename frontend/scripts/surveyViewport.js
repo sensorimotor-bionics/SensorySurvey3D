@@ -791,7 +791,6 @@ export class SurveyViewport {
                         this.meshStorage, filename
                     )
                 ) {
-                    console.log("Mesh in storage");
                     var mesh = this.meshStorage[filename];
                     prepareMesh(this, mesh);
                     resolve(true);

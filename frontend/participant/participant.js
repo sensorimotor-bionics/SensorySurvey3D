@@ -39,39 +39,7 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "survey":
-				// Initialize a survey using the received data
-				surveyManager.survey = new SVY.Survey();
-				surveyManager.survey.fromJSON(msg.survey);
-				const modelSelect = document.getElementById("modelSelect");
-				// Set the UI to defaults
-				populateSelect(modelSelect, 
-								Object.keys(msg.survey.config.models));
-				populateSelect(document.getElementById("typeSelect"), 
-								msg.survey.config.typeList);
-				
-				cameraController.reset();
-				// If the survey has projected fields, fill the survey table
-				// and click the first "view" button
-				if (surveyManager.survey.projectedFields.length > 0) {
-					surveyTable.update(surveyManager.survey, 0);
-					let field = surveyManager.survey.projectedFields[0];
-					performModelReplacement(
-						surveyManager.survey.config.models[field.model],
-						field.vertices,
-						new THREE.Color("#abcabc"),
-						field.hotSpot
-					);
-				}
-
-				// If the config has hidden scale values, hide them
-				if (surveyManager.survey.config.hideScaleValues) {
-					document.getElementById("intensityValue").innerHTML = "";
-					document.getElementById("naturalnessValue").innerHTML = "";
-					document.getElementById("painValue").innerHTML = "";
-				}
-				if (waitingInterval) { 
-					endWaiting(); 
-				}
+				prepSurvey(msg.survey);
 				break;
 			case "submitResponse":
 				if (msg.success) {
@@ -292,6 +260,54 @@ function populateFieldEditor(field) {
 		painSlider.dispatchEvent(new Event("input"));
 
 		surveyManager.currentField = field;
+	}
+}
+
+/**
+ * Take a survey, give it to the survey manager, and prep the UI to display the 
+ * information contained in that survey.
+ * @param {Survey} survey - the survey whose data is to be used
+ */
+function prepSurvey(survey) {
+	// Initialize a survey using the received data
+	surveyManager.survey = new SVY.Survey();
+	surveyManager.survey.fromJSON(survey);
+	const modelSelect = document.getElementById("modelSelect");
+	// Set the UI to defaults
+	populateSelect(modelSelect, 
+					Object.keys(surveyManager.survey.config.models));
+	populateSelect(document.getElementById("typeSelect"), 
+		surveyManager.survey.config.typeList);
+	
+	cameraController.reset();
+	// If the survey has projected fields, fill the survey table
+	// and click the first "view" button
+	if (surveyManager.survey.projectedFields.length > 0) {
+		surveyTable.update(surveyManager.survey, 0);
+		let field = surveyManager.survey.projectedFields[0];
+		performModelReplacement(
+			surveyManager.survey.config.models[field.model],
+			field.vertices,
+			new THREE.Color("#abcabc"),
+			field.hotSpot
+		);
+	}
+	else {
+		performModelReplacement(
+			surveyManager.survey.config.models[modelSelect.value],
+			null,
+			new THREE.Color("#abcabc")
+		);
+	}
+
+	// If the config has hidden scale values, hide them
+	if (surveyManager.survey.config.hideScaleValues) {
+		document.getElementById("intensityValue").innerHTML = "";
+		document.getElementById("naturalnessValue").innerHTML = "";
+		document.getElementById("painValue").innerHTML = "";
+	}
+	if (waitingInterval) { 
+		endWaiting(); 
 	}
 }
 
