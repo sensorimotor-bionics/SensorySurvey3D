@@ -740,6 +740,21 @@ export class SurveyViewport {
             });
         });
     }
+    
+    /**
+     * Takes the filename of a model, loads it, then stores the resulting mesh
+     * in the meshStorage
+     * @param {string} filename 
+     * @returns {Promise}
+     */
+    loadMeshIntoStorage(filename) {
+        return new Promise(function(resolve, reject) {
+            this.loadModel(filename).then(function(value) {
+                this.meshStorage[filename] = value;
+                resolve(true);
+            }.bind(this));
+        }.bind(this));
+    }
 
     /**
      * Replaces the current mesh object with a new mesh
@@ -835,7 +850,6 @@ export class SurveyViewport {
 
         var vertices = [];
         const position = geometry.getAttribute("position").array;
-        console.log(position);
 
         for (let i = 0; i < position.length/3; i++) {
             vertices.push([
@@ -845,7 +859,6 @@ export class SurveyViewport {
 
         var faces = [];
         const index = geometry.index.array;
-        console.log(index);
         for (let i = 0; i < index.length/3; i++) {
             faces.push([
                 index[i * 3], index[i * 3 + 1], index[i * 3 + 2]
@@ -1066,6 +1079,8 @@ export class SurveyViewport {
         }
     }
 
+    /* SPECIAL PROPERTIES */
+
     /**
      * Getter for the position of the orbMesh object
      */
@@ -1075,5 +1090,12 @@ export class SurveyViewport {
             y: this.orbMesh.position.y,
             z: this.orbMesh.position.z,
         }
+    }
+
+    /**
+     * Getter for all names in 
+     */
+    get storedMeshNames() {
+        return new Set(Object.keys(this.meshStorage));
     }
 }

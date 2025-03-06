@@ -471,17 +471,29 @@ function submitCallback() {
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
 		const usedMeshes = surveyManager.survey.usedMeshFilenames;
-		console.log(usedMeshes);
-		const meshParams = viewport.getStoredMeshParameters(usedMeshes);
-		const meshParamsObject = {meshes: meshParams};
+		const storedMeshes = viewport.storedMeshNames;
 
-		if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {
-			startSubmissionTimeout();
+		var promises = [];
+
+		if (!usedMeshes.isSubsetOf(storedMeshes)) {
+			const diff = usedMeshes.difference(storedMeshes);
+			for (let key of diff) {
+				promises.push(viewport.loadMeshIntoStorage(key));
+			}
 		}
-		else {
-			toggleButtons(true);
-			alert("Survey submission failed -- socket is not connected!");
-		}
+
+		Promise.all(promises).then(function(values) {
+			const meshParams = viewport.getStoredMeshParameters(usedMeshes);
+			const meshParamsObject = {meshes: meshParams};
+
+			if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {
+				startSubmissionTimeout();
+			}
+			else {
+				toggleButtons(true);
+				alert("Survey submission failed -- socket is not connected!");
+			}
+		});
 	}
 	else {
 		toggleButtons(true);
