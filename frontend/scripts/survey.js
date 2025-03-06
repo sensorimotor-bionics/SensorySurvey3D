@@ -276,6 +276,18 @@ export class Survey {
             this.projectedFields.push(field);
         }
     }
+
+    /**
+     * The set of meshes used by the survey
+     * @returns {Set}
+     */
+    get usedMeshFilenames() {
+        var list = [];
+        for (let i = 0; i < this.projectedFields.length; i++) {
+            list.push(this.config.models[this.projectedFields[i].model]);
+        }
+        return new Set(list);
+    }
 }
 
 /**
@@ -325,14 +337,29 @@ export class SurveyManager {
     /**
      * Submit the currentSurvey to the server via websocket
      * @param {WebSocket} socket - the socket the survey is to be sent over
+     * @param {Object} additionalData - additional data to be sent to the server
+     *      along with the survey, must be JSON.stringify-able
      * @returns {boolean}
      */
-    submitSurveyToServer(socket) {
+    submitSurveyToServer(socket, additionalData) {
+        // Create message object
         var msg = {
             type: "submit",
             survey: this.survey.toJSON()
         }
 
+        // Append additional data
+        if (additionalData) {
+            for (let prop in additionalData) {
+                if (
+                    Object.prototype.hasOwnProperty.call(additionalData, prop)
+                ) {
+                    msg[prop] = additionalData[prop];
+                }
+            }
+        }
+
+        // Try sending the message
         if (socket.readyState == WebSocket.OPEN) {
             socket.send(JSON.stringify(msg));
             this.currentField = null;

@@ -425,6 +425,8 @@ export class SurveyViewport {
 
         this.eventQueue = new ViewportEventQueue(eventQueueLength);
 
+        this.meshStorage = {};
+
         this.pointerDownViewport = true;
 
         // Set event listeners
@@ -433,6 +435,13 @@ export class SurveyViewport {
         document.onpointerup = this.onPointerUp.bind(this);
         this.renderer.domElement.onpointerdown = 
             this.onPointerDownViewport.bind(this);
+    }
+
+    /**
+     * Clear all saved meshes from the meshStorage property
+     */
+    clearMeshStorage() {
+        this.meshStorage = {};
     }
 
     /**
@@ -731,6 +740,21 @@ export class SurveyViewport {
             });
         });
     }
+    
+    /**
+     * Takes the filename of a model, loads it, then stores the resulting mesh
+     * in the meshStorage
+     * @param {string} filename 
+     * @returns {Promise}
+     */
+    loadMeshIntoStorage(filename) {
+        return new Promise(function(resolve, reject) {
+            this.loadModel(filename).then(function(value) {
+                this.meshStorage[filename] = value;
+                resolve(true);
+            }.bind(this));
+        }.bind(this));
+    }
 
     /**
      * Replaces the current mesh object with a new mesh
@@ -743,40 +767,59 @@ export class SurveyViewport {
      * @returns {Promise}
      */
     replaceCurrentMesh(filename, colorVertices = null, color = null) {
+        function prepareMesh(that, mesh) {
+            if (mesh) {
+                that.currentMesh = mesh;
+                that.currentModelFile = filename;
+                that.scene.add(that.currentMesh);
+                that.populateColor(
+                    that.defaultColor, 
+                    that.currentMesh
+                );
+                if (colorVertices && color) {
+                    that.populateColorOnVertices(
+                        color, 
+                        that.currentMesh, 
+                        colorVertices
+                    );
+                }
+                that.eventQueue.reset();
+                var defaultEvent = new ViewportEvent(
+                    controlStates.PAINT
+                );
+                defaultEvent.updateColorStateFromMesh(
+                    that.currentMesh
+                );
+                that.eventQueue.push(defaultEvent);
+            }
+        };
+
         return new Promise(function(resolve, reject) {
             if (filename != this.currentModelFile) {
+
                 if (this.currentMesh) {
                     this.unloadCurrentMesh();
                 }
-                const loadResult = this.loadModel(filename).then(
-                    function(value) {
-                        if (value) {
-                            this.currentMesh = value;
-                            this.currentModelFile = filename;
-                            this.scene.add(this.currentMesh);
-                            this.populateColor(
-                                this.defaultColor, 
-                                this.currentMesh
-                            );
-                            if (colorVertices && color) {
-                                this.populateColorOnVertices(
-                                    color, 
-                                    this.currentMesh, 
-                                    colorVertices
-                                );
-                            }
-                            this.eventQueue.reset();
-                            var defaultEvent = new ViewportEvent(
-                                controlStates.PAINT
-                            );
-                            defaultEvent.updateColorStateFromMesh(
-                                this.currentMesh
-                            );
-                            this.eventQueue.push(defaultEvent);
-                        }
-                        resolve(true);
-                    }.bind(this)
-                );
+
+                if (
+                    Object.prototype.hasOwnProperty.call(
+                        this.meshStorage, filename
+                    )
+                ) {
+                    var mesh = this.meshStorage[filename];
+                    prepareMesh(this, mesh);
+                    resolve(true);
+                }
+                else {
+                    const loadResult = this.loadModel(filename).then(
+                        function(value) {
+                            prepareMesh(this, value);
+                            this.meshStorage[filename] = value;
+                            resolve(true);
+                        }.bind(this)
+                    );
+                }
+                
             }
             else {
                 this.populateColor(
@@ -793,6 +836,62 @@ export class SurveyViewport {
                 resolve(false);
             }
         }.bind(this));
+    }
+
+    /**
+     * Takes a mesh, and uses its geometry to obtain data which can be used to
+     * reconstruct the mesh post-hoc
+     * @param {THREE.Mesh} mesh - the mesh whose parameters will be returned
+     * @param {string} [filename] - the filename from which the mesh was loaded
+     * @returns {Object}
+     */
+    getMeshParameters(mesh, filename = "") {
+        const geometry = mesh.geometry;
+
+        var vertices = [];
+        const position = geometry.getAttribute("position").array;
+
+        for (let i = 0; i < position.length/3; i++) {
+            vertices.push([
+                position[i * 3], position[i * 3 + 1], position[i * 3 + 2]
+            ]);
+        }
+
+        var faces = [];
+        const index = geometry.index.array;
+        for (let i = 0; i < index.length/3; i++) {
+            faces.push([
+                index[i * 3], index[i * 3 + 1], index[i * 3 + 2]
+            ]);
+        }
+
+        return {
+            "filename": filename,
+            "vertices": vertices,
+            "faces": faces
+        }
+    }
+    
+    /**
+     * Return mesh parameters for each mesh in meshStorage
+     * @param {Set} [meshes] - the meshes whose parameters should 
+     *      be retrieved
+     * @returns {Object}
+     */
+    getStoredMeshParameters(meshes = null) {
+        var result = {};
+
+        for (let prop in this.meshStorage) {
+            if (Object.prototype.hasOwnProperty.call(this.meshStorage, prop)
+            && (!meshes || (meshes && meshes.has(prop)))) {
+                result[prop] = this.getMeshParameters(
+                    this.meshStorage[prop], 
+                    prop
+                );
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -980,6 +1079,8 @@ export class SurveyViewport {
         }
     }
 
+    /* SPECIAL PROPERTIES */
+
     /**
      * Getter for the position of the orbMesh object
      */
@@ -989,5 +1090,12 @@ export class SurveyViewport {
             y: this.orbMesh.position.y,
             z: this.orbMesh.position.z,
         }
+    }
+
+    /**
+     * Getter for all names in 
+     */
+    get storedMeshNames() {
+        return new Set(Object.keys(this.meshStorage));
     }
 }

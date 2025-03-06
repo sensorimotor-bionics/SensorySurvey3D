@@ -39,39 +39,7 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "survey":
-				// Initialize a survey using the received data
-				surveyManager.survey = new SVY.Survey();
-				surveyManager.survey.fromJSON(msg.survey);
-				const modelSelect = document.getElementById("modelSelect");
-				// Set the UI to defaults
-				populateSelect(modelSelect, 
-								Object.keys(msg.survey.config.models));
-				populateSelect(document.getElementById("typeSelect"), 
-								msg.survey.config.typeList);
-				
-				cameraController.reset();
-				// If the survey has projected fields, fill the survey table
-				// and click the first "view" button
-				if (surveyManager.survey.projectedFields.length > 0) {
-					surveyTable.update(surveyManager.survey, 0);
-					let field = surveyManager.survey.projectedFields[0];
-					performModelReplacement(
-						surveyManager.survey.config.models[field.model],
-						field.vertices,
-						new THREE.Color("#abcabc"),
-						field.hotSpot
-					);
-				}
-
-				// If the config has hidden scale values, hide them
-				if (surveyManager.survey.config.hideScaleValues) {
-					document.getElementById("intensityValue").innerHTML = "";
-					document.getElementById("naturalnessValue").innerHTML = "";
-					document.getElementById("painValue").innerHTML = "";
-				}
-				if (waitingInterval) { 
-					endWaiting(); 
-				}
+				prepSurvey(msg.survey);
 				break;
 			case "submitResponse":
 				if (msg.success) {
@@ -79,10 +47,10 @@ function socketConnect() {
 					surveyTable.clear();
 					viewport.unloadCurrentMesh();
 					viewport.orbMesh.visible = false;
-					endSubmissionTimeout(msg.success);
+					processSubmissionResult(msg.success);
 				}
 				else if (submissionTimeoutInterval) {
-					endSubmissionTimeout(msg.success);
+					processSubmissionResult(msg.success);
 				}
 				else {
 					alert(
@@ -296,6 +264,54 @@ function populateFieldEditor(field) {
 }
 
 /**
+ * Take a survey, give it to the survey manager, and prep the UI to display the 
+ * information contained in that survey.
+ * @param {Survey} survey - the survey whose data is to be used
+ */
+function prepSurvey(survey) {
+	// Initialize a survey using the received data
+	surveyManager.survey = new SVY.Survey();
+	surveyManager.survey.fromJSON(survey);
+	const modelSelect = document.getElementById("modelSelect");
+	// Set the UI to defaults
+	populateSelect(modelSelect, 
+					Object.keys(surveyManager.survey.config.models));
+	populateSelect(document.getElementById("typeSelect"), 
+		surveyManager.survey.config.typeList);
+	
+	cameraController.reset();
+	// If the survey has projected fields, fill the survey table
+	// and click the first "view" button
+	if (surveyManager.survey.projectedFields.length > 0) {
+		surveyTable.update(surveyManager.survey, 0);
+		let field = surveyManager.survey.projectedFields[0];
+		performModelReplacement(
+			surveyManager.survey.config.models[field.model],
+			field.vertices,
+			new THREE.Color("#abcabc"),
+			field.hotSpot
+		);
+	}
+	else {
+		performModelReplacement(
+			surveyManager.survey.config.models[modelSelect.value],
+			null,
+			new THREE.Color("#abcabc")
+		);
+	}
+
+	// If the config has hidden scale values, hide them
+	if (surveyManager.survey.config.hideScaleValues) {
+		document.getElementById("intensityValue").innerHTML = "";
+		document.getElementById("naturalnessValue").innerHTML = "";
+		document.getElementById("painValue").innerHTML = "";
+	}
+	if (waitingInterval) { 
+		endWaiting(); 
+	}
+}
+
+/**
  * Take the values in the relevant editor elements and save them to the
  * corresponding fields in the surveyManager's currentField
  */
@@ -400,7 +416,7 @@ function startSubmissionTimeout() {
 	var timeoutCount = 0;
 	submissionTimeoutInterval = setInterval(function() {
 		if (timeoutCount == 10) {
-			endSubmissionTimeout(false);
+			processSubmissionResult(false);
 		}
 		timeoutCount += 1;
 	}.bind(timeoutCount), 500);
@@ -412,11 +428,12 @@ function startSubmissionTimeout() {
  * @param {boolean} success - A boolean representing if the submission was a 
  * 		success, determines which alert is displayed
  */
-function endSubmissionTimeout(success) {
+function processSubmissionResult(success) {
 	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
 	
 	if (success) {
-		startWaiting()
+		startWaiting();
+		viewport.clearMeshStorage();
 
 		var okFunction = function() {
 			COM.openSidebarTab("waitingTab");
@@ -450,18 +467,37 @@ function endSubmissionTimeout(success) {
  * starts the wait for a new survey to begin.
  */
 function submitCallback() {
+	toggleButtons(false);
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
-		if (surveyManager.submitSurveyToServer(socket)) {
-			toggleButtons(false);
-			startSubmissionTimeout();
+		const usedMeshes = surveyManager.survey.usedMeshFilenames;
+		const storedMeshes = viewport.storedMeshNames;
+
+		var promises = [];
+
+		if (!usedMeshes.isSubsetOf(storedMeshes)) {
+			const diff = usedMeshes.difference(storedMeshes);
+			for (let key of diff) {
+				promises.push(viewport.loadMeshIntoStorage(key));
+			}
 		}
-		else {
-			toggleButtons(true);
-			alert("Survey submission failed -- socket is not connected!");
-		}
+
+		Promise.all(promises).then(function(values) {
+			const meshParams = viewport.getStoredMeshParameters(usedMeshes);
+			const meshParamsObject = {meshes: meshParams};
+
+			if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {
+				startSubmissionTimeout();
+			}
+			else {
+				toggleButtons(true);
+				alert("Survey submission failed -- socket is not connected!");
+			}
+		});
 	}
 	else {
+		toggleButtons(true);
+
 		var goBackButton = function() {
 			openList();
 		}

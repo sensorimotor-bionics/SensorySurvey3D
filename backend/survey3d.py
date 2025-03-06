@@ -2,6 +2,51 @@ import os
 import json
 from datetime import datetime
 from dataclasses import dataclass, field
+from typing import Sequence
+
+@dataclass
+class Mesh():
+    filename: str = "default"
+    vertices: list[Sequence[float]] = field(default_factory = list)
+    faces: list[Sequence[int]] = field(default_factory = list)
+
+    def toDict(self) -> dict:
+        """
+        Return the Mesh's properties as a dictionary.
+
+        Returns: A dictionary of the Mesh's properties.
+        """
+        return {
+            "filename": self.filename,
+            "vertices": self.vertices,
+            "faces": self.faces
+        }
+    
+    def fromDict(self, dict: dict):
+        """
+        Take a dictionary and uses its fields to populate the fields of the
+        Mesh object.
+
+        Args:
+            dictionary: a dictionary with keys named for each property of a
+            Mesh
+        """
+        self.filename = dict["filename"]
+        self.vertices = dict["vertices"]
+        self.faces = dict["faces"]
+    
+    def saveMesh(self, path: str):
+        """
+        Save this Mesh to the given path.
+
+        Args:
+            path: The folder to which the .json file should be saved
+        """
+        filename = f"{self.filename}.json"
+        print(f"Saving mesh data to {filename}...")
+        with open(os.path.join(path, filename), 'w') as file:
+            json.dump(self.toDict(), file, indent = 4)
+        return True
 
 @dataclass
 class Quality():
