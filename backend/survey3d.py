@@ -41,12 +41,18 @@ class Mesh():
 
         Args:
             path: The folder to which the .json file should be saved
+
+        Returns: True if saved, False if not
         """
         filename = f"{self.filename}.json"
-        print(f"Saving mesh data to {filename}...")
-        with open(os.path.join(path, filename), 'w') as file:
-            json.dump(self.toDict(), file, indent = 4)
-        return True
+        fullpath = os.path.join(path, filename)
+        if not os.path.isfile(fullpath):
+            print(f"Saving mesh data to {filename}...")
+            with open(fullpath, 'w') as file:
+                json.dump(self.toDict(), file, indent = 4)
+            return True
+        else:
+            return False
 
 @dataclass
 class Quality():
@@ -249,6 +255,7 @@ class SurveyManager():
             )
         except Exception as e:
             raise Exception(f"Participant config cannot be read: {e}")
+        
         self.data_path = os.path.join(_data_path)
 
     def newSurvey(self, participant: str):
