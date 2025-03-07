@@ -41,3 +41,5 @@ npx vite
 By default, this will open the frontend to localhost. You may use the --host flag to change the IP.
 
 
+### Models
+Example model meshes are hosted on our [Box](https://uchicago.box.com/s/89r4uojt9xlzgsy6pje75cqkf8g06vye).
