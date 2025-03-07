@@ -237,9 +237,18 @@ class SurveyManager():
             lives
             _data_path: The path in which surveys should be saved
         """
-        with open(os.path.join(_config_path, "participant_config.json"), 
-                  'r') as data:
-            self.config = json.load(data)
+        try:
+            with open(os.path.join(_config_path, "participant_config.json"), 
+                    'r') as data:
+                self.config = json.load(data)
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(
+                f"Participant config cannot be parsed",
+                e.doc,
+                e.pos
+            )
+        except Exception as e:
+            raise Exception(f"Participant config cannot be read: {e}")
         self.data_path = os.path.join(_data_path)
 
     def newSurvey(self, participant: str):
