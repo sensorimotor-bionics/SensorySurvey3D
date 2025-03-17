@@ -343,6 +343,11 @@ function saveFieldFromEditor() {
  * 		editor
  */
 function populateQualityEditor(field, quality) {
+	const qualityNumber = document.getElementById("qualityNumber");
+	console.log(field.qualities.indexOf(quality));
+	qualityNumber.innerHTML = 
+		"Quality #" + (field.qualities.indexOf(quality) + 1);
+
 	const typeSelect = document.getElementById("typeSelect");
 	if (quality.type) {
 		typeSelect.value = quality.type;
@@ -635,6 +640,43 @@ function qualifyDoneCallback() {
 }
 
 /**
+ * Checks if the current quality is complete, then if it is, duplicates that
+ * quality and opens a new quality editor for the duplicate
+ */
+function qualifyAnotherCallback() {
+	if (
+		!document.getElementById("belowSkinCheck").checked
+		&& !document.getElementById("atSkinCheck").checked
+		&& !document.getElementById("aboveSkinCheck").checked
+	) {
+		const okFunction = function() {
+			openQualityEditor();
+		}
+		
+		openAlert(
+			"You must select at least one depth before continuing.",
+			["Go Back"],
+			[okFunction]
+		); 
+	}
+	else {
+		saveQualityFromEditor();
+
+		const field = surveyManager.currentField;
+		viewFieldCallback(field);
+
+		const currentFieldIdx = field.qualities.indexOf(
+			surveyManager.currentQuality
+		);
+		const newQuality =  field.duplicateQuality(currentFieldIdx);
+		surveyManager.currentQuality = newQuality;
+		populateQualityEditor(field, newQuality);
+
+		openQualityEditor();
+	}	
+} 
+
+/**
  * Return to the list without saving changes from the current editor
  */
 function cancelCallback() {
@@ -810,6 +852,11 @@ window.onload = function() {
 
 	const qualifyDeleteButton = document.getElementById("qualifyDeleteButton");
 	qualifyDeleteButton.onpointerup = qualifyDeleteCallback;
+
+	const qualifyAnotherButton = document.getElementById(
+		"qualifyAnotherButton"
+	);
+	qualifyAnotherButton.onpointerup = qualifyAnotherCallback;
 
 	const modelSelect = document.getElementById("modelSelect");
 	modelSelect.onchange = modelSelectChangeCallback;

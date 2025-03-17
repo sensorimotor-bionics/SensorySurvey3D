@@ -92,6 +92,23 @@ export class ProjectedField {
     }
 
     /**
+     * Duplicates the quality at the given index, add it to the qualities list,
+     * then return that new quality
+     * @param {number} idx - the index of the quality to be duplicated
+     * @returns {Quality}
+     */
+    duplicateQuality(idx) {
+        const oldQuality = this.qualities[idx];
+        const newQuality = new Quality(
+            oldQuality.intensity, 
+            oldQuality.depth,
+            oldQuality.type
+        );
+        this.qualities.push(newQuality);
+        return this.qualities[this.qualities.length - 1];
+    }
+
+    /**
      * Remove a given quality from the qualities array
      * @param {Quality} quality - the Quality to be deleted
      */
@@ -120,7 +137,7 @@ export class ProjectedField {
             hotSpot     : this.hotSpot,
             naturalness : this.naturalness,
             pain        : this.pain,
-            qualities: jsonQualities
+            qualities   : jsonQualities
         }
 
         return output;
