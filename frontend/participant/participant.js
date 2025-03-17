@@ -234,36 +234,6 @@ function populateSelect(selectElement, optionList) {
 }
 
 /**
- * Put the data from the given projected field into the editor UI
- * @param {ProjectedField} field - the ProjectedField whose data is to
- * 		be displayed
- */
-function populateFieldEditor(field) {
-	if (field != surveyManager.currentField) {
-		const modelSelect = document.getElementById("modelSelect");
-		if (field.model) {
-			performModelReplacement(
-				surveyManager.survey.config.models[modelSelect.value],
-				field.vertices,
-				new THREE.Color("#abcabc"),
-				field.hotSpot
-			);
-			modelSelect.value = field.model;
-		}
-
-		const naturalnessSlider = document.getElementById("naturalnessSlider");
-		naturalnessSlider.value = field.naturalness;
-		naturalnessSlider.dispatchEvent(new Event("input"));
-
-		const painSlider = document.getElementById("painSlider");
-		painSlider.value = field.pain;
-		painSlider.dispatchEvent(new Event("input"));
-
-		surveyManager.currentField = field;
-	}
-}
-
-/**
  * Take a survey, give it to the survey manager, and prep the UI to display the 
  * information contained in that survey.
  * @param {Survey} survey - the survey whose data is to be used
@@ -312,6 +282,56 @@ function prepSurvey(survey) {
 }
 
 /**
+ * Put the data from the given projected field into the editor UI
+ * @param {ProjectedField} field - the ProjectedField whose data is to
+ * 		be displayed
+ */
+function populateFieldEditor(field) {
+	if (field != surveyManager.currentField) {
+		const modelSelect = document.getElementById("modelSelect");
+		if (field.model) {
+			performModelReplacement(
+				surveyManager.survey.config.models[modelSelect.value],
+				field.vertices,
+				new THREE.Color("#abcabc"),
+				field.hotSpot
+			);
+			modelSelect.value = field.model;
+		}
+
+		const naturalnessSlider = document.getElementById("naturalnessSlider");
+		
+		if (field.naturalness >= 0) {
+			naturalnessSlider.value = field.naturalness;
+			naturalnessSlider.dispatchEvent(new Event("input"));
+		}
+		else {
+			naturalnessSlider.value = 5.0;
+			naturalnessSlider.dispatchEvent(new Event("input"));
+			const naturalnessHidden = document.getElementById(
+				"naturalnessHidden"
+			);
+			naturalnessHidden.value = field.naturalness;
+		}
+
+		const painSlider = document.getElementById("painSlider");
+
+		if (field.pain >= 0) {
+			painSlider.value = field.pain;
+			painSlider.dispatchEvent(new Event("input"));
+		}
+		else {
+			painSlider.value = 0.0;
+			painSlider.dispatchEvent(new Event("input"));
+			const painHidden = document.getElementById("painHidden");
+			painHidden.value = field.pain;
+		}
+
+		surveyManager.currentField = field;
+	}
+}
+
+/**
  * Take the values in the relevant editor elements and save them to the
  * corresponding fields in the surveyManager's currentField
  */
@@ -329,12 +349,12 @@ function saveFieldFromEditor() {
 	const modelSelect = document.getElementById("modelSelect");
 	surveyManager.currentField.model = modelSelect.value;
 
-	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	const naturalnessHidden = document.getElementById("naturalnessHidden");
 	surveyManager.currentField.naturalness = parseFloat(
-		naturalnessSlider.value);
+		naturalnessHidden.value);
 
-	const painSlider = document.getElementById("painSlider");
-	surveyManager.currentField.pain = parseFloat(painSlider.value);
+	const painHidden = document.getElementById("painHidden");
+	surveyManager.currentField.pain = parseFloat(painHidden.value);
 }
 
 /**
@@ -366,8 +386,16 @@ function populateQualityEditor(field, quality) {
 	else { aboveSkinCheck.checked = false }
 
 	const intensitySlider = document.getElementById("intensitySlider");
-	intensitySlider.value = quality.intensity;
-	intensitySlider.dispatchEvent(new Event("input"));
+	if (quality.intensity >= 0) {
+		intensitySlider.value = quality.intensity;
+		intensitySlider.dispatchEvent(new Event("input"));
+	}
+	else {
+		intensitySlider.value = 5.0;
+		intensitySlider.dispatchEvent(new Event("input"));
+		const intensityHidden = document.getElementById("intensityHidden");
+		intensityHidden.value = quality.intensity;
+	}
 
 	surveyManager.currentField = field;
 	surveyManager.currentQuality = quality;
@@ -378,8 +406,8 @@ function populateQualityEditor(field, quality) {
  * corresponding fields in the surveyManager's currentQuality
  */
 function saveQualityFromEditor() {
-	const intensitySlider = document.getElementById("intensitySlider");
-	surveyManager.currentQuality.intensity = parseFloat(intensitySlider.value);
+	const intensityHidden = document.getElementById("intensityHidden");
+	surveyManager.currentQuality.intensity = parseFloat(intensityHidden.value);
 
 	const depthSelected = 
 		document.querySelectorAll("input[name=\"skinLevelCheckSet\"]:checked");
@@ -874,6 +902,8 @@ window.onload = function() {
 			document.getElementById("intensityValue").innerHTML = 
 				intensitySlider.value;
 		}
+		const intensityHidden = document.getElementById("intensityHidden");
+		intensityHidden.value = intensitySlider.value;
 	}
 	intensitySlider.dispatchEvent(new Event("input"));
 
@@ -884,7 +914,8 @@ window.onload = function() {
 			document.getElementById("naturalnessValue").innerHTML = 
 				naturalnessSlider.value;
 		}
-		
+		const naturalnessHidden = document.getElementById("naturalnessHidden");
+		naturalnessHidden.value = naturalnessSlider.value;
 	}
 	naturalnessSlider.dispatchEvent(new Event("input"));
 
@@ -894,6 +925,8 @@ window.onload = function() {
 				&& !surveyManager.survey.config.hideScaleValues) {
 			document.getElementById("painValue").innerHTML = painSlider.value;
 		}
+		const painHidden = document.getElementById("painHidden");
+		painHidden.value = painSlider.value;
 	}
 	painSlider.dispatchEvent(new Event("input"));
 

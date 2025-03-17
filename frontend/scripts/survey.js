@@ -9,7 +9,7 @@ export class Quality {
      * @param {string} type - the type of the quality 
      */
     constructor(
-        intensity = 5.0, 
+        intensity = -1.0, 
         depth = [],
         type = null
     ) {
@@ -67,8 +67,8 @@ export class ProjectedField {
         name = "Unnamed", 
         vertices = new Set([]), 
         hotSpot = {x: null, y: null, z: null}, 
-        naturalness = 5.0,
-        pain = 0.0,
+        naturalness = -1.0,
+        pain = -1.0,
         qualities = []
     ) {
         this.model = model;
