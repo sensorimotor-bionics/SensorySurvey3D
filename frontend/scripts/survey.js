@@ -9,7 +9,7 @@ export class Quality {
      * @param {string} type - the type of the quality 
      */
     constructor(
-        intensity = 5.0, 
+        intensity = -1.0, 
         depth = [],
         type = null
     ) {
@@ -67,8 +67,8 @@ export class ProjectedField {
         name = "Unnamed", 
         vertices = new Set([]), 
         hotSpot = {x: null, y: null, z: null}, 
-        naturalness = 5.0,
-        pain = 0.0,
+        naturalness = -1.0,
+        pain = -1.0,
         qualities = []
     ) {
         this.model = model;
@@ -88,6 +88,23 @@ export class ProjectedField {
      */
     addQuality() {
         this.qualities.push(new Quality());
+        return this.qualities[this.qualities.length - 1];
+    }
+
+    /**
+     * Duplicates the quality at the given index, add it to the qualities list,
+     * then return that new quality
+     * @param {number} idx - the index of the quality to be duplicated
+     * @returns {Quality}
+     */
+    duplicateQuality(idx) {
+        const oldQuality = this.qualities[idx];
+        const newQuality = new Quality(
+            oldQuality.intensity, 
+            oldQuality.depth,
+            oldQuality.type
+        );
+        this.qualities.push(newQuality);
         return this.qualities[this.qualities.length - 1];
     }
 
@@ -120,7 +137,7 @@ export class ProjectedField {
             hotSpot     : this.hotSpot,
             naturalness : this.naturalness,
             pain        : this.pain,
-            qualities: jsonQualities
+            qualities   : jsonQualities
         }
 
         return output;
@@ -230,8 +247,8 @@ export class Survey {
                     }  
                 }
     
-                field.name = model.charAt(0).toUpperCase() + model.slice(1) + " "
-                                + (priorTypeCount + 1).toString();
+                field.name = model.charAt(0).toUpperCase() + model.slice(1) 
+                    + " " + (priorTypeCount + 1).toString();
             }
         }
     }
@@ -276,6 +293,18 @@ export class Survey {
             this.projectedFields.push(field);
         }
     }
+
+    /**
+     * The set of meshes used by the survey
+     * @returns {Set}
+     */
+    get usedMeshFilenames() {
+        var list = [];
+        for (let i = 0; i < this.projectedFields.length; i++) {
+            list.push(this.config.models[this.projectedFields[i].model]);
+        }
+        return new Set(list);
+    }
 }
 
 /**
@@ -302,16 +331,20 @@ export class SurveyManager {
 
     /**
      * Check the current survey for missing information 
+     * @returns {string}
      */
     validateSurvey() {
         // Invalid if there are no projected fields
         if (this.survey.projectedFields.length == 0) {
             return "Survey has no projected fields.";
         }
-        // Invalid if there is a projected field without any qualities
+        // Invalid if there is a projected field without any qualities,
+        // unless that field has an empty drawing
         for (let i = 0; i < this.survey.projectedFields.length; i++) {
-            if (this.survey.projectedFields[i].qualities.length <= 0) {
-                return "At least one projected field has no qualities.";
+            const field = this.survey.projectedFields[i]
+            if (field.qualities.length <= 0
+                && field.vertices > 0) {
+                return "At least one projected field needs qualities.";
             }
         }
 
@@ -321,14 +354,29 @@ export class SurveyManager {
     /**
      * Submit the currentSurvey to the server via websocket
      * @param {WebSocket} socket - the socket the survey is to be sent over
+     * @param {Object} additionalData - additional data to be sent to the server
+     *      along with the survey, must be JSON.stringify-able
      * @returns {boolean}
      */
-    submitSurveyToServer(socket) {
+    submitSurveyToServer(socket, additionalData) {
+        // Create message object
         var msg = {
             type: "submit",
             survey: this.survey.toJSON()
         }
 
+        // Append additional data
+        if (additionalData) {
+            for (let prop in additionalData) {
+                if (
+                    Object.prototype.hasOwnProperty.call(additionalData, prop)
+                ) {
+                    msg[prop] = additionalData[prop];
+                }
+            }
+        }
+
+        // Try sending the message
         if (socket.readyState == WebSocket.OPEN) {
             socket.send(JSON.stringify(msg));
             this.currentField = null;

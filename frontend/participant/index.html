@@ -17,6 +17,7 @@
                     <div id="fieldListParent" class="surveyTable"></div>
                     <br>
                     <button id="newFieldButton">Add Field</button>
+                    <div style="height:3vh"></div>
                     <button id="submitButton">Submit</button>
                 </div>
     
@@ -42,6 +43,7 @@
                         <p style="text-align:center">Naturalness: <span id="naturalnessValue"></span></p>
                         <div class="rowContainer">
                             <input type="range" min="0" max="10" value="5.0" step="0.1" id="naturalnessSlider">
+                            <input type="hidden" value="-1" id="naturalnessHidden">
                         </div>
                         <div class="rowContainer">
                             <p style="width:50%; font-size:2vh">Unnatural</p>
@@ -52,6 +54,7 @@
                         <p style="text-align:center">Pain: <span id="painValue"></span></p>
                         <div class="rowContainer">
                             <input type="range" min="0" max="10" value="0" step="0.1" id="painSlider">
+                            <input type="hidden" value="-1" id="painHidden">
                         </div>
                         <div class="rowContainer">
                             <p style="width:50%; font-size:2vh">None</p>
@@ -59,19 +62,21 @@
                         </div>
                     </div>
                     <div class="rowContainer">
-                        <button id="fieldDoneButton">Done</button>
+                        <button id="fieldDeleteButton" class="warnButton">Delete</button>
                         <button id="fieldCancelButton">Cancel</button>
-                        <button id="fieldDeleteButton">Delete</button>
+                        <button id="fieldDoneButton">Done</button>
                     </div>
                 </div>
     
                 <div id="qualifyTab" class="sidebarTab">
+                    <p id="qualityNumber"></p>
                     <p>Type:</p>
                     <select id="typeSelect"></select>
                     <div style="width:80%;">
                         <p style="text-align:center">Intensity: <span id="intensityValue"></span></p>
                         <div class="rowContainer">
                             <input type="range" min="0" max="10" value="5.0" step="0.1" id="intensitySlider">
+                            <input type="hidden" value="-1" id="intensityHidden">
                         </div>
                         <div class="rowContainer">
                             <p style="width: 50%">Faint</p>
@@ -87,10 +92,11 @@
                         <label for="aboveSkinCheck">Above Skin</label>
                     </form>
                     <div class="rowContainer">
-                        <button id="qualifyDoneButton">Done</button>
+                        <button id="qualifyDeleteButton" class="warnButton">Delete</button>
                         <button id="qualifyCancelButton">Cancel</button>
-                        <button id="qualifyDeleteButton">Delete</button>
+                        <button id="qualifyDoneButton">Done</button>
                     </div>
+                    <button id="qualifyAnotherButton">Add Another</button>
                 </div>
             </div>
         </div>

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from survey3d import Survey, SurveyManager
+from survey3d import Survey, SurveyManager, Mesh
 import threading
 import pyrtma
 import time
@@ -153,29 +153,35 @@ async def participant(websocket: WebSocket):
             # If participant reports having an update, update the server's
             # representation of the survey with that data
             elif data["type"] == "update":
-                if manager.survey.startTime == data["survey"]["startTime"]:
-                    manager.survey.fromDict(data["survey"])
+                if isinstance(manager.survey, Survey):
+                    if manager.survey.startTime == data["survey"]["startTime"]:
+                        manager.survey.fromDict(data["survey"])
+                    else:
+                        print("Cannot update survey with mismatched start time")
                 else:
-                    print("Cannot update survey with mismatched start time")
+                    print("Cannot update when there is no survey in manager!")
             # If participant requests to submit the survey, update the survey
             # then attempt to save to .json
             elif data["type"] == "submit":
-                print("Saving survey...")
-                if manager.survey.startTime == data["survey"]["startTime"]:
-                    manager.survey.fromDict(data["survey"])
-                    result = manager.saveSurvey(data_path=data_path)
+                if isinstance(manager.survey, Survey):
+                    print("Saving survey...")
+                    if manager.survey.startTime == data["survey"]["startTime"]:
+                        manager.survey.fromDict(data["survey"])
+                        result = manager.saveSurvey()
+                        for mesh in data["meshes"]:
+                            obj = Mesh()
+                            obj.fromDict(data["meshes"][mesh])
+                            obj.saveMesh(manager.data_path)
+                    else:
+                        print("Cannot save survey with mismatched start time")
+                        result = False
+                    msg = {
+                        "type" : "submitResponse",
+                        "success" : result
+                    } 
+                    await websocket.send_json(msg)
                 else:
-                    print("Cannot save survey with mismatched start time")
-                    result = False
-                # if client.connected:
-                #     msgs = manager.getResponseMessages()
-                #     for msg in msgs:
-                #         client.send_message(msg)
-                msg = {
-                    "type" : "submitResponse",
-                    "success" : result
-                } 
-                await websocket.send_json(msg)
+                    print("Cannot submit when there is no survey in manager")
             else:
                 raise ValueError("Bad type value in participant-ws: " 
                                  + f"{data['type']}")

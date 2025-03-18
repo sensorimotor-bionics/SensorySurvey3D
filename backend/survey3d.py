@@ -4,6 +4,57 @@ import copy
 import climber_message as md
 from datetime import datetime
 from dataclasses import dataclass, field
+from typing import Sequence
+
+@dataclass
+class Mesh():
+    filename: str = "default"
+    vertices: list[Sequence[float]] = field(default_factory = list)
+    faces: list[Sequence[int]] = field(default_factory = list)
+
+    def toDict(self) -> dict:
+        """
+        Return the Mesh's properties as a dictionary.
+
+        Returns: A dictionary of the Mesh's properties.
+        """
+        return {
+            "filename": self.filename,
+            "vertices": self.vertices,
+            "faces": self.faces
+        }
+    
+    def fromDict(self, dict: dict):
+        """
+        Take a dictionary and uses its fields to populate the fields of the
+        Mesh object.
+
+        Args:
+            dictionary: a dictionary with keys named for each property of a
+            Mesh
+        """
+        self.filename = dict["filename"]
+        self.vertices = dict["vertices"]
+        self.faces = dict["faces"]
+    
+    def saveMesh(self, path: str):
+        """
+        Save this Mesh to the given path.
+
+        Args:
+            path: The folder to which the .json file should be saved
+
+        Returns: True if saved, False if not
+        """
+        filename = f"{self.filename}.json"
+        fullpath = os.path.join(path, filename)
+        if not os.path.isfile(fullpath):
+            print(f"Saving mesh data to {filename}...")
+            with open(fullpath, 'w') as file:
+                json.dump(self.toDict(), file, indent = 4)
+            return True
+        else:
+            return False
 
 @dataclass
 class Quality():
@@ -181,11 +232,11 @@ class SurveyManager():
     An object which handles survey creation, deletion, and editing. Has 
     knowledge of paths which the survey object itself does not need access to
     """
-    survey: Survey = None
+    survey: Survey | None = None
     config: dict = {}
     data_path: str = ""
 
-    def __init__(self, _config_path: str):
+    def __init__(self, _config_path: str, _data_path: str):
         """
         Class initialization function
 
@@ -194,9 +245,20 @@ class SurveyManager():
             lives
             _data_path: The path in which surveys should be saved
         """
-        with open(os.path.join(_config_path, "participant_config.json"), 
-                  'r') as data:
-            self.config = json.load(data)
+        try:
+            with open(os.path.join(_config_path, "participant_config.json"), 
+                    'r') as data:
+                self.config = json.load(data)
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(
+                f"Participant config cannot be parsed",
+                e.doc,
+                e.pos
+            )
+        except Exception as e:
+            raise Exception(f"Participant config cannot be read: {e}")
+        
+        self.data_path = os.path.join(_data_path)
 
     def newSurvey(self, participant: str):
         """
@@ -229,13 +291,16 @@ class SurveyManager():
 
         Returns: True if success, False if failure
         """
-        self.survey.endTimeNow()
-        try:
-            if self.survey.saveSurvey(data_path):
-                self.survey = None
-                return True
-            else:
+        if isinstance(self.survey, Survey):
+            self.survey.endTimeNow()
+            try:
+                if self.survey.saveSurvey(self.data_path):
+                    self.survey = None
+                    return True
+                else:
+                    return False
+            except Exception as e:
+                print(e)
                 return False
-        except Exception as e:
-            print(e)
+        else:
             return False

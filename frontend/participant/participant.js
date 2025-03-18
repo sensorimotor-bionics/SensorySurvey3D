@@ -39,39 +39,7 @@ function socketConnect() {
 
 		switch (msg.type) {
 			case "survey":
-				// Initialize a survey using the received data
-				surveyManager.survey = new SVY.Survey();
-				surveyManager.survey.fromJSON(msg.survey);
-				const modelSelect = document.getElementById("modelSelect");
-				// Set the UI to defaults
-				populateSelect(modelSelect, 
-								Object.keys(msg.survey.config.models));
-				populateSelect(document.getElementById("typeSelect"), 
-								msg.survey.config.typeList);
-				
-				cameraController.reset();
-				// If the survey has projected fields, fill the survey table
-				// and click the first "view" button
-				if (surveyManager.survey.projectedFields.length > 0) {
-					surveyTable.update(surveyManager.survey, 0);
-					let field = surveyManager.survey.projectedFields[0];
-					performModelReplacement(
-						surveyManager.survey.config.models[field.model],
-						field.vertices,
-						new THREE.Color("#abcabc"),
-						field.hotSpot
-					);
-				}
-
-				// If the config has hidden scale values, hide them
-				if (surveyManager.survey.config.hideScaleValues) {
-					document.getElementById("intensityValue").innerHTML = "";
-					document.getElementById("naturalnessValue").innerHTML = "";
-					document.getElementById("painValue").innerHTML = "";
-				}
-				if (waitingInterval) { 
-					endWaiting(); 
-				}
+				prepSurvey(msg.survey);
 				break;
 			case "submitResponse":
 				if (msg.success) {
@@ -79,10 +47,10 @@ function socketConnect() {
 					surveyTable.clear();
 					viewport.unloadCurrentMesh();
 					viewport.orbMesh.visible = false;
-					endSubmissionTimeout(msg.success);
+					processSubmissionResult(msg.success);
 				}
 				else if (submissionTimeoutInterval) {
-					endSubmissionTimeout(msg.success);
+					processSubmissionResult(msg.success);
 				}
 				else {
 					alert(
@@ -194,7 +162,7 @@ function performModelReplacement(
 			cameraController.reset();
 			document.getElementById("modelSelect").disabled = false;
 
-			if (hotSpot.x) {
+			if (hotSpot && hotSpot.x) {
 				viewport.orbMesh.position.copy(
 					new THREE.Vector3(
 						hotSpot.x,
@@ -266,6 +234,54 @@ function populateSelect(selectElement, optionList) {
 }
 
 /**
+ * Take a survey, give it to the survey manager, and prep the UI to display the 
+ * information contained in that survey.
+ * @param {Survey} survey - the survey whose data is to be used
+ */
+function prepSurvey(survey) {
+	// Initialize a survey using the received data
+	surveyManager.survey = new SVY.Survey();
+	surveyManager.survey.fromJSON(survey);
+	const modelSelect = document.getElementById("modelSelect");
+	// Set the UI to defaults
+	populateSelect(modelSelect, 
+					Object.keys(surveyManager.survey.config.models));
+	populateSelect(document.getElementById("typeSelect"), 
+		surveyManager.survey.config.typeList);
+	
+	cameraController.reset();
+	// If the survey has projected fields, fill the survey table
+	// and click the first "view" button
+	if (surveyManager.survey.projectedFields.length > 0) {
+		surveyTable.update(surveyManager.survey, 0);
+		let field = surveyManager.survey.projectedFields[0];
+		performModelReplacement(
+			surveyManager.survey.config.models[field.model],
+			field.vertices,
+			new THREE.Color("#abcabc"),
+			field.hotSpot
+		);
+	}
+	else {
+		performModelReplacement(
+			surveyManager.survey.config.models[modelSelect.value],
+			null,
+			new THREE.Color("#abcabc")
+		);
+	}
+
+	// If the config has hidden scale values, hide them
+	if (surveyManager.survey.config.hideScaleValues) {
+		document.getElementById("intensityValue").innerHTML = "";
+		document.getElementById("naturalnessValue").innerHTML = "";
+		document.getElementById("painValue").innerHTML = "";
+	}
+	if (waitingInterval) { 
+		endWaiting(); 
+	}
+}
+
+/**
  * Put the data from the given projected field into the editor UI
  * @param {ProjectedField} field - the ProjectedField whose data is to
  * 		be displayed
@@ -284,12 +300,32 @@ function populateFieldEditor(field) {
 		}
 
 		const naturalnessSlider = document.getElementById("naturalnessSlider");
-		naturalnessSlider.value = field.naturalness;
-		naturalnessSlider.dispatchEvent(new Event("input"));
+		
+		if (field.naturalness >= 0) {
+			naturalnessSlider.value = field.naturalness;
+			naturalnessSlider.dispatchEvent(new Event("input"));
+		}
+		else {
+			naturalnessSlider.value = 5.0;
+			naturalnessSlider.dispatchEvent(new Event("input"));
+			const naturalnessHidden = document.getElementById(
+				"naturalnessHidden"
+			);
+			naturalnessHidden.value = field.naturalness;
+		}
 
 		const painSlider = document.getElementById("painSlider");
-		painSlider.value = field.pain;
-		painSlider.dispatchEvent(new Event("input"));
+
+		if (field.pain >= 0) {
+			painSlider.value = field.pain;
+			painSlider.dispatchEvent(new Event("input"));
+		}
+		else {
+			painSlider.value = 0.0;
+			painSlider.dispatchEvent(new Event("input"));
+			const painHidden = document.getElementById("painHidden");
+			painHidden.value = field.pain;
+		}
 
 		surveyManager.currentField = field;
 	}
@@ -313,12 +349,12 @@ function saveFieldFromEditor() {
 	const modelSelect = document.getElementById("modelSelect");
 	surveyManager.currentField.model = modelSelect.value;
 
-	const naturalnessSlider = document.getElementById("naturalnessSlider");
+	const naturalnessHidden = document.getElementById("naturalnessHidden");
 	surveyManager.currentField.naturalness = parseFloat(
-		naturalnessSlider.value);
+		naturalnessHidden.value);
 
-	const painSlider = document.getElementById("painSlider");
-	surveyManager.currentField.pain = parseFloat(painSlider.value);
+	const painHidden = document.getElementById("painHidden");
+	surveyManager.currentField.pain = parseFloat(painHidden.value);
 }
 
 /**
@@ -327,6 +363,11 @@ function saveFieldFromEditor() {
  * 		editor
  */
 function populateQualityEditor(field, quality) {
+	const qualityNumber = document.getElementById("qualityNumber");
+	console.log(field.qualities.indexOf(quality));
+	qualityNumber.innerHTML = 
+		"Quality #" + (field.qualities.indexOf(quality) + 1);
+
 	const typeSelect = document.getElementById("typeSelect");
 	if (quality.type) {
 		typeSelect.value = quality.type;
@@ -345,8 +386,16 @@ function populateQualityEditor(field, quality) {
 	else { aboveSkinCheck.checked = false }
 
 	const intensitySlider = document.getElementById("intensitySlider");
-	intensitySlider.value = quality.intensity;
-	intensitySlider.dispatchEvent(new Event("input"));
+	if (quality.intensity >= 0) {
+		intensitySlider.value = quality.intensity;
+		intensitySlider.dispatchEvent(new Event("input"));
+	}
+	else {
+		intensitySlider.value = 5.0;
+		intensitySlider.dispatchEvent(new Event("input"));
+		const intensityHidden = document.getElementById("intensityHidden");
+		intensityHidden.value = quality.intensity;
+	}
 
 	surveyManager.currentField = field;
 	surveyManager.currentQuality = quality;
@@ -357,8 +406,8 @@ function populateQualityEditor(field, quality) {
  * corresponding fields in the surveyManager's currentQuality
  */
 function saveQualityFromEditor() {
-	const intensitySlider = document.getElementById("intensitySlider");
-	surveyManager.currentQuality.intensity = parseFloat(intensitySlider.value);
+	const intensityHidden = document.getElementById("intensityHidden");
+	surveyManager.currentQuality.intensity = parseFloat(intensityHidden.value);
 
 	const depthSelected = 
 		document.querySelectorAll("input[name=\"skinLevelCheckSet\"]:checked");
@@ -400,7 +449,7 @@ function startSubmissionTimeout() {
 	var timeoutCount = 0;
 	submissionTimeoutInterval = setInterval(function() {
 		if (timeoutCount == 10) {
-			endSubmissionTimeout(false);
+			processSubmissionResult(false);
 		}
 		timeoutCount += 1;
 	}.bind(timeoutCount), 500);
@@ -412,14 +461,21 @@ function startSubmissionTimeout() {
  * @param {boolean} success - A boolean representing if the submission was a 
  * 		success, determines which alert is displayed
  */
-function endSubmissionTimeout(success) {
+function processSubmissionResult(success) {
 	submissionTimeoutInterval = clearInterval(submissionTimeoutInterval);
-
+	
 	if (success) {
+		startWaiting();
+		viewport.clearMeshStorage();
+
+		var okFunction = function() {
+			COM.openSidebarTab("waitingTab");
+		}
+
 		openAlert(
 			"Submission was successful!",
 			["Ok"],
-			[startWaiting]
+			[okFunction]
 		);
 	}
 	else {
@@ -444,18 +500,37 @@ function endSubmissionTimeout(success) {
  * starts the wait for a new survey to begin.
  */
 function submitCallback() {
+	toggleButtons(false);
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
-		if (surveyManager.submitSurveyToServer(socket)) {
-			toggleButtons(false);
-			startSubmissionTimeout();
+		const usedMeshes = surveyManager.survey.usedMeshFilenames;
+		const storedMeshes = viewport.storedMeshNames;
+
+		var promises = [];
+
+		if (!usedMeshes.isSubsetOf(storedMeshes)) {
+			const diff = usedMeshes.difference(storedMeshes);
+			for (let key of diff) {
+				promises.push(viewport.loadMeshIntoStorage(key));
+			}
 		}
-		else {
-			toggleButtons(true);
-			alert("Survey submission failed -- socket is not connected!");
-		}
+
+		Promise.all(promises).then(function(values) {
+			const meshParams = viewport.getStoredMeshParameters(usedMeshes);
+			const meshParamsObject = {meshes: meshParams};
+
+			if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {
+				startSubmissionTimeout();
+			}
+			else {
+				toggleButtons(true);
+				alert("Survey submission failed -- socket is not connected!");
+			}
+		});
 	}
 	else {
+		toggleButtons(true);
+
 		var goBackButton = function() {
 			openList();
 		}
@@ -537,13 +612,11 @@ function fieldDoneCallback() {
 	const vertices = viewport.getNonDefaultVertices(viewport.currentMesh);
 	if (vertices.size <= 0) {
 		alertMessage = 
-			`Are you sure you're done with this projected field?<br><br>
-			The current projected field is missing a drawing.`;
+			`The current projected field is missing a drawing.`;
 	}
 	else if (!viewport.orbMesh.visible) {
 		alertMessage = 
-				`Are you sure you're done with this projected field?<br><br>
-				The current projected field is missing a hot spot.`;
+				`The current projected field is missing a hot spot.`;
 	}
 
 	if (alertMessage) {
@@ -593,6 +666,43 @@ function qualifyDoneCallback() {
 		openList();
 	}	
 }
+
+/**
+ * Checks if the current quality is complete, then if it is, duplicates that
+ * quality and opens a new quality editor for the duplicate
+ */
+function qualifyAnotherCallback() {
+	if (
+		!document.getElementById("belowSkinCheck").checked
+		&& !document.getElementById("atSkinCheck").checked
+		&& !document.getElementById("aboveSkinCheck").checked
+	) {
+		const okFunction = function() {
+			openQualityEditor();
+		}
+		
+		openAlert(
+			"You must select at least one depth before continuing.",
+			["Go Back"],
+			[okFunction]
+		); 
+	}
+	else {
+		saveQualityFromEditor();
+
+		const field = surveyManager.currentField;
+		viewFieldCallback(field);
+
+		const currentFieldIdx = field.qualities.indexOf(
+			surveyManager.currentQuality
+		);
+		const newQuality =  field.duplicateQuality(currentFieldIdx);
+		surveyManager.currentQuality = newQuality;
+		populateQualityEditor(field, newQuality);
+
+		openQualityEditor();
+	}	
+} 
 
 /**
  * Return to the list without saving changes from the current editor
@@ -771,6 +881,11 @@ window.onload = function() {
 	const qualifyDeleteButton = document.getElementById("qualifyDeleteButton");
 	qualifyDeleteButton.onpointerup = qualifyDeleteCallback;
 
+	const qualifyAnotherButton = document.getElementById(
+		"qualifyAnotherButton"
+	);
+	qualifyAnotherButton.onpointerup = qualifyAnotherCallback;
+
 	const modelSelect = document.getElementById("modelSelect");
 	modelSelect.onchange = modelSelectChangeCallback;
 
@@ -787,6 +902,8 @@ window.onload = function() {
 			document.getElementById("intensityValue").innerHTML = 
 				intensitySlider.value;
 		}
+		const intensityHidden = document.getElementById("intensityHidden");
+		intensityHidden.value = intensitySlider.value;
 	}
 	intensitySlider.dispatchEvent(new Event("input"));
 
@@ -797,7 +914,8 @@ window.onload = function() {
 			document.getElementById("naturalnessValue").innerHTML = 
 				naturalnessSlider.value;
 		}
-		
+		const naturalnessHidden = document.getElementById("naturalnessHidden");
+		naturalnessHidden.value = naturalnessSlider.value;
 	}
 	naturalnessSlider.dispatchEvent(new Event("input"));
 
@@ -807,6 +925,8 @@ window.onload = function() {
 				&& !surveyManager.survey.config.hideScaleValues) {
 			document.getElementById("painValue").innerHTML = painSlider.value;
 		}
+		const painHidden = document.getElementById("painHidden");
+		painHidden.value = painSlider.value;
 	}
 	painSlider.dispatchEvent(new Event("input"));
 
