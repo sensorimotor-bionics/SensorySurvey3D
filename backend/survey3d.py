@@ -149,6 +149,7 @@ class Survey():
     date: str = ""
     startTime: str = ""
     endTime: str = ""
+    setNum: str = ""
     projectedFields: list[ProjectedField] = field(default_factory=list)
     
     def startDateTimeNow(self) -> None:
@@ -284,7 +285,7 @@ class SurveyManager():
                 print("Cannot begin new survey; given participant is not in " 
                       "participant config.")
     
-    def saveSurvey(self, data_path):
+    def saveSurvey(self):
         """
         Set the end time to the current time, then saves the survey to a file 
         in the Manager's data path

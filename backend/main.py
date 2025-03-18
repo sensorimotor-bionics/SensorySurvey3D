@@ -87,14 +87,21 @@ def RTMAConnect():
                     client.disconnect()
                     rtmaConnected = False
                 elif isinstance(msgIn.data, md.MDF_SET_START):
-                    if manager.survey:
+                    if manager.survey and manager.survey.projectedFields:
                         print(
                             "There is already a current survey! Cannot start "
                             + "new survey until current survey is complete.")
                     else:
-                        if manager.newSurvey(msgIn.data.subject_id):
+                        if (manager.survey 
+                            and not manager.survey.projectedFields):
+                            print(f"Survey is empty; updating survey set "
+                                  + f"number to {msgIn.data.set_num}")
+                            manager.survey.setNum = str(msgIn.data.set_num)
+                        elif manager.newSurvey(msgIn.data.subject_id):
                             print(f"Starting survey for "
-                                  + f"{msgIn.data.subject_id}.")
+                                  + f"{msgIn.data.subject_id}, set number "
+                                  + f"{msgIn.data.set_num}.")
+                            manager.survey.setNum = str(msgIn.data.set_num)
                         else:
                             print(
                                 f"Cannot start survey for "
