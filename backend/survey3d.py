@@ -205,6 +205,7 @@ class Survey():
             "date": self.date,
             "startTime": self.startTime,
             "endTime" : self.endTime,
+            "setNum" : self.setNum,
             "projectedFields": projectedFieldsDict
         }
 

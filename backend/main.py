@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from survey3d import Survey, SurveyManager, Mesh
+from pathlib import Path
 import threading
 import pyrtma
 import time
@@ -27,7 +28,7 @@ SYS_CONFIG = load_config.system()
 app = FastAPI(lifespan=lifespan)
 
 # The survey manager
-manager = SurveyManager(CONFIG_PATH)
+manager = SurveyManager(CONFIG_PATH, data_path)
 
 # Variable which controls the RTMA loop
 rtmaConnected = False
@@ -96,20 +97,21 @@ def RTMAConnect():
                             and not manager.survey.projectedFields):
                             print(f"Survey is empty; updating survey set "
                                   + f"number to {msgIn.data.set_num}")
-                            manager.survey.setNum = str(msgIn.data.set_num)
+                            manager.survey.setNum = msgIn.data.set_num
                         elif manager.newSurvey(msgIn.data.subject_id):
                             print(f"Starting survey for "
                                   + f"{msgIn.data.subject_id}, set number "
                                   + f"{msgIn.data.set_num}.")
-                            manager.survey.setNum = str(msgIn.data.set_num)
+                            manager.survey.setNum = msgIn.data.set_num
                         else:
                             print(
                                 f"Cannot start survey for "
                                 + f"{msgIn.data.subject_id}!"
                             )
                 elif isinstance(msgIn.data, md.MDF_SAVE_MESSAGE_LOG):
-                    global data_path
-                    data_path = os.path.join(msgIn.data.pathname)
+                    manager.data_path = os.path.join(
+                        Path(msgIn.data.pathname).parent
+                    )
                 else:
                     print('Message not recognized')
             except Exception as e:
