@@ -1,4 +1,12 @@
 {
+    "TestBCI" : {
+        "models" : {
+            "Breast" : "nipple_addition.gltf"
+        },
+        "typeList" : ["touch", "pressure", "tingling", "squeezing",
+                      "buzzing", "electrical", "movement (joint)",
+                      "stinging", "uncomfortable", "contracting", "painful"]
+    },
     "bci02" : {
         "models" : {
             "Right Hand" : "hand_r.gltf"
