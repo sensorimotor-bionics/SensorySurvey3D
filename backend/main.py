@@ -62,7 +62,7 @@ def RTMAConnect():
                 client.subscribe(
                     [md.MT_ACKNOWLEDGE, 
                      md.MT_EXIT, 
-                     md.MT_SET_START,
+                     md.MT_ENABLE_PARTICIPANT_RESPONSES,
                      md.MT_SAVE_MESSAGE_LOG]
                 )
                 client.send_module_ready()
