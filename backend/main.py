@@ -87,7 +87,7 @@ def RTMAConnect():
                 elif (msgIn.type_id == md.MT_EXIT):
                     client.disconnect()
                     rtmaConnected = False
-                elif isinstance(msgIn.data, md.MDF_SET_START):
+                elif isinstance(msgIn.data, md.MDF_ENABLE_PARTICIPANT_RESPONSES):
                     if manager.survey and manager.survey.projectedFields:
                         print(
                             "There is already a current survey! Cannot start "
@@ -98,16 +98,16 @@ def RTMAConnect():
                             print(f"Survey is empty; updating survey set "
                                   + f"number to {msgIn.data.set_num}")
                             manager.survey.setNum = msgIn.data.set_num
-                        elif manager.newSurvey(msgIn.data.subject_id):
+                        elif manager.newSurvey(msgIn.data.participant):
                             if manager.survey:
                                 print(f"Starting survey for "
-                                    + f"{msgIn.data.subject_id}, set number "
+                                    + f"{msgIn.data.participant}, set number "
                                     + f"{msgIn.data.set_num}.")
                                 manager.survey.setNum = msgIn.data.set_num
                         else:
                             print(
                                 f"Cannot start survey for "
-                                + f"{msgIn.data.subject_id}!"
+                                + f"{msgIn.data.participant}!"
                             )
                 elif isinstance(msgIn.data, md.MDF_SAVE_MESSAGE_LOG):
                     manager.data_path = os.path.join(
