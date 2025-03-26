@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
 
 # The path we pull our configs from
 CONFIG_PATH = r"./config/"
-data_path = r"./data/"
+data_path = r"../data/"
 
 # Get system config
 SYS_CONFIG = load_config.system()
@@ -99,10 +99,11 @@ def RTMAConnect():
                                   + f"number to {msgIn.data.set_num}")
                             manager.survey.setNum = msgIn.data.set_num
                         elif manager.newSurvey(msgIn.data.subject_id):
-                            print(f"Starting survey for "
-                                  + f"{msgIn.data.subject_id}, set number "
-                                  + f"{msgIn.data.set_num}.")
-                            manager.survey.setNum = msgIn.data.set_num
+                            if manager.survey:
+                                print(f"Starting survey for "
+                                    + f"{msgIn.data.subject_id}, set number "
+                                    + f"{msgIn.data.set_num}.")
+                                manager.survey.setNum = msgIn.data.set_num
                         else:
                             print(
                                 f"Cannot start survey for "
@@ -176,11 +177,16 @@ async def participant(websocket: WebSocket):
                     print("Saving survey...")
                     if manager.survey.startTime == data["survey"]["startTime"]:
                         manager.survey.fromDict(data["survey"])
+                        rtmaMsgs = manager.survey.toRTMAMessages()
                         result = manager.saveSurvey()
-                        for mesh in data["meshes"]:
-                            obj = Mesh()
-                            obj.fromDict(data["meshes"][mesh])
-                            obj.saveMesh(manager.data_path)
+                        if result:
+                            for msg in rtmaMsgs:
+                                client.send_message(msg)
+                            client.info("Survey messages sent over RTMA!")
+                            for mesh in data["meshes"]:
+                                obj = Mesh()
+                                obj.fromDict(data["meshes"][mesh])
+                                obj.saveMesh(manager.data_path)
                     else:
                         print("Cannot save survey with mismatched start time")
                         result = False

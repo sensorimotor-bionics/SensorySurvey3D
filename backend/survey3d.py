@@ -1,6 +1,8 @@
 import os
 import json
 import copy
+import pyrtma
+import math
 import climber_message as md
 from datetime import datetime
 from dataclasses import dataclass, field
@@ -149,7 +151,7 @@ class Survey():
     date: str = ""
     startTime: str = ""
     endTime: str = ""
-    setNum: str = ""
+    setNum: int = -1
     projectedFields: list[ProjectedField] = field(default_factory=list)
     
     def startDateTimeNow(self) -> None:
@@ -227,6 +229,57 @@ class Survey():
         for field in dictionary["projectedFields"]:
             self.projectedFields.append(ProjectedField())
             self.projectedFields[-1].fromDict(field)
+    
+    def toRTMAMessages(self) -> list[pyrtma.MessageData]:
+        msgs = []
+
+        surveyMsg = md.MDF_SURVEY_3D_TRIAL_RESPONSE()
+        surveyMsg.set_num = self.setNum
+        surveyMsg.participant = self.participant
+        surveyMsg.date = self.date
+        surveyMsg.start_time = self.startTime
+        surveyMsg.end_time = self.endTime
+        
+        fieldListTemp = []
+        for i in range(16): 
+            fieldListTemp.append(md.SURVEY_3D_PROJECTED_FIELD())
+        surveyMsg.projected_fields = fieldListTemp
+
+        for i, field in enumerate(self.projectedFields):
+            fieldMsg = surveyMsg.projected_fields[i]
+            fieldMsg.total_vertices = len(field.vertices)
+            fieldMsg.naturalness = field.naturalness
+            fieldMsg.pain = field.pain
+            fieldMsg.hot_spot_x = field.hotSpot["x"]
+            fieldMsg.hot_spot_y = field.hotSpot["y"]
+            fieldMsg.hot_spot_z = field.hotSpot["z"]
+            fieldMsg.model = field.model
+            fieldMsg.name = field.name
+
+            qualityListTemp = []
+            for j in range(16): 
+                qualityListTemp.append(md.SURVEY_3D_QUALITY())
+            fieldMsg.qualities = qualityListTemp
+
+            for j, quality in enumerate(field.qualities):
+                qualityMsg = fieldMsg.qualities[j]
+                qualityMsg.intensity = quality.intensity
+                qualityMsg.depth = str(quality.depth)
+                qualityMsg.type = quality.type
+
+            for j in range(math.ceil(len(field.vertices) / 512)):
+                streamMsg = md.MDF_SURVEY_3D_VERTICES_STREAM()
+                streamMsg.name = field.name
+                vertices = field.vertices[
+                    j * 512 : ((j + 1) * 512) - 1
+                ]
+                vertices += [-1] * (512 - len(vertices))
+                streamMsg.vertices = vertices
+                msgs.append(streamMsg)
+
+        msgs.append(surveyMsg)
+
+        return msgs
         
         
 class SurveyManager():

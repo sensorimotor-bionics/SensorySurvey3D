@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
 
-export const socketURL = "ws://192.168.1.40:5002/";
+export const socketURL = "ws://127.0.0.1:8000/";
 
 export const uiPositions = Object.freeze({
     TOP: 0,
