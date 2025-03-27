@@ -250,9 +250,14 @@ class Survey():
             fieldMsg.total_vertices = len(field.vertices)
             fieldMsg.naturalness = field.naturalness
             fieldMsg.pain = field.pain
-            fieldMsg.hot_spot_x = field.hotSpot["x"]
-            fieldMsg.hot_spot_y = field.hotSpot["y"]
-            fieldMsg.hot_spot_z = field.hotSpot["z"]
+            if field.hotSpot["x"]:
+                fieldMsg.hot_spot_x = field.hotSpot["x"]
+                fieldMsg.hot_spot_y = field.hotSpot["y"]
+                fieldMsg.hot_spot_z = field.hotSpot["z"]
+            else:
+                fieldMsg.hot_spot_x = -1
+                fieldMsg.hot_spot_y = -1
+                fieldMsg.hot_spot_z = -1
             fieldMsg.model = field.model
             fieldMsg.name = field.name
 
