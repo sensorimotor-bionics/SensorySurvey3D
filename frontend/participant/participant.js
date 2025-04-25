@@ -503,30 +503,43 @@ function submitCallback() {
 	toggleButtons(false);
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
-		const usedMeshes = surveyManager.survey.usedMeshFilenames;
-		const storedMeshes = viewport.storedMeshNames;
-
-		var promises = [];
-
-		if (!usedMeshes.isSubsetOf(storedMeshes)) {
-			const diff = usedMeshes.difference(storedMeshes);
-			for (let key of diff) {
-				promises.push(viewport.loadMeshIntoStorage(key));
-			}
+		var noButton = function() {
+			openList();
+			toggleButtons(true);
 		}
 
-		Promise.all(promises).then(function(values) {
-			const meshParams = viewport.getStoredMeshParameters(usedMeshes);
-			const meshParamsObject = {meshes: meshParams};
+		var yesButton = function() {
+			const usedMeshes = surveyManager.survey.usedMeshFilenames;
+			const storedMeshes = viewport.storedMeshNames;
 
-			if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {
-				startSubmissionTimeout();
+			var promises = [];
+
+			if (!usedMeshes.isSubsetOf(storedMeshes)) {
+				const diff = usedMeshes.difference(storedMeshes);
+				for (let key of diff) {
+					promises.push(viewport.loadMeshIntoStorage(key));
+				}
 			}
-			else {
-				toggleButtons(true);
-				alert("Survey submission failed -- socket is not connected!");
-			}
-		});
+
+			Promise.all(promises).then(function(values) {
+				const meshParams = viewport.getStoredMeshParameters(usedMeshes);
+				const meshParamsObject = {meshes: meshParams};
+
+				if (surveyManager.submitSurveyToServer(socket, meshParamsObject)) {
+					startSubmissionTimeout();
+				}
+				else {
+					toggleButtons(true);
+					alert("Survey submission failed -- socket is not connected!");
+				}
+			});
+		}
+
+		openAlert(
+			"Are you sure you want to submit this survey?",
+			["No", "Yes"],
+			[noButton, yesButton]
+		);
 	}
 	else {
 		toggleButtons(true);
@@ -539,7 +552,7 @@ function submitCallback() {
 			`Cannot submit survey.<br><br>` + surveyValidityError,
 			["Go Back"],
 			[goBackButton]
-		)
+		);
 	}
 }
 
