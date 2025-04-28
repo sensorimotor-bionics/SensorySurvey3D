@@ -363,11 +363,12 @@ function saveFieldFromEditor() {
  * 		editor
  */
 function populateQualityEditor(field, quality) {
-	const qualityNumber = document.getElementById("qualityNumber");
-	console.log(field.qualities.indexOf(quality));
-	qualityNumber.innerHTML = 
-		"Quality #" + (field.qualities.indexOf(quality) + 1);
-
+	const smallQualityList = document.getElementById("smallQualityList");
+	console.log(surveyTable.createQualitiesListChunk(field).children);
+	smallQualityList.replaceChildren(
+		...surveyTable.createQualitiesListChunk(field).children
+	);
+	
 	const typeSelect = document.getElementById("typeSelect");
 	if (quality.type) {
 		typeSelect.value = quality.type;

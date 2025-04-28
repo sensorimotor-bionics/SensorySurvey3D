@@ -464,6 +464,43 @@ export class SurveyTable {
 
         target.getElementsByTagName('img')[0].src = "/images/eye.png";
     }
+    
+    /**
+     * Create a div containing a list of qualities for a given projected field,
+     * along with edit buttons for each
+     * @param {ProjectedField} field - 
+     * @param {string} indent - a string to be prepended to each quality name
+     * @returns {Element}
+     */
+    createQualitiesListChunk(field, indent = "") {
+        const that = this;
+        var chunk = document.createElement("div");
+        for (let i = 0; i < field.qualities.length; i++) {
+            const quality = field.qualities[i];
+
+            var qualityRow = document.createElement("div");
+            qualityRow.classList.add("surveyTableRow");
+
+            var name = document.createElement("div");
+            name.innerHTML = indent
+                + quality.type.charAt(0).toUpperCase() 
+                + quality.type.slice(1)
+            name.style["flex"] = "1 1 auto";
+            qualityRow.appendChild(name);
+
+            if (this._isParticipant) {
+                var qualityEditButton = document.createElement("button");
+                qualityEditButton.innerHTML = "Edit";
+                qualityEditButton.addEventListener("pointerup", function() {
+                    that._editQualityCallbackExternal(field, quality);
+                });
+                qualityRow.appendChild(qualityEditButton);
+            }
+            
+            chunk.appendChild(qualityRow);
+        }
+        return chunk
+    }
 
     /**
      * Creates a chunk containing information for a given projected field, 
@@ -511,33 +548,9 @@ export class SurveyTable {
         }
 
         chunk.appendChild(fieldRow);
-
-        for (let i = 0; i < field.qualities.length; i++) {
-            const quality = field.qualities[i];
-
-            var qualityRow = document.createElement("div");
-            qualityRow.classList.add("surveyTableRow");
-
-            var name = document.createElement("div");
-            name.innerHTML = "→ "
-                + quality.type.charAt(0).toUpperCase() 
-                + quality.type.slice(1)
-                + ", " 
-                + quality.intensity.toFixed(1);
-            name.style["flex"] = "1 1 auto";
-            qualityRow.appendChild(name);
-
-            if (this._isParticipant) {
-                var qualityEditButton = document.createElement("button");
-                qualityEditButton.innerHTML = "Edit";
-                qualityEditButton.addEventListener("pointerup", function() {
-                    that._editQualityCallbackExternal(field, quality);
-                });
-                qualityRow.appendChild(qualityEditButton);
-            }
-            
-            chunk.appendChild(qualityRow);
-        }
+        
+        var qualitiesChunk = this.createQualitiesListChunk(field, "• ");
+        chunk.appendChild(qualitiesChunk);
 
         if (this._isParticipant) {
             var addQualityButtonContainer = document.createElement("div");

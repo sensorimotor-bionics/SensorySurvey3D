@@ -21,18 +21,28 @@ html {
     position: fixed;
     z-index: 1000;
     background-color: #111;
-    overflow-x: hidden;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.scrollContainer {
+.scrollContainerMedium{
+    align-self: flex-start; 
+    flex: 1 1 auto;
     margin: auto;
-    max-height: 100%;
-    width: 100%;
-    overflow: auto;
+    max-height: 80%;
+    overflow-y: scroll;
+}
+
+.scrollContainerSmall{
+    align-self: flex-start; 
+    flex: 1 1 auto;
+    margin: auto;
+    max-height: 40%;
+    width: 60%;
+    overflow-y: scroll;
 }
 
 .sidebarTab {
@@ -41,7 +51,7 @@ html {
     align-items: center;
     margin: auto;
     flex-direction: column;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .widthbar {
