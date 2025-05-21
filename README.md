@@ -43,3 +43,5 @@ By default, this will open the frontend to localhost. You may use the --host fla
 
 ### Models
 Example model meshes are hosted on our [Box](https://uchicago.box.com/s/89r4uojt9xlzgsy6pje75cqkf8g06vye).
+
+For custom models we suggest importing to [Blender](https://www.blender.org/) to trim and process and then using [Instant Meshes](https://github.com/wjakob/instant-meshes).
