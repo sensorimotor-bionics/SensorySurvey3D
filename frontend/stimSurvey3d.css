@@ -28,7 +28,7 @@ html {
     align-items: center;
 }
 
-.scrollContainerMedium{
+.scrollContainerMedium {
     align-self: flex-start; 
     flex: 1 1 auto;
     margin: auto;
@@ -36,11 +36,11 @@ html {
     overflow-y: scroll;
 }
 
-.scrollContainerSmall{
+.scrollContainerSmall {
     align-self: flex-start; 
     flex: 1 1 auto;
-    margin: auto;
-    max-height: 40%;
+    margin: 4px auto;
+    max-height: 30%;
     width: 60%;
     overflow-y: scroll;
 }
@@ -159,6 +159,25 @@ html {
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+}
+
+.smallButton {
+    background-color: var(--buttonColor);
+    border: none;
+    color: white;
+    padding: 9px 18px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    margin: 4px 8px;
+    cursor: pointer;
+    float: left;
+    border-radius: 5px;
+    font-size: 1.8vh;
+}
+
+.smallText {
+    font-size: 1.8vh;
 }
 
 p {

@@ -364,9 +364,9 @@ function saveFieldFromEditor() {
  */
 function populateQualityEditor(field, quality) {
 	const smallQualityList = document.getElementById("smallQualityList");
-	console.log(surveyTable.createQualitiesListChunk(field).children);
+	var quality_positon = field.qualities.indexOf(quality);
 	smallQualityList.replaceChildren(
-		...surveyTable.createQualitiesListChunk(field).children
+		...surveyTable.createQualitiesListChunk(field, quality_positon).children
 	);
 	
 	const typeSelect = document.getElementById("typeSelect");
