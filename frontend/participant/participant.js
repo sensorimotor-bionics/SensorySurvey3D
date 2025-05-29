@@ -582,6 +582,9 @@ function viewFieldCallback(field) {
  * @param {Quality} quality - the quality to be edited 
  */
 function editQualityCallback(field, quality) {
+	if (surveyManager.currentQuality) {
+		saveQualityFromEditor();
+	}
 	viewFieldCallback(field);
 	populateQualityEditor(field, quality);
 	openQualityEditor();
