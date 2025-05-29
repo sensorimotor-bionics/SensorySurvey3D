@@ -557,6 +557,7 @@ export class SurveyViewport {
                             this.orbMesh.position.copy(res[0].point);
                             this.orbMesh.visible = true;
                         }
+                        else { this.orbMesh.visible = false; }
                     }
                     break;
             }

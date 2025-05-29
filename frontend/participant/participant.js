@@ -363,11 +363,12 @@ function saveFieldFromEditor() {
  * 		editor
  */
 function populateQualityEditor(field, quality) {
-	const qualityNumber = document.getElementById("qualityNumber");
-	console.log(field.qualities.indexOf(quality));
-	qualityNumber.innerHTML = 
-		"Quality #" + (field.qualities.indexOf(quality) + 1);
-
+	const smallQualityList = document.getElementById("smallQualityList");
+	var quality_positon = field.qualities.indexOf(quality);
+	smallQualityList.replaceChildren(
+		...surveyTable.createQualitiesListChunk(field, quality_positon).children
+	);
+	
 	const typeSelect = document.getElementById("typeSelect");
 	if (quality.type) {
 		typeSelect.value = quality.type;
@@ -581,6 +582,9 @@ function viewFieldCallback(field) {
  * @param {Quality} quality - the quality to be edited 
  */
 function editQualityCallback(field, quality) {
+	if (surveyManager.currentQuality) {
+		saveQualityFromEditor();
+	}
 	viewFieldCallback(field);
 	populateQualityEditor(field, quality);
 	openQualityEditor();

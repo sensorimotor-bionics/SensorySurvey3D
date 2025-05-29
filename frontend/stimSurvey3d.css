@@ -21,18 +21,28 @@ html {
     position: fixed;
     z-index: 1000;
     background-color: #111;
-    overflow-x: hidden;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.scrollContainer {
+.scrollContainerMedium {
+    align-self: flex-start; 
+    flex: 1 1 auto;
     margin: auto;
-    max-height: 100%;
-    width: 100%;
-    overflow: auto;
+    max-height: 80%;
+    overflow-y: scroll;
+}
+
+.scrollContainerSmall {
+    align-self: flex-start; 
+    flex: 1 1 auto;
+    margin: 4px auto;
+    max-height: 30%;
+    width: 60%;
+    overflow-y: scroll;
 }
 
 .sidebarTab {
@@ -41,7 +51,7 @@ html {
     align-items: center;
     margin: auto;
     flex-direction: column;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .widthbar {
@@ -149,6 +159,29 @@ html {
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+}
+
+.smallButton {
+    background-color: var(--buttonColor);
+    border: none;
+    color: white;
+    padding: 9px 18px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    margin: 4px 8px;
+    cursor: pointer;
+    float: left;
+    border-radius: 5px;
+    font-size: 1.8vh;
+}
+
+.smallText {
+    font-size: 1.8vh;
+}
+
+.titleText {
+    text-align: center;
 }
 
 p {
