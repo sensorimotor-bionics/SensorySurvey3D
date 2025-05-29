@@ -503,6 +503,7 @@ export class SurveyTable {
                 });
                 if (selected === i) {
                     qualityEditButton.disabled = true;
+                    name.style.fontWeight = "bold";
                 }
                 qualityRow.appendChild(qualityEditButton);
             }
