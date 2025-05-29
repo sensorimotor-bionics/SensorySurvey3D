@@ -180,6 +180,10 @@ html {
     font-size: 1.8vh;
 }
 
+.titleText {
+    text-align: center;
+}
+
 p {
     font-size: 2.4vh;
     color: white;
