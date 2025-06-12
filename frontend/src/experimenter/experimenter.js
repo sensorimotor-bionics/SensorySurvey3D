@@ -16,7 +16,7 @@ var lastClickedView = null;
 
 /* WEBSOCKET */
 
-const socketURL = COM.socketURL + "experimenter-ws";
+const socketURL = "/experimenter-ws";
 var socket;
 
 /**

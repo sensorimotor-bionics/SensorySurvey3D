@@ -1,5 +1,6 @@
 node_modules/
 data/
 3dmodels/
+frontend/dist/
 __pycache__/
 .vite/
