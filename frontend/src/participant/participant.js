@@ -16,7 +16,7 @@ var updateServerInterval;
 
 /* WEBSOCKET */
 
-const socketURL = COM.socketURL + "participant-ws";
+const socketURL = "/participant-ws";
 var socket;
 
 /**
