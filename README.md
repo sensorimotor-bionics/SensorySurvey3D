@@ -17,29 +17,24 @@ pip install -r requirements.txt
 ### Frontend
 The frontend requires a [Node.js](https://nodejs.org/en/download/package-manager) installation.
 
-In the [frontend folder](/frontend/), there is a package-lock.json file. Navigate to this folder with your command line, and use the following command:
+In the [frontend source folder](/frontend/src/), there is a package-lock.json file. Navigate to this folder with your command line, and use the following command to install required npm packages:
 ```
 npm i
 ```
 
+Once the required packages are installed, you'll need to build the "dist" version of the frontend to be served by the backend. To do so, run the following command in the [frontend source folder](/frontend/src/):
+```
+npx vite build
+```
+
 ## Running
 
-### Backend
 In the [backend folder](/backend/), run the following command:
 ```
 uvicorn main:app --reload
 ```
 
-By default, this will open the backend to 127.0.0.1:8000. If you would like to change this, you may use the --host and --port options to set the IP and port for the backend. If you do so: you must change the socketURL variable in [common.json](/frontend/scripts/common.js) to match your settings.
-
-### Frontend
-In the [frontend folder](/frontend/), run the following command:
-```
-npx vite
-```
-
-By default, this will open the frontend to localhost. You may use the --host flag to change the IP.
-
+By default, this will open the app to 127.0.0.1:8000. If you would like to change this, you may use the --host and --port options to set the IP and port, respectively. 
 
 ### Models
 Example model meshes are hosted on our [Box](https://uchicago.box.com/s/89r4uojt9xlzgsy6pje75cqkf8g06vye).
