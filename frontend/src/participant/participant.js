@@ -782,6 +782,20 @@ function modelSelectChangeCallback() {
 }
 
 /**
+ * Get the current selected quality and update its name to match the type select
+ */
+function typeSelectCallback() {
+	const selectedQualities = 
+		document.getElementsByClassName("selectedQuality");
+	for (let i = 0; i < selectedQualities.length; i++) {
+		selectedQualities[i].innerHTML = (
+			typeSelect.value.charAt(0).toUpperCase() 
+			+ typeSelect.value.slice(1)
+		);
+	}
+}
+
+/**
  * Call for the viewport to "undo" the last action
  * @param {Event} event - the event which triggered the callback
  */
@@ -946,6 +960,9 @@ window.onload = function() {
 		painHidden.value = painSlider.value;
 	}
 	painSlider.dispatchEvent(new Event("input"));
+
+	const typeSelect = document.getElementById("typeSelect");
+	typeSelect.oninput = typeSelectCallback;
 
 	toggleUndoRedo(false);
 	viewport.animate();

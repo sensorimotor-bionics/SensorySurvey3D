@@ -7,6 +7,7 @@
     --warnButtonActiveColor: #8C1313;
     --sideWidth: 25%;
     --widthbarHeight: 64px;
+    --highlightText: #F8EE7E;
 }
 
 html {
@@ -182,6 +183,11 @@ html {
 
 .titleText {
     text-align: center;
+}
+
+.selectedQuality {
+    font-weight: bold;
+    color: var(--highlightText);
 }
 
 p {
