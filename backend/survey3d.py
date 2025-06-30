@@ -230,7 +230,7 @@ class SurveyManager():
     An object which handles survey creation, deletion, and editing. Has 
     knowledge of paths which the survey object itself does not need access to
     """
-    survey: Survey | None = None
+    survey: Survey | None
     config: dict = {}
     data_path: str = ""
 
@@ -257,6 +257,7 @@ class SurveyManager():
             raise Exception(f"Participant config cannot be read: {e}")
         
         self.data_path = os.path.join(_data_path)
+        self.survey = None
 
     def newSurvey(self, participant: str):
         """
@@ -289,7 +290,7 @@ class SurveyManager():
 
         Returns: True if success, False if failure
         """
-        if isinstance(self.survey, Survey):
+        if isinstance(self.survey, Survey) and self.data_path:
             self.survey.endTimeNow()
             try:
                 if self.survey.saveSurvey(self.data_path):
