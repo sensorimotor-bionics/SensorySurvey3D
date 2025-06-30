@@ -71,7 +71,7 @@ async def participant_ws(websocket: WebSocket):
                         for mesh in data["meshes"]:
                             obj = Mesh()
                             obj.fromDict(data["meshes"][mesh])
-                            obj.saveMesh(manager.data_path)
+                            obj.saveMesh(manager.dataPath)
                     else:
                         print("Cannot save survey with mismatched start time")
                         result = False

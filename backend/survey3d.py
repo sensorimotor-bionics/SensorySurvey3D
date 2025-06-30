@@ -232,9 +232,9 @@ class SurveyManager():
     """
     survey: Survey | None
     config: dict = {}
-    data_path: str = ""
+    dataPath: str = ""
 
-    def __init__(self, _config_path: str, _data_path: str):
+    def __init__(self, configPath: str, dataPath: str):
         """
         Class initialization function
 
@@ -244,7 +244,7 @@ class SurveyManager():
             _data_path: The path in which surveys should be saved
         """
         try:
-            with open(os.path.join(_config_path, "participant_config.json"), 
+            with open(os.path.join(configPath, "participant_config.json"), 
                     'r') as data:
                 self.config = json.load(data)
         except json.JSONDecodeError as e:
@@ -256,7 +256,7 @@ class SurveyManager():
         except Exception as e:
             raise Exception(f"Participant config cannot be read: {e}")
         
-        self.data_path = os.path.join(_data_path)
+        self.dataPath = os.path.join(dataPath)
         self.survey = None
 
     def newSurvey(self, participant: str):
@@ -290,10 +290,10 @@ class SurveyManager():
 
         Returns: True if success, False if failure
         """
-        if isinstance(self.survey, Survey) and self.data_path:
+        if isinstance(self.survey, Survey) and self.dataPath:
             self.survey.endTimeNow()
             try:
-                if self.survey.saveSurvey(self.data_path):
+                if self.survey.saveSurvey(self.dataPath):
                     self.survey = None
                     return True
                 else:
