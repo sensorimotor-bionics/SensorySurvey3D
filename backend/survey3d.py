@@ -259,7 +259,7 @@ class SurveyManager():
         self.dataPath = os.path.join(dataPath)
         self.survey = None
 
-    def newSurvey(self, participant: str):
+    def newSurvey(self, participant: str) -> bool:
         """
         Create a new survey for a given participant if one does not already
         exist
@@ -282,14 +282,38 @@ class SurveyManager():
             else:
                 print("Cannot begin new survey; given participant is not in " 
                       "participant config.")
+                return False
+                
+    def updateSurvey(self, survey: dict) -> bool:
+        if isinstance(self.survey, Survey):
+            if self.survey.startTime == survey["startTime"]:
+                self.survey.fromDict(survey)
+                return True
+            else:
+                print("Cannot update survey with mismatched start time")
+        else:
+            print("Cannot update survey; there is no current survey")
+        return False
     
-    def saveSurvey(self):
+    def saveMeshData(self, meshData: dict) -> bool:
+        try:
+            for mesh in meshData:
+                obj = Mesh()
+                obj.fromDict(meshData[mesh])
+                obj.saveMesh(self.dataPath)
+        except:
+            print("Could not save mesh data")
+            return False
+        return True
+    
+    def saveSurvey(self) -> bool:
         """
         Set the end time to the current time, then saves the survey to a file 
         in the Manager's data path
 
         Returns: True if success, False if failure
         """
+        print("Saving survey...")
         if isinstance(self.survey, Survey) and self.dataPath:
             self.survey.endTimeNow()
             try:
@@ -297,9 +321,11 @@ class SurveyManager():
                     self.survey = None
                     return True
                 else:
+                    print("Survey failed to save")
                     return False
             except Exception as e:
                 print(e)
                 return False
         else:
+            print("Cannot save when there is no survey in manager")
             return False
