@@ -112,3 +112,7 @@ async def experimenter_ws(websocket: WebSocket):
                                  + f"{data['type']}")
     except WebSocketDisconnect:
         print("Experimenter disconnected")
+
+    @app.get("/favicon.ico")
+    async def favicon():
+        return FileResponse(DIST_PATH + r"/favicon.ico")
