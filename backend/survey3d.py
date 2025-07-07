@@ -174,7 +174,7 @@ class Survey():
         Returns: True if success, False if failure
         """
         if self.projectedFields:
-            filename = f"{self.participant}_{self.date}_{self.startTime}.json"
+            filename = f"Survey3D_{self.participant}_{self.date}_{self.startTime}.json"
             print(f"Saving survey to {filename}...")
             with open(os.path.join(path, filename), 'w') as file:
                 json.dump(self.toDict(), file, indent = 4)
