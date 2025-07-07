@@ -784,14 +784,6 @@ export class SurveyViewport {
                         colorVertices
                     );
                 }
-                that.eventQueue.reset();
-                var defaultEvent = new ViewportEvent(
-                    controlStates.PAINT
-                );
-                defaultEvent.updateColorStateFromMesh(
-                    that.currentMesh
-                );
-                that.eventQueue.push(defaultEvent);
             }
         };
 
@@ -809,6 +801,7 @@ export class SurveyViewport {
                 ) {
                     var mesh = this.meshStorage[filename];
                     prepareMesh(this, mesh);
+                    this.resetEventQueue();
                     resolve(true);
                 }
                 else {
@@ -816,11 +809,11 @@ export class SurveyViewport {
                         function(value) {
                             prepareMesh(this, value);
                             this.meshStorage[filename] = value;
+                            this.resetEventQueue();
                             resolve(true);
                         }.bind(this)
                     );
                 }
-                
             }
             else {
                 this.populateColor(
@@ -834,6 +827,7 @@ export class SurveyViewport {
                         colorVertices
                     );
                 }
+                this.resetEventQueue();
                 resolve(false);
             }
         }.bind(this));
@@ -1078,6 +1072,16 @@ export class SurveyViewport {
             colorAttr.copy(redoEvent.colorState);
             colorAttr.needsUpdate = true;
         }
+    }
+
+    /**
+     * Resets the event queue, with the current state added as the first event
+     */
+    resetEventQueue() {
+        this.eventQueue.reset();
+        var defaultEvent = new ViewportEvent(controlStates.PAINT);
+        defaultEvent.updateColorStateFromMesh(this.currentMesh);
+        this.eventQueue.push(defaultEvent);
     }
 
     /* SPECIAL PROPERTIES */
