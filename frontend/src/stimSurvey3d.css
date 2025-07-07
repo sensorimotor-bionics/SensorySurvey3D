@@ -53,6 +53,7 @@ html {
     margin: auto;
     flex-direction: column;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .widthbar {
