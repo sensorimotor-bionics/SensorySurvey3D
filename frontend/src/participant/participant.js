@@ -366,7 +366,7 @@ function populateQualityEditor(field, quality) {
 	const smallQualityList = document.getElementById("smallQualityList");
 	var quality_positon = field.qualities.indexOf(quality);
 	smallQualityList.replaceChildren(
-		...surveyTable.createQualitiesListChunk(field, quality_positon).children
+		...surveyTable.createQualitiesListChunk(field, quality_positon, "", false).children
 	);
 	
 	const typeSelect = document.getElementById("typeSelect");

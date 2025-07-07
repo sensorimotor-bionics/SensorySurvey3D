@@ -475,7 +475,12 @@ export class SurveyTable {
      * @param {string} indent - a string to be prepended to each quality name
      * @returns {Element}
      */
-    createQualitiesListChunk(field, selected = null, indent = "") {
+    createQualitiesListChunk(
+        field, 
+        selected = null, 
+        indent = "", 
+        small = true
+    ) {
         const that = this;
         var chunk = document.createElement("div");
         for (let i = 0; i < field.qualities.length; i++) {
@@ -488,7 +493,9 @@ export class SurveyTable {
             name.innerHTML = indent
                 + quality.type.charAt(0).toUpperCase() 
                 + quality.type.slice(1);
-            name.classList.add("smallText");
+            if (small) {
+                name.classList.add("smallText");
+            }
             name.style["flex"] = "1 1 auto";
             qualityRow.appendChild(name);
 
@@ -497,7 +504,9 @@ export class SurveyTable {
             ) {
                 var qualityEditButton = document.createElement("button");
                 qualityEditButton.innerHTML = "Edit";
-                qualityEditButton.classList.add("smallButton");
+                if (small) {
+                    qualityEditButton.classList.add("smallButton");
+                }
                 qualityEditButton.addEventListener("pointerup", function() {
                     that._editQualityCallbackExternal(field, quality);
                 });
