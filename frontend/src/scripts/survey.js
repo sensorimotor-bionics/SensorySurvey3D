@@ -59,6 +59,7 @@ export class ProjectedField {
      *      coordinates, where the hotSpot was placed
      * @param {number} naturalness - a naturalness rating of 0 to 10
      * @param {number} pain - a pain rating of 0 to 10
+     * @param {number} itch - an itch rating of 0 to 10
      * @param {Quality[]} qualities - array of Quality objects assigned to this 
      *      projected field
      */
@@ -69,6 +70,7 @@ export class ProjectedField {
         hotSpot = {x: null, y: null, z: null}, 
         naturalness = -1.0,
         pain = -1.0,
+        itch = -1.0,
         qualities = []
     ) {
         this.model = model;
@@ -78,6 +80,7 @@ export class ProjectedField {
         this.hotSpot = hotSpot;
         this.naturalness = naturalness;
         this.pain = pain;
+        this.itch = itch;
         this.qualities = qualities;
     }
 
@@ -137,6 +140,7 @@ export class ProjectedField {
             hotSpot     : this.hotSpot,
             naturalness : this.naturalness,
             pain        : this.pain,
+            itch        : this.itch,
             qualities   : jsonQualities
         }
 
@@ -155,6 +159,7 @@ export class ProjectedField {
         this.hotSpot = json.hotSpot;
         this.naturalness = json.naturalness;
         this.pain = json.pain;
+        this.itch = json.itch;
         this.qualities = [];
         for (let i = 0; i < json.qualities.length; i++) {
             var quality = new Quality();

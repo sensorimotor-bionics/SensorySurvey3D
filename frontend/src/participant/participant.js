@@ -270,12 +270,26 @@ function prepSurvey(survey) {
 		);
 	}
 
+	// Hide and show values depending on config
+
 	// If the config has hidden scale values, hide them
 	if (surveyManager.survey.config.hideScaleValues) {
 		document.getElementById("intensityValue").innerHTML = "";
 		document.getElementById("naturalnessValue").innerHTML = "";
 		document.getElementById("painValue").innerHTML = "";
+		document.getElementById("itchValue").innerHTML = "";
 	}
+	
+	// Hide pain slider
+	if (surveyManager.survey.config.hidePainSlider) {
+		document.getElementById("painDiv").visible = false;
+	}
+
+	// Hide itch slider
+	if (surveyManager.survey.config.hideItchSlider) {
+		document.getElementById("itchDiv").visible = false;
+	}
+
 	if (waitingInterval) { 
 		endWaiting(); 
 	}
@@ -327,6 +341,19 @@ function populateFieldEditor(field) {
 			painHidden.value = field.pain;
 		}
 
+		const itchSlider = document.getElementById("itchSlider");
+
+		if (field.itch >= 0) {
+			itchSlider.value = field.itch;
+			itchSlider.dispatchEvent(new Event("input"));
+		}
+		else {
+			itchSlider.value = 0.0;
+			itchSlider.dispatchEvent(new Event("input"));
+			const itchHidden = document.getElementById("itchHidden");
+			itchHidden.value = field.itch;
+		}
+
 		surveyManager.currentField = field;
 	}
 }
@@ -355,6 +382,9 @@ function saveFieldFromEditor() {
 
 	const painHidden = document.getElementById("painHidden");
 	surveyManager.currentField.pain = parseFloat(painHidden.value);
+
+	const itchHidden = document.getElementById("itchHidden");
+	surveyManager.currentField.itch = parseFloat(itchHidden.value);
 }
 
 /**
@@ -960,6 +990,17 @@ window.onload = function() {
 		painHidden.value = painSlider.value;
 	}
 	painSlider.dispatchEvent(new Event("input"));
+
+	const itchSlider = document.getElementById("itchSlider");
+	itchSlider.oninput = function() {
+		if (surveyManager.survey 
+				&& !surveyManager.survey.config.hideScaleValues) {
+			document.getElementById("itchValue").innerHTML = itchSlider.value;
+		}
+		const itchHidden = document.getElementById("itchHidden");
+		itchHidden.value = itchSlider.value;
+	}
+	itchSlider.dispatchEvent(new Event("input"));
 
 	const typeSelect = document.getElementById("typeSelect");
 	typeSelect.oninput = typeSelectCallback;

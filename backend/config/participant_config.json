@@ -6,7 +6,9 @@
             "Chest" : "chest.glb"
         },
         "typeList" : ["pressure", "poke", "sparkle"],
-        "hideScaleValues" : false
+        "hideScaleValues" : false,
+        "hidePainSlider" : false,
+        "hideItchSlider" : false
     },
     "test2" : {
         "models" : {
@@ -20,6 +22,8 @@
             "8" : "Female_Head.gltf"
         },
         "typeList" : ["sorrow", "elation", "jubilance", "ennui", "maleficence"],
-        "hideScaleValues" : true
+        "hideScaleValues" : true,
+        "hidePainSlider" : true,
+        "hideItchSlider" : false
     }
 }

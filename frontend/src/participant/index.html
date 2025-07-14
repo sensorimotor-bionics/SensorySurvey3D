@@ -52,10 +52,19 @@
                     </div>
                 </div>
                 <div style="width:80%;">
-                    <p class="titleText">Pain: <span id="painValue"></span></p>
-                    <div class="rowContainer">
-                        <input type="range" min="0" max="10" value="0" step="0.1" id="painSlider">
-                        <input type="hidden" value="-1" id="painHidden">
+                    <div class="painDiv">
+                        <p class="titleText">Pain: <span id="painValue"></span></p>
+                        <div class="rowContainer">
+                            <input type="range" min="0" max="10" value="0" step="0.1" id="painSlider">
+                            <input type="hidden" value="-1" id="painHidden">
+                        </div>
+                    </div>
+                    <div class="itchDiv">
+                        <p class="titleText">Itch: <span id="itchValue"></span></p>
+                        <div class="rowContainer">
+                            <input type="range" min="0" max="10" value="0" step="0.1" id="itchSlider">
+                            <input type="hidden" value="-1" id="itchHidden">
+                        </div>
                     </div>
                     <div class="rowContainer">
                         <p style="width:50%; font-size:2vh">None</p>
