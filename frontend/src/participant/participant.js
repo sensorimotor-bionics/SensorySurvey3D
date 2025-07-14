@@ -281,13 +281,23 @@ function prepSurvey(survey) {
 	}
 	
 	// Hide pain slider
+	const painDiv = document.getElementById("painDiv");
 	if (surveyManager.survey.config.hidePainSlider) {
-		document.getElementById("painDiv").visible = false;
+		painDiv.style.display = 'none';
+		console.log("hiding pain!");
+	}
+	else {
+		painDiv.style.display = 'auto'
 	}
 
 	// Hide itch slider
+	const itchDiv = document.getElementById("itchDiv");
 	if (surveyManager.survey.config.hideItchSlider) {
-		document.getElementById("itchDiv").visible = false;
+		itchDiv.style.display = 'none';
+		console.log("hiding itch!");
+	}
+	else {
+		itchDiv.style.display = 'auto';
 	}
 
 	if (waitingInterval) { 
