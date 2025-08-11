@@ -277,27 +277,25 @@ function prepSurvey(survey) {
 		document.getElementById("intensityValue").innerHTML = "";
 		document.getElementById("naturalnessValue").innerHTML = "";
 		document.getElementById("painValue").innerHTML = "";
-		document.getElementById("itchValue").innerHTML = "";
+		document.getElementById("fieldIntensityValue").innerHTML = "";
 	}
 	
 	// Hide pain slider
 	const painDiv = document.getElementById("painDiv");
 	if (surveyManager.survey.config.hidePainSlider) {
 		painDiv.style.display = 'none';
-		console.log("hiding pain!");
 	}
 	else {
 		painDiv.style.display = 'auto'
 	}
 
-	// Hide itch slider
-	const itchDiv = document.getElementById("itchDiv");
-	if (surveyManager.survey.config.hideItchSlider) {
-		itchDiv.style.display = 'none';
-		console.log("hiding itch!");
+	// Hide field intensity slider
+	const fieldIntensityDiv = document.getElementById("fieldIntensityDiv");
+	if (surveyManager.survey.config.hideFieldIntensitySlider) {
+		fieldIntensityDiv.style.display = 'none';
 	}
 	else {
-		itchDiv.style.display = 'auto';
+		fieldIntensityDiv.style.display = 'auto';
 	}
 
 	if (waitingInterval) { 
@@ -351,17 +349,17 @@ function populateFieldEditor(field) {
 			painHidden.value = field.pain;
 		}
 
-		const itchSlider = document.getElementById("itchSlider");
+		const fieldIntensitySlider = document.getElementById("fieldIntensitySlider");
 
-		if (field.itch >= 0) {
-			itchSlider.value = field.itch;
-			itchSlider.dispatchEvent(new Event("input"));
+		if (field.intensity >= 0) {
+			fieldIntensitySlider.value = field.intensity;
+			fieldIntensitySlider.dispatchEvent(new Event("input"));
 		}
 		else {
-			itchSlider.value = 0.0;
-			itchSlider.dispatchEvent(new Event("input"));
-			const itchHidden = document.getElementById("itchHidden");
-			itchHidden.value = field.itch;
+			fieldIntensitySlider.value = 0.0;
+			fieldIntensitySlider.dispatchEvent(new Event("input"));
+			const fieldIntensityHidden = document.getElementById("fieldIntensityHidden");
+			fieldIntensityHidden.value = field.fieldIntensitySlider;
 		}
 
 		surveyManager.currentField = field;
@@ -393,8 +391,8 @@ function saveFieldFromEditor() {
 	const painHidden = document.getElementById("painHidden");
 	surveyManager.currentField.pain = parseFloat(painHidden.value);
 
-	const itchHidden = document.getElementById("itchHidden");
-	surveyManager.currentField.itch = parseFloat(itchHidden.value);
+	const fieldIntensityHidden = document.getElementById("fieldIntensityHidden");
+	surveyManager.currentField.intensity = parseFloat(fieldIntensityHidden.value);
 }
 
 /**
@@ -1001,16 +999,16 @@ window.onload = function() {
 	}
 	painSlider.dispatchEvent(new Event("input"));
 
-	const itchSlider = document.getElementById("itchSlider");
-	itchSlider.oninput = function() {
+	const fieldIntensitySlider = document.getElementById("fieldIntensitySlider");
+	fieldIntensitySlider.oninput = function() {
 		if (surveyManager.survey 
 				&& !surveyManager.survey.config.hideScaleValues) {
-			document.getElementById("itchValue").innerHTML = itchSlider.value;
+			document.getElementById("fieldIntensityValue").innerHTML = fieldIntensitySlider.value;
 		}
-		const itchHidden = document.getElementById("itchHidden");
-		itchHidden.value = itchSlider.value;
+		const fieldIntensityHidden = document.getElementById("fieldIntensityHidden");
+		fieldIntensityHidden.value = fieldIntensitySlider.value;
 	}
-	itchSlider.dispatchEvent(new Event("input"));
+	fieldIntensitySlider.dispatchEvent(new Event("input"));
 
 	const typeSelect = document.getElementById("typeSelect");
 	typeSelect.oninput = typeSelectCallback;
