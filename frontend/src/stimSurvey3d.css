@@ -53,7 +53,6 @@ html {
     margin: auto;
     flex-direction: column;
     overflow: hidden;
-    white-space: nowrap;
 }
 
 .widthbar {
@@ -147,6 +146,7 @@ html {
     display: flex; 
     flex-direction: row; 
     align-items: center;
+    white-space: nowrap;
 }
 
 .surveyTable {
