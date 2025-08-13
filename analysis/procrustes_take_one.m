@@ -1,152 +1,261 @@
 
-% 2D vs 3D skeletal plotting and alignment tests
+%% import 2D and 3D meshes 
+val = importjson("2D_mesh_data.json");
+two_dim_verts = val.vertices;
+two_dim_faces = val.faces;
+region_data = importjson("2D_region_definitions.json");
 
-%% landmark definitions
+val = importjson("Male_Hands_R_rm_5000_glb.json");
+three_dim_verts = val.vertices;
+three_dim_faces = val.faces;
+
+%% import model landmarks
 landmarks = {"Tend","Tpip","Tmcp",...
     "Iend","Idip","Ipip","Imcp",...
     "Mend","Mdip","Mpip","Mmcp",...
     "Rend","Rdip","Rpip","Rmcp",...
     "Pend","Pdip","Ppip","Pmcp",...
     "MpP","MpD","WuT","WuP", "EoW"};
-
-landmark_2D = struct("Tend", [-0.3973161280155182, -0.09739081561565399, 0.008577486500144005],...
-                    "Tpip", [-0.2889059782028198, -0.1601298600435257, 0.0008937307284213603],...
-                    "Tmcp", [-0.1731044054031372, -0.29852038621902466, -0.0030092033557593822],...
-                    "Iend", [-0.20343202352523804, 0.2659095823764801, 0.0052677933126688],...
-                    "Idip", [-0.16815689206123352, 0.15536479651927948, -0.0019431354012340307],...
-                    "Ipip", [-0.13614414632320404, 0.05264347046613693, -0.0019431463442742825],...
-                    "Imcp", [-0.09463842958211899, -0.09171192348003387, 0.0009222878143191338],...
-                    "Mend", [0.014180099591612816, 0.33758774399757385, 0.00526772066950798],...
-                    "Mdip", [0.002082435879856348, 0.20410408079624176, -0.0019431916298344731],...
-                    "Mpip", [0.0019956817850470543, 0.09231160581111908, -0.0019431918626651168],...
-                    "Mmcp", [-0.01149352453649044, -0.08220024406909943, 0.008189394138753414],...
-                    "Rend", [0.1625347137451172, 0.29255402088165283, 0.00526767410337925],...
-                    "Rdip", [0.14687740802764893, 0.1652742624282837, -0.001943238195963204],...
-                    "Rpip", [0.12747149169445038, 0.08470387011766434, -0.0019432312110438943],...
-                    "Rmcp", [0.09871725738048553, -0.10498759150505066, 0.008189357817173004],...
-                    "Pend", [0.31460586190223694, 0.1387959122657776, 0.005267622880637646],...
-                    "Pdip", [0.2664164900779724, 0.0453401654958725, -0.001943276496604085],...
-                    "Ppip", [0.23313823342323303, -0.017573753371834755, -0.0019432657863944769],...
-                    "Pmcp", [0.1747056543827057, -0.14175035059452057, 0.00092220091028139],...
-                    "MpP", [0.005719088949263096, -0.28767216205596924, -0.021619586274027824],...
-                    "MpD", [0.033343859016895294, -0.25342318415641785, 0.07902956753969193],...
-                    "WuT", [-0.19626854360103607, -0.3809897303581238, -0.003009192878380418],...
-                    "WuP", [0.16042210161685944, -0.49611347913742065, -0.0030093092937022448],...
-                    "EoW", [-0.0036766380071640015, -0.6203309297561646, -0.0030092555098235607]);
-
-landmark_3D = struct("Tend", [0.011944269761443138, -0.025434358045458794, 0.14793965220451355],...
-                    "Tpip", [0.02625223994255066, -0.005346675869077444, 0.10906960815191269],...
-                    "Tmcp", [0.04830366000533104, 0.028626257553696632, 0.05326266214251518],...
-                    "Iend", [-0.09803204983472824, -0.11361753940582275, 0.09060187637805939],...
-                    "Idip", [-0.08436223119497299, -0.07808545976877213, 0.07706764340400696],...
-                    "Ipip", [-0.06497237086296082, -0.04143152013421059, 0.062459029257297516],...
-                    "Imcp", [-0.0282317865639925, 0.003915929235517979, 0.04234475642442703],...
-                    "Mend", [-0.11940792948007584, -0.1269465535879135, 0.04681067541241646],...
-                    "Mdip", [-0.10010241717100143, -0.08598123490810394, 0.035041313618421555],...
-                    "Mpip", [-0.08144111186265945, -0.05056745558977127, 0.024615518748760223],...
-                    "Mmcp", [-0.03732520714402199, -0.0032152137719094753, 0.00855743046849966],...
-                    "Rend", [-0.12056756019592285, -0.12936486303806305, -0.011717624962329865],...
-                    "Rdip", [-0.10277992486953735, -0.09457283467054367, -0.01590607687830925],...
-                    "Rpip", [-0.07978403568267822, -0.05456552281975746, -0.019512664526700974],...
-                    "Rmcp", [-0.03639180585741997, -0.008907418698072433, -0.024278538301587105],...
-                    "Pend", [-0.08219294250011444, -0.11728043854236603, -0.057242635637521744],...
-                    "Pdip", [-0.07266569137573242, -0.0835917666554451, -0.060377899557352066],...
-                    "Ppip", [-0.058815956115722656, -0.0500861257314682, -0.059373967349529266],...
-                    "Pmcp", [-0.028035607188940048, -0.012062869034707546, -0.05384033918380737],...
-                    "MpP", [0.03106795810163021, 0.005717303138226271, -0.011161050759255886],...
-                    "MpD", [-0.0062567004933953285, 0.048727069050073624, -0.017364144325256348],...
-                    "WuT", [0.09697737544775009, 0.07979375869035721, 0.010476600378751755],...
-                    "WuP", [0.06988106667995453, 0.05041353031992912, -0.09531185030937195],...
-                    "EoW", [0.1162354052066803, 0.09213633835315704, -0.058112263679504395]);
+landmark_2D = importjson("2D_model_procrustes_keypoints.json");
+landmark_3D = importjson("3D_model_procrustes_keypoints.json");
 
 %% plotting 3d model landmarks
-
-all_3d = [];
-
-figure
-title('3D Model Landmarks')
-hold on
-which_landmarks = {"Tpip","Tmcp",...
-    "Idip","Ipip","Imcp",...
-    "Mdip","Mpip","Mmcp",...
-    "Rdip","Rpip","Rmcp",...
-    "Pdip","Ppip","Pmcp"};
-
-for ii = 1:length(which_landmarks)
-    this_landmark = landmark_3D.(which_landmarks{ii});
-    plot3(this_landmark(1),this_landmark(2),this_landmark(3),'r.','MarkerSize',30)
-    all_3d = cat(1,all_3d,this_landmark);
-end
-
-which_landmarks = {"Tend","Iend","Mend","Rend","Pend"};
-
-for ii = 1:length(which_landmarks)
-    this_landmark = landmark_3D.(which_landmarks{ii});
-    plot3(this_landmark(1),this_landmark(2),this_landmark(3),'b.','MarkerSize',30)
-    all_3d = cat(1,all_3d,this_landmark);
-end
-
-which_landmarks = {"MpP","MpD","WuT","WuP", "EoW"};
-
-for ii = 1:length(which_landmarks)
-    this_landmark = landmark_3D.(which_landmarks{ii});
-    plot3(this_landmark(1),this_landmark(2),this_landmark(3),'g.','MarkerSize',30)
-    all_3d = cat(1,all_3d,this_landmark);
-end
-
-axis equal
+all_3d = plotmodellandmarks('3D Model Landmarks',landmark_3D);
 
 %% plotting 2d model landmarks
+all_2d = plotmodellandmarks('2D Model Landmarks',landmark_2D);
 
-all_2d = [];
+%% 3d mesh dibs assignment
+dibs = nan(size(three_dim_verts,1),1);
+dibs_valence = nan(size(three_dim_verts,1),1);
+
+% new landmarks:
+axial_landmarks = [1 2; 2 3;...
+    4 5; 5 6; 6 7;...
+    8 9; 9 10; 10 11;...
+    12 13; 13 14; 14 15;...
+    16 17; 17 18; 18 19;...
+    20 23; 20 22;...
+    22 24; 23 24;...
+    21 23; 21 22];
+
+expanded_landmarks = [];
+expanded_values = [];
+valence_values = [];
+
+for l = 1:size(axial_landmarks,1)
+    point1 = landmark_3D.(landmarks{axial_landmarks(l,1)});
+    point2 = landmark_3D.(landmarks{axial_landmarks(l,2)});
+    x=linspace(point1(1),point2(1),10);
+    y=linspace(point1(2),point2(2),10);
+    z=linspace(point1(3),point2(3),10);
+    expanded_landmarks = cat(1,expanded_landmarks,[x;y;z]');
+    expanded_values = cat(1,expanded_values,axial_landmarks(l,2).*ones(10,1));
+    % valence_values = cat(1,valence_values,[0.55:0.05:1]);
+    valence_values = cat(1,valence_values,ones(10,1));
+
+    % expanded_values = cat(1,expanded_values,axial_landmarks(l,1).*ones(5,1));
+    % expanded_values = cat(1,expanded_values,axial_landmarks(l,2).*ones(5,1));
+    % valence_values = cat(1,valence_values,[1:-.2:0.2]);
+end
+
+for v = 1:size(three_dim_verts,1)
+    this_vert = three_dim_verts(v,:);
+    distance_record = nan(length(expanded_landmarks),1);
+
+    for l = 1:length(expanded_landmarks)
+        this_landmark = expanded_landmarks(l,:);
+        distance_record(l) = pdist([this_vert;this_landmark],'euclidean');
+    end
+
+    dibs(v) = expanded_values(find(distance_record == min(distance_record),1,'first'));
+    dibs_valence(v) = valence_values(find(distance_record == min(distance_record),1,'first'));
+end
+
+% for v = 1:size(three_dim_verts,1)
+%     this_vert = three_dim_verts(v,:);
+%     distance_record = nan(length(landmarks),1);
+% 
+%     for l = 1:length(landmarks)
+%         this_landmark = landmark_3D.(landmarks{l});
+%         distance_record(l) = pdist([this_vert',this_landmark]','euclidean');
+%     end
+% 
+%     dibs(v) = find(distance_record == min(distance_record));
+% end
 
 figure
-title('2D Model Landmarks')
 hold on
-which_landmarks = {"Tpip","Tmcp",...
-    "Idip","Ipip","Imcp",...
-    "Mdip","Mpip","Mmcp",...
-    "Rdip","Rpip","Rmcp",...
-    "Pdip","Ppip","Pmcp"};
-
-for ii = 1:length(which_landmarks)
-    this_landmark = landmark_2D.(which_landmarks{ii});
-    plot3(this_landmark(1),this_landmark(2),this_landmark(3),'r.','MarkerSize',30)
-    all_2d = cat(1,all_2d,this_landmark);
-end
-
-which_landmarks = {"Tend","Iend","Mend","Rend","Pend"};
-
-for ii = 1:length(which_landmarks)
-    this_landmark = landmark_2D.(which_landmarks{ii});
-    plot3(this_landmark(1),this_landmark(2),this_landmark(3),'b.','MarkerSize',30)
-    all_2d = cat(1,all_2d,this_landmark);
-end
-
-which_landmarks = {"MpP","MpD","WuT","WuP","EoW"};
-
-for ii = 1:length(which_landmarks)
-    this_landmark = landmark_2D.(which_landmarks{ii});
-    plot3(this_landmark(1),this_landmark(2),this_landmark(3),'g.','MarkerSize',30)
-    all_2d = cat(1,all_2d,this_landmark);
-end
-
 axis equal
+for l = 1:length(landmarks)
+    plot3(three_dim_verts(dibs==l,1),three_dim_verts(dibs==l,2),three_dim_verts(dibs==l,3),'.')
+end
+% need to fix my dibs mechanism--some ring finger dots at the base are
+% being assigned to the pinky finger...
+% try medial axis to assign dibs instead!
 
-%% procrustin'
-
-[d,Z,transform] = procrustes(all_2d,all_3d);
-
+%% 2D vs 3D skeletal plotting and alignment tests
+% initial procrustin'
 % Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c
+[d,Z,transform] = procrustes(all_2d,all_3d);
 
 figure
 hold on
 plot3(all_2d(:,1),all_2d(:,2),all_2d(:,3),'r.','MarkerSize',30)
 axis equal
 plot3(Z(:,1),Z(:,2),Z(:,3),'b.','MarkerSize',30)
+axis equal
 
 % start with ordinary procrustes transformation calculation, then overlay
-% the two whole meshes.
+% the two whole meshes
+three_dim_verts = transform.b*three_dim_verts*transform.T+transform.c(1,:);
 
-% then, work out the finger-straightening ish, etc.
-% or possibly, straighten fingers first
+figure
+hold on
+plot3(three_dim_verts(:,1),three_dim_verts(:,2),three_dim_verts(:,3),'.')
+plot3(two_dim_verts(:,1),two_dim_verts(:,2),two_dim_verts(:,3),'.','MarkerSize',30)
+axis equal
+
+% iterative procrustin'
+% landmarks = {"Tend","Tpip","Tmcp",...
+%     "Iend","Idip","Ipip","Imcp",...
+%     "Mend","Mdip","Mpip","Mmcp",...
+%     "Rend","Rdip","Rpip","Rmcp",...
+%     "Pend","Pdip","Ppip","Pmcp",...
+%     "MpP","MpD","WuT","WuP", "EoW"};
+
+landmark_translator = [15,1,2,16,3,4,5,17,6,7,8,18,9,10,11,19,12,13,14,20,21,22,23,24];
+dgt_grouper = {1:3,4:7,8:11,12:15,16:19};
+
+iter_options = [1 2 24;...
+        2 3 24;...
+        4 5 24; 5 6 24; 6 7 24;...
+        8 9 24; 9 10 24; 10 11 24;...
+        12 13 24; 13 14 24; 14 15 24;...
+        16 17 24; 17 18 24; 18 19 24;...
+        20 21 24; 22 23 24];
+all_3d = Z;
+
+%% fixing finger abduction by mcp > end axis:
+% 
+% for dgt = 1:5
+%     % match mcp
+%     mcp_disc = all_3d(landmark_translator(dgt_grouper{dgt}(end)),:)-all_2d(landmark_translator(dgt_grouper{dgt}(end)),:);
+%     offset_for_rot = all_3d(landmark_translator(dgt_grouper{dgt}(end)),:)-mcp_disc; % first translation adjustment
+% 
+%     % find the vector from mcp to end for both models
+%     mcp_end_3d = diff(all_3d(landmark_translator([dgt_grouper{dgt}(end),dgt_grouper{dgt}(1)]),:));
+%     mcp_end_2d = diff(all_2d(landmark_translator([dgt_grouper{dgt}(end),dgt_grouper{dgt}(1)]),:));
+% 
+%     % ignoring "z", calculate the angle of adduction/abduction
+%     if mcp_end_3d(1)>mcp_end_2d(1)
+%         ang = -acosd(dot(mcp_end_3d(1:2),mcp_end_2d(1:2))/(sqrt(dot(mcp_end_3d(1:2),mcp_end_3d(1:2)))*sqrt(dot(mcp_end_2d(1:2),mcp_end_2d(1:2)))));
+%     else
+%         ang = acosd(dot(mcp_end_3d(1:2),mcp_end_2d(1:2))/(sqrt(dot(mcp_end_3d(1:2),mcp_end_3d(1:2)))*sqrt(dot(mcp_end_2d(1:2),mcp_end_2d(1:2)))));
+%     end
+% 
+%     % determine the rotation matrix for that angle
+%     Rz = [cosd(ang) -sind(ang) 0; sind(ang) cosd(ang) 0; 0 0 1];
+%     where_dibs = ismember(dibs,dgt_grouper{dgt});
+%     three_dim_verts(where_dibs,:) = (three_dim_verts(where_dibs,:)-mcp_disc-offset_for_rot)*Rz+offset_for_rot;
+%     all_3d(landmark_translator(dgt_grouper{dgt}),:) = (all_3d(landmark_translator(dgt_grouper{dgt}),:)-mcp_disc-offset_for_rot)*Rz+offset_for_rot;
+% end
+% 
+% figure
+% hold on
+% plot3(three_dim_verts(:,1),three_dim_verts(:,2),three_dim_verts(:,3),'.')
+% plot3(all_3d(:,1),all_3d(:,2),all_3d(:,3),'*')
+% plot3(two_dim_verts(:,1),two_dim_verts(:,2),two_dim_verts(:,3),'.','MarkerSize',30)
+% axis equal
+
+%% fixing finger flexion by joint:
+
+for dgt = 1:5
+    % progressing from mcp > pip, pip > dip, dip > end, straighten fingers,
+    % rotating all else out from the joint
+
+    % joint from mcp to pip, ignoring x, find vector from mcp to pip
+    % find angle between that vector and a vector with no z component
+    % if mcp is shifted to (0,0), this is a z of 0
+    % rotate pip and up--dibs (1:end-1)--about mcp
+    
+    % then, joint from pip to dip
+    % rotate dip and up--dibs(1:end-2)--about pip
+    
+    % then, joint from dip to end
+    % rotate end--dibs(1)--about dip
+
+    for joint = 1:length(dgt_grouper{dgt})-1
+        offset_for_rot = all_3d(landmark_translator(dgt_grouper{dgt}(end-joint+1)),:);
+
+        % find the vector of this joint in the 3d model
+        joint_3d = diff(all_3d(landmark_translator([dgt_grouper{dgt}(end-joint+1),dgt_grouper{dgt}(end-joint)]),:));
+        no_flexion = joint_3d;
+        no_flexion(3) = 0;
+
+        if joint_3d(3)<0
+            ang = -acosd(dot(joint_3d(2:3),no_flexion(2:3))/(sqrt(dot(joint_3d(2:3),joint_3d(2:3)))*sqrt(dot(no_flexion(2:3),no_flexion(2:3)))));
+        else
+            ang = acosd(dot(joint_3d(2:3),no_flexion(2:3))/(sqrt(dot(joint_3d(2:3),joint_3d(2:3)))*sqrt(dot(no_flexion(2:3),no_flexion(2:3)))));
+        end
+
+        Rx = [1 0 0; 0 cosd(ang) -sind(ang); 0 sind(ang) cosd(ang)];
+        where_dibs = ismember(dibs,dgt_grouper{dgt}(1:end-joint));
+        how_much_dibs = dibs_valence(where_dibs);
+        new_verts = (three_dim_verts(where_dibs,:)-offset_for_rot)*Rx+offset_for_rot;
+        three_dim_verts(where_dibs,:) = new_verts.*how_much_dibs + three_dim_verts(where_dibs,:).*(1-how_much_dibs);
+        all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint)),:) = (all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint)),:)-offset_for_rot)*Rx+offset_for_rot;
+    end
+end
+
+figure
+hold on
+plot3(three_dim_verts(:,1),three_dim_verts(:,2),three_dim_verts(:,3),'.')
+plot3(all_3d(:,1),all_3d(:,2),all_3d(:,3),'*')
+plot3(two_dim_verts(:,1),two_dim_verts(:,2),two_dim_verts(:,3),'.','MarkerSize',30)
+axis equal
+
+%% fixing finger abduction joint by joint:
+
+for dgt = 1:5
+    for joint = 1:length(dgt_grouper{dgt})-1
+        % match mcp
+        mcp_disc = all_3d(landmark_translator(dgt_grouper{dgt}(end-joint+1)),:)-all_2d(landmark_translator(dgt_grouper{dgt}(end-joint+1)),:);
+        mcp_disc(3) = 0;
+        offset_for_rot = all_3d(landmark_translator(dgt_grouper{dgt}(end-joint+1)),:);
+
+        % find the vector from between joints for each model
+        mcp_end_3d = diff(all_3d(landmark_translator([dgt_grouper{dgt}(end-joint+1),dgt_grouper{dgt}(end-joint)]),:));
+        mcp_end_2d = diff(all_2d(landmark_translator([dgt_grouper{dgt}(end-joint+1),dgt_grouper{dgt}(end-joint)]),:));
+
+        % ignoring "z", calculate the angle of adduction/abduction
+        if mcp_end_3d(1)>mcp_end_2d(1)
+            ang = -acosd(dot(mcp_end_3d(1:2),mcp_end_2d(1:2))/(sqrt(dot(mcp_end_3d(1:2),mcp_end_3d(1:2)))*sqrt(dot(mcp_end_2d(1:2),mcp_end_2d(1:2)))));
+        else
+            ang = acosd(dot(mcp_end_3d(1:2),mcp_end_2d(1:2))/(sqrt(dot(mcp_end_3d(1:2),mcp_end_3d(1:2)))*sqrt(dot(mcp_end_2d(1:2),mcp_end_2d(1:2)))));
+        end
+
+        % determine the rotation matrix for that angle
+        Rz = [cosd(ang) -sind(ang) 0; sind(ang) cosd(ang) 0; 0 0 1];
+        where_dibs = ismember(dibs,dgt_grouper{dgt}(1:end-joint+1));
+        how_much_dibs = dibs_valence(where_dibs);
+        new_verts = (three_dim_verts(where_dibs,:)-offset_for_rot)*Rz+offset_for_rot-mcp_disc;
+        three_dim_verts(where_dibs,:) = new_verts.*how_much_dibs + three_dim_verts(where_dibs,:).*(1-how_much_dibs);
+        % three_dim_verts(where_dibs,:) = (three_dim_verts(where_dibs,:)-offset_for_rot)*Rz+offset_for_rot-mcp_disc;
+        all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint+1)),:) = (all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint+1)),:)-offset_for_rot)*Rz+offset_for_rot-mcp_disc;
+    end
+    mcp_disc = all_3d(landmark_translator(dgt_grouper{dgt}(1)),:)-all_2d(landmark_translator(dgt_grouper{dgt}(1)),:);
+    mcp_disc(3) = 0;
+    where_dibs = ismember(dibs,dgt_grouper{dgt}(1));
+    three_dim_verts(where_dibs,:) = three_dim_verts(where_dibs,:)-mcp_disc;
+    all_3d(landmark_translator(dgt_grouper{dgt}(1)),:) = all_3d(landmark_translator(dgt_grouper{dgt}(1)),:)-mcp_disc;
+end
+
+figure
+hold on
+plot3(three_dim_verts(:,1),three_dim_verts(:,2),three_dim_verts(:,3),'.')
+plot3(all_3d(:,1),all_3d(:,2),all_3d(:,3),'*')
+plot3(two_dim_verts(:,1),two_dim_verts(:,2),two_dim_verts(:,3),'o','MarkerSize',10)
+plot3(all_2d(:,1),all_2d(:,2),all_2d(:,3),'^')
+axis equal
+
