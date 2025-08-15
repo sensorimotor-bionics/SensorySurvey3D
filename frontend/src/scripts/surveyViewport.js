@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast,
          CONTAINED, INTERSECTED, NOT_INTERSECTED } from 'three-mesh-bvh';
 
@@ -355,6 +356,8 @@ export class SurveyViewport {
         defaultColor, 
         eventQueueLength
     ) {
+        const that = this;
+
         // Create the scene
         this.scene = new THREE.Scene();
         this.scene.background = backgroundColor;
@@ -429,12 +432,34 @@ export class SurveyViewport {
 
         this.pointerDownViewport = true;
 
+        // Create lilGUI
+        this.gui = new GUI();
+        const cameraFolder = this.gui.addFolder("Camera")
+        cameraFolder.add(this.camera.position, "x").listen();
+        cameraFolder.add(this.camera.position, "y").listen();
+        cameraFolder.add(this.camera.position, "z").listen();
+        cameraFolder.add(this.camera, "zoom").listen();
+
+        this.gui.onChange( event => {
+            that.camera.updateProjectionMatrix();
+        })
+
+        this.gui.hide();
+
         // Set event listeners
         window.onresize = this.onWindowResize.bind(this);
         document.onpointermove = this.onPointerMove.bind(this);
         document.onpointerup = this.onPointerUp.bind(this);
+        document.addEventListener("keyup", event => {
+            if (event.key == "=") { that.toggleLilGUI() }
+        })
         this.renderer.domElement.onpointerdown = 
             this.onPointerDownViewport.bind(this);
+    }
+
+    toggleLilGUI() {
+        if (this.gui._hidden) { this.gui.show(); }
+        else { this.gui.hide(); }
     }
 
     /**
