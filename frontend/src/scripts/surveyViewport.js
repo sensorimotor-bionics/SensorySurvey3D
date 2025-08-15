@@ -235,17 +235,6 @@ export class CameraController {
         return this.camera.zoom;
     }
 
-    /*  setZoom
-        
-
-        Inputs:
-            value: int
-                
-
-        Outputs:
-            this.camera.zoom: int
-                The current zoom value
-    */
     /**
      * Sets the zoom to a given value, updates the screen, and returns the
      * current zoom value
@@ -457,6 +446,9 @@ export class SurveyViewport {
             this.onPointerDownViewport.bind(this);
     }
 
+    /**
+     * Alternately hides and shows this.GUI
+     */
     toggleLilGUI() {
         if (this.gui._hidden) { this.gui.show(); }
         else { this.gui.hide(); }
