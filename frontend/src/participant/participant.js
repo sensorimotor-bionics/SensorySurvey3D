@@ -114,7 +114,7 @@ function toggleUndoRedo(enabled) {
  * @param {function[]} buttonFunctions - the functions to be used as callbacks
  * 		for each button, 
  */
-function openAlert(message, buttonNames, buttonFunctions) {
+function openAlert(message, buttonNames = [], buttonFunctions = []) {
 	const alertTab = document.getElementById("alertTab");
 	alertTab.innerHTML = "";
 
@@ -548,6 +548,8 @@ function submitCallback() {
 		}
 
 		var yesButton = function() {
+			openAlert("Submitting...")
+
 			const usedMeshes = surveyManager.survey.usedMeshFilenames;
 			const storedMeshes = viewport.storedMeshNames;
 
