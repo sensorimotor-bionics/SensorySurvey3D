@@ -216,13 +216,6 @@ export class CameraController {
         return this.camera.zoom;
     }
     
-    /*  decrementZoom
-        
-
-        Outputs:
-            this.camera.zoom: int
-                The current zoom value
-    */
     /**
      * Decrements the zoom value by 1, updates the screen, and returns the 
      * current zoom value

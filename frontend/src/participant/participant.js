@@ -3,8 +3,6 @@ import * as VP from '../scripts/surveyViewport'
 import * as SVY from '../scripts/survey'
 import * as COM from '../scripts/common'
 
-document.title = "Participant - SensorySurvey3D"
-
 var viewport;
 var surveyManager;
 var surveyTable;
