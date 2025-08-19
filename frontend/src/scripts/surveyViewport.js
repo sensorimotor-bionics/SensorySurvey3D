@@ -367,6 +367,15 @@ export class CameraController {
             this.viewsButtonContainer.appendChild(button);
         }
     }
+
+    /**
+     * If a viewsButtonContainer is defined, remove all of its children
+     */
+    destroyViewsButtons() {
+        if (this.viewsButtonContainer) {
+            this.viewsButtonContainer.innerHTML = "";
+        }
+    }
 }
 
 /**

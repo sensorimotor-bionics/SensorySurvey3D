@@ -158,9 +158,8 @@ function performModelReplacement(
 		color
 	).then(function() {
 			viewport.orbMesh.visible = false;
-			console.log(`${preMesh}, ${viewport.currentModelFile}`);
 			if (preMesh != viewport.currentModelFile) {
-				console.log("in");
+				cameraController.destroyViewsButtons();
 				cameraController.createViewsButtons(
 					surveyManager.survey.config.models[modelName]["views"]
 				);
