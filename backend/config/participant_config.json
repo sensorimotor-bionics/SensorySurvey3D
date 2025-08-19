@@ -1,9 +1,20 @@
 {
     "test1" : {
         "models" : {
-            "Left Hand" : "hand_l.gltf",
-            "Right Hand" : "hand_r.gltf",
-            "Chest" : "chest.glb"
+            "Left Hand" : {
+                "file": "hand_l.gltf",
+                "views": {
+                    "Front": [0, 0.75, 0.75, 20],
+                    "Back": [0, 0.85, 0.85, 20]
+                }
+            },
+            "Right Hand" : {
+                "file": "hand_r.gltf",
+                "views": {
+                    "Front": [0, 0.75, 0.75, 20],
+                    "Back": [0, 0.85, 0.85, 20]
+                }
+            }
         },
         "typeList" : ["pressure", "poke", "sparkle"],
         "hideScaleValues" : false,

@@ -151,13 +151,16 @@ function performModelReplacement(
 ) {
 	viewport.orbMesh.visible = false;
 	document.getElementById("modelSelect").disabled = true;
+	const preMesh = viewport.currentModelFile;
 	viewport.replaceCurrentMesh(
 		filename,
 		colorVertices,
 		color
 	).then(function() {
 			viewport.orbMesh.visible = false;
-			cameraController.reset();
+			if (preMesh != viewport.currentModelFile) {
+				cameraController.createViewsButtons("", )
+			}
 			document.getElementById("modelSelect").disabled = false;
 
 			if (hotSpot && hotSpot.x) {
@@ -254,7 +257,7 @@ function prepSurvey(survey) {
 		surveyTable.update(surveyManager.survey, 0);
 		let field = surveyManager.survey.projectedFields[0];
 		performModelReplacement(
-			surveyManager.survey.config.models[field.model],
+			surveyManager.survey.config.models[field.model]["file"],
 			field.vertices,
 			new THREE.Color("#abcabc"),
 			field.hotSpot
@@ -262,7 +265,7 @@ function prepSurvey(survey) {
 	}
 	else {
 		performModelReplacement(
-			surveyManager.survey.config.models[modelSelect.value],
+			surveyManager.survey.config.models[modelSelect.value]["file"],
 			null,
 			new THREE.Color("#abcabc")
 		);
@@ -311,7 +314,7 @@ function populateFieldEditor(field) {
 		const modelSelect = document.getElementById("modelSelect");
 		if (field.model) {
 			performModelReplacement(
-				surveyManager.survey.config.models[modelSelect.value],
+				surveyManager.survey.config.models[modelSelect.value]["file"],
 				field.vertices,
 				new THREE.Color("#abcabc"),
 				field.hotSpot
@@ -815,7 +818,7 @@ function qualifyDeleteCallback() {
 function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
 	performModelReplacement(
-		surveyManager.survey.config.models[modelSelect.value]
+		surveyManager.survey.config.models[modelSelect.value]["file"]
 	);
 }
 
@@ -862,12 +865,15 @@ window.onload = function() {
 										new THREE.Color(0x424242),
 										20);
 
-	cameraController = new VP.CameraController(viewport.controls, 
-		viewport.renderer.domElement, 2, 20);
-	cameraController.createZoomSlider(document.getElementById(
-		"cameraControlContainer"));
-	cameraController.createCameraReset(document.getElementById(
-		"cameraControlContainer"));
+	cameraController = new VP.CameraController(
+			viewport.controls, 
+			viewport.renderer.domElement, 
+			2, 
+			20, 
+			document.getElementById("cameraControlContainer")
+		);
+		cameraController.createZoomSlider();
+		cameraController.createCameraReset();
 
     surveyManager = new SVY.SurveyManager(); 
 
