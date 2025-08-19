@@ -265,7 +265,7 @@ export class CameraController {
      * @param {number} zoom - the zoom of the camera
      */
     setCamera(x, y, z, zoom) {
-        this.camera.position = [x,y,z];
+        this.camera.position.set(x,y,z);
         this.setZoom(zoom);
     }
 
