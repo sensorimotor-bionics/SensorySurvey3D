@@ -144,7 +144,7 @@ function openAlert(message, buttonNames = [], buttonFunctions = []) {
  * @param {JSON} hotSpot - a JSON with an x, y, and z property
  */
 function performModelReplacement(
-	filename, 
+	modelName, 
 	colorVertices = null, 
 	color = null,
 	hotSpot = null
@@ -153,13 +153,17 @@ function performModelReplacement(
 	document.getElementById("modelSelect").disabled = true;
 	const preMesh = viewport.currentModelFile;
 	viewport.replaceCurrentMesh(
-		filename,
+		surveyManager.survey.config.models[modelName]["file"],
 		colorVertices,
 		color
 	).then(function() {
 			viewport.orbMesh.visible = false;
+			console.log(`${preMesh}, ${viewport.currentModelFile}`);
 			if (preMesh != viewport.currentModelFile) {
-				cameraController.createViewsButtons("", )
+				console.log("in");
+				cameraController.createViewsButtons(
+					surveyManager.survey.config.models[modelName]["views"]
+				);
 			}
 			document.getElementById("modelSelect").disabled = false;
 
@@ -257,7 +261,7 @@ function prepSurvey(survey) {
 		surveyTable.update(surveyManager.survey, 0);
 		let field = surveyManager.survey.projectedFields[0];
 		performModelReplacement(
-			surveyManager.survey.config.models[field.model]["file"],
+			field.model,
 			field.vertices,
 			new THREE.Color("#abcabc"),
 			field.hotSpot
@@ -265,7 +269,7 @@ function prepSurvey(survey) {
 	}
 	else {
 		performModelReplacement(
-			surveyManager.survey.config.models[modelSelect.value]["file"],
+			modelSelect.value,
 			null,
 			new THREE.Color("#abcabc")
 		);
@@ -314,7 +318,7 @@ function populateFieldEditor(field) {
 		const modelSelect = document.getElementById("modelSelect");
 		if (field.model) {
 			performModelReplacement(
-				surveyManager.survey.config.models[modelSelect.value]["file"],
+				modelSelect.value,
 				field.vertices,
 				new THREE.Color("#abcabc"),
 				field.hotSpot
@@ -818,7 +822,7 @@ function qualifyDeleteCallback() {
 function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
 	performModelReplacement(
-		surveyManager.survey.config.models[modelSelect.value]["file"]
+		modelSelect.value
 	);
 }
 
