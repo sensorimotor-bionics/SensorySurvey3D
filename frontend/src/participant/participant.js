@@ -264,6 +264,20 @@ function prepSurvey(survey) {
 	
 	cameraController.reset();
 
+	// Place UI based on config
+	var reportEdge = COM.uiPositions.LEFT;
+	var controlEdge = COM.uiPositions.TOP;
+
+	if (surveyManager.survey.config.reportEdge == "right") {
+		reportEdge = COM.uiPositions.RIGHT;
+	}
+
+	if (surveyManager.survey.config.controlEdge == "bottom") {
+		controlEdge = COM.uiPositions.BOTTOM;
+	}
+
+	COM.placeUI(reportEdge, controlEdge);
+
 	// If the survey has projected fields, fill the survey table
 	// and click the first "view" button
 	if (surveyManager.survey.projectedFields.length > 0) {

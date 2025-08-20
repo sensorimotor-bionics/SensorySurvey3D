@@ -19,7 +19,9 @@
         "typeList" : ["pressure", "poke", "sparkle"],
         "hideScaleValues" : false,
         "hidePainSlider" : false,
-        "hideFieldIntensitySlider" : false
+        "hideFieldIntensitySlider" : false,
+        "reportSide" : "left",
+        "controlEdge" : "top"
     },
     "test2" : {
         "models" : {
@@ -34,6 +36,8 @@
         "typeList" : ["sorrow", "elation", "jubilance", "ennui", "maleficence"],
         "hideScaleValues" : true,
         "hidePainSlider" : true,
-        "hideFieldIntensitySlider" : false
+        "hideFieldIntensitySlider" : false,
+        "reportEdge" : "right",
+        "controlEdge" : "bottom"
     }
 }
