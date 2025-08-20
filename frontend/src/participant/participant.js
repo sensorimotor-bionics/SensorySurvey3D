@@ -253,7 +253,7 @@ function prepSurvey(survey) {
 		document.getElementById("modelSelectContainer").style.display = 'none';
 	}
 	else {
-		document.getElementById("modelSelectContainer").style.display = 'auto';
+		document.getElementById("modelSelectContainer").style.display = 'flex';
 	}
 
 	const modelSelect = document.getElementById("modelSelect");
@@ -299,7 +299,7 @@ function prepSurvey(survey) {
 		painDiv.style.display = 'none';
 	}
 	else {
-		painDiv.style.display = 'auto';
+		painDiv.style.display = 'inline';
 	}
 
 	// Hide field intensity slider
@@ -308,7 +308,7 @@ function prepSurvey(survey) {
 		fieldIntensityDiv.style.display = 'none';
 	}
 	else {
-		fieldIntensityDiv.style.display = 'auto';
+		fieldIntensityDiv.style.display = 'inline';
 	}
 
 	if (waitingInterval) { 
