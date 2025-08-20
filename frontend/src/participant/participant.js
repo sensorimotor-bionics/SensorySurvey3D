@@ -520,6 +520,7 @@ function processSubmissionResult(success) {
 	if (success) {
 		startWaiting();
 		viewport.clearMeshStorage();
+		cameraController.destroyViewsButtons();
 
 		var okFunction = function() {
 			COM.openSidebarTab("waitingTab");
