@@ -185,6 +185,7 @@ export class CameraController {
         this.sliderElement = null;
         this.cameraResetElement = null;
         this.viewsButtonContainer = null;
+        this.viewsButtons = [];
 
         const that = this;
 
@@ -365,6 +366,7 @@ export class CameraController {
                 );
             });
             this.viewsButtonContainer.appendChild(button);
+            this.viewsButtons.push(button);
         }
     }
 
@@ -374,6 +376,20 @@ export class CameraController {
     destroyViewsButtons() {
         if (this.viewsButtonContainer) {
             this.viewsButtonContainer.innerHTML = "";
+            this.viewsButtons = [];
+        }
+    }
+
+    /**
+     * Switches to a view among the 
+     * @param {number} index - the index of the view to change to
+     */
+    goToView(index) {
+        if (this.viewsButtons.length > index) {
+            this.viewsButtons[index].dispatchEvent(new Event("pointerup"));
+        }
+        else {
+            console.error(`Cannot click view button at ${index}, there are only ${this.viewsButtons.length} buttons`);
         }
     }
 }

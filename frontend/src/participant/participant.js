@@ -163,6 +163,7 @@ function performModelReplacement(
 				cameraController.createViewsButtons(
 					surveyManager.survey.config.models[modelName]["views"]
 				);
+				cameraController.goToView(0);
 			}
 			document.getElementById("modelSelect").disabled = false;
 
