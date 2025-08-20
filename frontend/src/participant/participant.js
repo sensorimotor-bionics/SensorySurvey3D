@@ -887,7 +887,6 @@ window.onload = function() {
 		document.getElementById("cameraControlContainer")
 	);
 	cameraController.createZoomSlider();
-	cameraController.createCameraReset();
 
     surveyManager = new SVY.SurveyManager(); 
 

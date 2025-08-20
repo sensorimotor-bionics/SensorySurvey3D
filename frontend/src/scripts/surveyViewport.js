@@ -325,6 +325,15 @@ export class CameraController {
         this.sliderElement = zoomSlider;
     }
 
+    generateCameraResetElement() {
+        const cameraResetButton = document.createElement("button");
+        cameraResetButton.id = "cameraResetButton";
+        cameraResetButton.innerHTML = "Reset Camera";
+        cameraResetButton.onpointerup = function() { this.reset(); }.bind(this);
+
+        return cameraResetButton;
+    }
+
     /**
      * Creates a button as a parentElement child which can be clicked to reset 
      * the camera
@@ -332,10 +341,7 @@ export class CameraController {
     createCameraReset() {
         if (!this.parentElement) { return; }
 
-        const cameraResetButton = document.createElement("button");
-        cameraResetButton.id = "cameraResetButton";
-        cameraResetButton.innerHTML = "Reset Camera";
-        cameraResetButton.onpointerup = function() { this.reset(); }.bind(this);
+        const cameraResetButton = this.generateCameraResetElement();
 
         this.parentElement.appendChild(cameraResetButton);
         this.cameraResetElement = cameraResetButton;
@@ -368,6 +374,12 @@ export class CameraController {
             this.viewsButtonContainer.appendChild(button);
             this.viewsButtons.push(button);
         }
+
+        const cameraReset = this.generateCameraResetElement();
+        console.log(cameraReset);
+        cameraReset.innerHTML = "Home";
+        this.viewsButtonContainer.appendChild(cameraReset);
+        this.viewsButtons.push(cameraReset);
     }
 
     /**
