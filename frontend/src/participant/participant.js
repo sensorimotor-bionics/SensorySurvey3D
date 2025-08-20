@@ -869,14 +869,14 @@ window.onload = function() {
 										20);
 
 	cameraController = new VP.CameraController(
-			viewport.controls, 
-			viewport.renderer.domElement, 
-			2, 
-			20, 
-			document.getElementById("cameraControlContainer")
-		);
-		cameraController.createZoomSlider();
-		cameraController.createCameraReset();
+		viewport.controls, 
+		viewport.renderer.domElement, 
+		2, 
+		20, 
+		document.getElementById("cameraControlContainer")
+	);
+	cameraController.createZoomSlider();
+	cameraController.createCameraReset();
 
     surveyManager = new SVY.SurveyManager(); 
 
