@@ -29,13 +29,6 @@
                     "Front": [-0.9634, -0.4375, 0.0738, 4],
                     "Back": [0.9229, 0.5224, 0.01806, 4]
                 }
-            },
-            "Right Hand" : {
-                "file": "hand_r.gltf",
-                "views": {
-                    "Front": [0, 0.75, 0.75, 2],
-                    "Back": [0, 0.85, 0.85, 2]
-                }
             }
         },
         "typeList" : ["sorrow", "elation", "jubilance", "ennui", "maleficence"],

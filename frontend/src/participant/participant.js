@@ -246,14 +246,23 @@ function prepSurvey(survey) {
 	// Initialize a survey using the received data
 	surveyManager.survey = new SVY.Survey();
 	surveyManager.survey.fromJSON(survey);
+
+	const modelKeys = Object.keys(surveyManager.survey.config.models);
+	
+	if (modelKeys.length < 2) {
+		document.getElementById("modelSelectContainer").style.display = 'none';
+	}
+	else {
+		document.getElementById("modelSelectContainer").style.display = 'auto';
+	}
+
 	const modelSelect = document.getElementById("modelSelect");
-	// Set the UI to defaults
-	populateSelect(modelSelect, 
-					Object.keys(surveyManager.survey.config.models));
+	populateSelect(modelSelect, modelKeys);
 	populateSelect(document.getElementById("typeSelect"), 
 		surveyManager.survey.config.typeList);
 	
 	cameraController.reset();
+
 	// If the survey has projected fields, fill the survey table
 	// and click the first "view" button
 	if (surveyManager.survey.projectedFields.length > 0) {
@@ -290,7 +299,7 @@ function prepSurvey(survey) {
 		painDiv.style.display = 'none';
 	}
 	else {
-		painDiv.style.display = 'auto'
+		painDiv.style.display = 'auto';
 	}
 
 	// Hide field intensity slider
@@ -562,7 +571,7 @@ function submitCallback() {
 			if (!usedMeshes.isSubsetOf(storedMeshes)) {
 				const diff = usedMeshes.difference(storedMeshes);
 				for (let key of diff) {
-					promises.push(viewport.loadMeshIntoStorage(key));
+					promises.push(viewport.loadMeshIntoStorage(key["file"]));
 				}
 			}
 
