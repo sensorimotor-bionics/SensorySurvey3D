@@ -325,6 +325,10 @@ export class CameraController {
         this.sliderElement = zoomSlider;
     }
 
+    /**
+     * Creates a button element which, on pointer up, resets the camera
+     * @returns {Element}
+     */
     generateCameraResetElement() {
         const cameraResetButton = document.createElement("button");
         cameraResetButton.id = "cameraResetButton";
@@ -376,7 +380,6 @@ export class CameraController {
         }
 
         const cameraReset = this.generateCameraResetElement();
-        console.log(cameraReset);
         cameraReset.innerHTML = "Home";
         this.viewsButtonContainer.appendChild(cameraReset);
         this.viewsButtons.push(cameraReset);
