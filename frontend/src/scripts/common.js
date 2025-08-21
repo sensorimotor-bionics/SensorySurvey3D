@@ -23,16 +23,28 @@ export function placeUI(rightleft, topbottom) {
     const sidebarWidth = getComputedStyle(document.body).
                             getPropertyValue("--sideWidth");
 
+    const style = window.getComputedStyle(document.body);
+
     sidebars[0].style.top = "0px";
 
     switch(rightleft) {
         case uiPositions.RIGHT:
+            console.log("right!");
             sidebars[0].style.right = "0px";
             widthbars[0].style.right = sidebarWidth;
+            threeDContainer.style.right = style.getPropertyValue("--sideWidth");
+            sidebars[0].style.left = "auto";
+            widthbars[0].style.left = "auto";
+            threeDContainer.style.left = "auto";
             break;
         case uiPositions.LEFT:
+            console.log("left!");
+            sidebars[0].style.right = "auto";
+            widthbars[0].style.right = "auto";
+            threeDContainer.style.right = "auto";
             sidebars[0].style.left = "0px";
             widthbars[0].style.left = sidebarWidth;
+            threeDContainer.style.left = style.getPropertyValue("--sideWidth");
             break;
         default:
             console.error("Receieved an invalid position for sidebar");
@@ -42,13 +54,15 @@ export function placeUI(rightleft, topbottom) {
     switch(topbottom) {
         case uiPositions.TOP:
             widthbars[0].style.top = "0px";
-            threeDContainer.style.top = getComputedStyle(document.body).
-                                        getPropertyValue("--widthbarHeight");
+            threeDContainer.style.top = style.getPropertyValue("--widthbarHeight");
+            widthbars[0].style.bottom = "auto";
+            threeDContainer.style.bottom = "auto";
             break;
         case uiPositions.BOTTOM:
+            widthbars[0].style.top = "auto";
+            threeDContainer.style.top = "auto";
             widthbars[0].style.bottom = "0px";
-            threeDContainer.style.bottom = getComputedStyle(document.body).
-                                            getPropertyValue("--widthbarHeight");
+            threeDContainer.style.bottom = style.getPropertyValue("--widthbarHeight");
             break;
         default:
             console.error("Receieved an invalid position for widthbar");
