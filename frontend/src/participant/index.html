@@ -87,34 +87,31 @@
 
             <div id="qualifyTab" class="sidebarTab">
                 <p>Qualities</p>
-                <div id="smallQualityList" class="scrollContainerSmall"></div>
-                <button id="qualifyAnotherButton">Add Another</button>
+                <div id="qualityList" class="qualityListContainer"></div>
                 <hr style="width:100%;">
-                <p>Type:</p>
-                <select id="typeSelect"></select>
-                <div style="width:80%;">
-                    <p class="titleText">Intensity: <span id="intensityValue"></span></p>
-                    <div class="rowContainer">
-                        <input type="range" min="0" max="10" value="5.0" step="0.1" id="intensitySlider">
-                        <input type="hidden" value="-1" id="intensityHidden">
+                <div id="qualityEditor">
+                    <p id="qualityName"></p>
+                    <div style="width:80%;">
+                        <p class="titleText">Intensity: <span id="intensityValue"></span></p>
+                        <div class="rowContainer">
+                            <input type="range" min="0" max="10" value="5.0" step="0.1" id="intensitySlider">
+                        </div>
+                        <div class="rowContainer">
+                            <p style="width: 50%">Faint</p>
+                            <p style="width: 50%; text-align: right;">Intense</p>
+                        </div>
                     </div>
+                    <form>
+                        <input type="checkbox" id="belowSkinCheck" value="belowSkin" name="skinLevelCheckSet">
+                        <label for="belowSkinCheck">Below Skin</label>
+                        <input type="checkbox" id="atSkinCheck" value="atSkin" name="skinLevelCheckSet">
+                        <label for="atSkinCheck">At Skin</label>
+                        <input type="checkbox" id="aboveSkinCheck" value="aboveSkin" name="skinLevelCheckSet">
+                        <label for="aboveSkinCheck">Above Skin</label>
+                    </form>
                     <div class="rowContainer">
-                        <p style="width: 50%">Faint</p>
-                        <p style="width: 50%; text-align: right;">Intense</p>
+                        <button id="qualifyDoneButton">Done</button>
                     </div>
-                </div>
-                <form>
-                    <input type="checkbox" id="belowSkinCheck" value="belowSkin" name="skinLevelCheckSet">
-                    <label for="belowSkinCheck">Below Skin</label>
-                    <input type="checkbox" id="atSkinCheck" value="atSkin" name="skinLevelCheckSet">
-                    <label for="atSkinCheck">At Skin</label>
-                    <input type="checkbox" id="aboveSkinCheck" value="aboveSkin" name="skinLevelCheckSet">
-                    <label for="aboveSkinCheck">Above Skin</label>
-                </form>
-                <div class="rowContainer">
-                    <button id="qualifyDeleteButton" class="warnButton">Delete</button>
-                    <button id="qualifyCancelButton">Cancel</button>
-                    <button id="qualifyDoneButton">Done</button>
                 </div>
             </div>
         </div>

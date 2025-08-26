@@ -171,6 +171,13 @@ html {
     box-sizing: border-box;
 }
 
+.qualityListContainer {
+    display: grid;
+    overflow-y: scroll;
+    grid-template-columns: 1fr;
+    grid-gap: 12px;
+}
+
 .smallButton {
     background-color: var(--buttonColor);
     border: none;

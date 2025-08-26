@@ -124,6 +124,22 @@ export class ProjectedField {
     }
 
     /**
+     * Looks through this field's qualities for one with a type matching the
+     * given value, returning that quality when a match is found, else retuning
+     * null
+     * @param {string} type 
+     * @returns {Quality|null}
+     */
+    findQualityOfType(type) {
+        for (let i = 0; i < this.qualities.length; i++) {
+            if (this.qualities[i].type == type) {
+                return this.qualities[i];
+            }
+        }
+        return null;
+    }
+
+    /**
      * Return a JSON-ified version of the Survey
      * @returns {JSON}
      */
@@ -429,24 +445,20 @@ export class SurveyTable {
      *      view button is clicked
      * @param {function} editFieldCallbackExternal - the function to be called 
      *      when an edit button is called for a field
-     * @param {function} editQualityCallbackExternal - the function to be called 
-     *      when an edit button is called for a quality
-     * @param {function} addQualityCallbackExternal - the function to be called 
-     *      when an add quality button is clicked
+     * @param {function} openQualitiesCallbackExternal - the function to be called 
+     *      when the edit qualities button is pressed
      */
     constructor(
         parentElement, 
         isParticipant, 
         viewCallbackExternal, 
         editFieldCallbackExternal,
-        editQualityCallbackExternal,
-        addQualityCallbackExternal,
+        openQualitiesCallbackExternal
     ) {
         this._isParticipant = isParticipant;
         this._viewCallbackExternal = viewCallbackExternal;
         this._editFieldCallbackExternal = editFieldCallbackExternal;
-        this._editQualityCallbackExternal = editQualityCallbackExternal;
-        this._addQualityCallbackExternal = addQualityCallbackExternal;
+        this._openQualitiesCallbackExternal = openQualitiesCallbackExternal;
         this.parentElement = parentElement;
     }
 
@@ -468,63 +480,6 @@ export class SurveyTable {
         }
 
         target.getElementsByTagName('img')[0].src = "/images/eye.png";
-    }
-    
-    /**
-     * Create a div containing a list of qualities for a given projected field,
-     * along with edit buttons for each
-     * @param {ProjectedField} field - the projected field whose qualities
-     *      should be listed
-     * @param {number} selected - the currently "selected" quality, whose button
-     *      will not be shown
-     * @param {string} indent - a string to be prepended to each quality name
-     * @returns {Element}
-     */
-    createQualitiesListChunk(
-        field, 
-        selected = null, 
-        indent = "", 
-        small = true
-    ) {
-        const that = this;
-        var chunk = document.createElement("div");
-        for (let i = 0; i < field.qualities.length; i++) {
-            const quality = field.qualities[i];
-
-            var qualityRow = document.createElement("div");
-            qualityRow.classList.add("surveyTableRow");
-
-            var name = document.createElement("div");
-            name.innerHTML = indent
-                + quality.type.charAt(0).toUpperCase() 
-                + quality.type.slice(1);
-            if (small) {
-                name.classList.add("smallText");
-            }
-            name.style["flex"] = "1 1 auto";
-            qualityRow.appendChild(name);
-
-            if (
-                this._isParticipant 
-            ) {
-                var qualityEditButton = document.createElement("button");
-                qualityEditButton.innerHTML = "Edit";
-                if (small) {
-                    qualityEditButton.classList.add("smallButton");
-                }
-                qualityEditButton.addEventListener("pointerup", function() {
-                    that._editQualityCallbackExternal(field, quality);
-                });
-                if (selected === i) {
-                    qualityEditButton.disabled = true;
-                    name.classList.add("selectedQuality");
-                }
-                qualityRow.appendChild(qualityEditButton);
-            }
-            
-            chunk.appendChild(qualityRow);
-        }
-        return chunk
     }
 
     /**
@@ -574,20 +529,35 @@ export class SurveyTable {
 
         chunk.appendChild(fieldRow);
         
-        var qualitiesChunk = this.createQualitiesListChunk(field);
+        var qualitiesChunk = document.createElement("div");
+        for (let i = 0; i < field.qualities.length; i++) {
+            const quality = field.qualities[i];
+
+            var qualityRow = document.createElement("div");
+            qualityRow.classList.add("surveyTableRow");
+
+            var name = document.createElement("div");
+            name.innerHTML = quality.type.charAt(0).toUpperCase() 
+                + quality.type.slice(1);
+            name.classList.add("smallText");
+            name.style["flex"] = "1 1 auto";
+            qualityRow.appendChild(name);
+
+            qualitiesChunk.appendChild(qualityRow);
+        }
         chunk.appendChild(qualitiesChunk);
 
         if (this._isParticipant) {
-            var addQualityButtonContainer = document.createElement("div");
-            addQualityButtonContainer.classList.add("surveyTableRow");
-            var addQualityButton = document.createElement("button");
-            addQualityButton.innerHTML = "Add Quality";
-            addQualityButton.classList.add("smallButton");
-            addQualityButton.addEventListener("pointerup", function() {
-                that._addQualityCallbackExternal(field);
+            var editQualitiesButtonContainer = document.createElement("div");
+            editQualitiesButtonContainer.classList.add("surveyTableRow");
+            var editQualitiesButton = document.createElement("button");
+            editQualitiesButton.innerHTML = "Edit Qualities";
+            editQualitiesButton.classList.add("smallButton");
+            editQualitiesButton.addEventListener("pointerup", function() {
+                that._openQualitiesCallbackExternal(field);
             });
-            addQualityButtonContainer.appendChild(addQualityButton);
-            chunk.appendChild(addQualityButtonContainer);
+            editQualitiesButtonContainer.appendChild(editQualitiesButton);
+            chunk.appendChild(editQualitiesButtonContainer);
         }
         
         return chunk;

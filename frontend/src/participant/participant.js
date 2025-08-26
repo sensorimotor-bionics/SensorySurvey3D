@@ -239,6 +239,33 @@ function populateSelect(selectElement, optionList) {
 }
 
 /**
+ * Clear the quality list container, then fill it with buttons according to the
+ * quality types in the surveyManager's config
+ */
+function createQualityButtons() {
+	const qualityList = document.getElementById("qualityList");
+
+	qualityList.innerHTML = "";
+
+	for (let i = 0; i < surveyManager.survey.config.qualityTypes.length; i++) {
+		const quality = surveyManager.survey.config.qualityTypes[i];
+
+		const button = document.createElement("button");
+		button.innerHTML = quality.charAt(0).toUpperCase() + quality.slice(1);
+		button.value = quality;
+
+		button.addEventListener("pointerup", event => {
+			populateQualityEditor(
+				surveyManager.currentField, 
+				event.target.value
+			);
+		});
+
+		qualityList.appendChild(button);
+	}
+}
+
+/**
  * Take a survey, give it to the survey manager, and prep the UI to display the 
  * information contained in that survey.
  * @param {Survey} survey - the survey whose data is to be used
@@ -259,8 +286,8 @@ function prepSurvey(survey) {
 
 	const modelSelect = document.getElementById("modelSelect");
 	populateSelect(modelSelect, modelKeys);
-	populateSelect(document.getElementById("typeSelect"), 
-		surveyManager.survey.config.typeList);
+
+	createQualityButtons();
 	
 	cameraController.reset();
 
@@ -425,66 +452,62 @@ function saveFieldFromEditor() {
 
 /**
  * Take a Quality and populate its data in the quality editor
- * @param {Quality} quality - the quality whose data will be populated in the
- * 		editor
+ * @param {SVY.ProjectedField} - the projected field whose qualities are being
+ * 		edited
+ * @param {string} qualityType - the quality type whose data will be populated
  */
-function populateQualityEditor(field, quality) {
-	const smallQualityList = document.getElementById("smallQualityList");
-	var quality_positon = field.qualities.indexOf(quality);
-	smallQualityList.replaceChildren(
-		...surveyTable.createQualitiesListChunk(field, quality_positon, "", false).children
-	);
-	
-	const typeSelect = document.getElementById("typeSelect");
-	if (quality.type) {
-		typeSelect.value = quality.type;
-	}
+function populateQualityEditor(field, qualityType) {
+	const quality = field.findQualityOfType(qualityType);
 
-	var belowSkinCheck = document.getElementById("belowSkinCheck");
-	if (quality.depth.includes('belowSkin')) { belowSkinCheck.checked = true }
-	else { belowSkinCheck.checked = false }
+	const qualityName = document.getElementById("qualityName");
+	qualityName.innerHTML = qualityType.charAt(0).toUpperCase() + qualityType.slice(1)
 
-	var atSkinCheck = document.getElementById("atSkinCheck");
-	if (quality.depth.includes('atSkin')) { atSkinCheck.checked = true }
-	else { atSkinCheck.checked = false }
-
-	var aboveSkinCheck = document.getElementById("aboveSkinCheck");
-	if (quality.depth.includes('aboveSkin')) { aboveSkinCheck.checked = true }
-	else { aboveSkinCheck.checked = false }
-
+	const belowSkinCheck = document.getElementById("belowSkinCheck");
+	const atSkinCheck = document.getElementById("atSkinCheck");
+	const aboveSkinCheck = document.getElementById("aboveSkinCheck");
 	const intensitySlider = document.getElementById("intensitySlider");
-	if (quality.intensity >= 0) {
-		intensitySlider.value = quality.intensity;
-		intensitySlider.dispatchEvent(new Event("input"));
+
+	if (quality) {
+		if (quality.depth.includes('belowSkin')) { belowSkinCheck.checked = true }
+		else { belowSkinCheck.checked = false }
+
+		
+		if (quality.depth.includes('atSkin')) { atSkinCheck.checked = true }
+		else { atSkinCheck.checked = false }
+
+		
+		if (quality.depth.includes('aboveSkin')) { aboveSkinCheck.checked = true }
+		else { aboveSkinCheck.checked = false }
+
+		
+		if (quality.intensity >= 0) {
+			intensitySlider.value = quality.intensity;
+			
+		}
+		else {
+			intensitySlider.value = 5.0;
+		}
 	}
 	else {
+		
+		belowSkinCheck.checked = false;
+		atSkinCheck.checked = false;
+		aboveSkinCheck.checked = false;
 		intensitySlider.value = 5.0;
-		intensitySlider.dispatchEvent(new Event("input"));
-		const intensityHidden = document.getElementById("intensityHidden");
-		intensityHidden.value = quality.intensity;
 	}
 
 	surveyManager.currentField = field;
 	surveyManager.currentQuality = quality;
 }
 
-/**
- * Take the values in the relevant editor elements and save them to the
- * corresponding fields in the surveyManager's currentQuality
- */
-function saveQualityFromEditor() {
-	const intensityHidden = document.getElementById("intensityHidden");
-	surveyManager.currentQuality.intensity = parseFloat(intensityHidden.value);
-
-	const depthSelected = 
-		document.querySelectorAll("input[name=\"skinLevelCheckSet\"]:checked");
-	surveyManager.currentQuality.depth = [];
-	for (let i = 0; i < depthSelected.length; i++) {
-		surveyManager.currentQuality.depth.push(depthSelected[i].value);
+function createQualityIfNone() {
+	if (self.currentField && !surveyManager.currentQuality) {
+		surveyManager.currentQuality = surveyManager.currentField.addQuality();
+		surveyManager.currentQuality.type = document.getElementById(
+			"qualityName").toLowerCase();
+		return true;
 	}
-
-	const typeSelect = document.getElementById("typeSelect");
-	surveyManager.currentQuality.type = typeSelect.value;
+	return false;
 }
 
 /**
@@ -644,34 +667,6 @@ function viewFieldCallback(field) {
 }
 
 /**
- * Populates the quality editor with a given Quality's data, then opens the 
- * quality editor menu
- * @param {ProjectedField} field - the projected field which has the quality to 
- * 		be edited as one of its "qualities"
- * @param {Quality} quality - the quality to be edited 
- */
-function editQualityCallback(field, quality) {
-	if (surveyManager.currentQuality) {
-		saveQualityFromEditor();
-	}
-	viewFieldCallback(field);
-	populateQualityEditor(field, quality);
-	openQualityEditor();
-}
-
-/**
- * Add a quality to the given field, then open the quality editor to edit
- * that new quality
- * @param {ProjectedField} field 
- */
-function addQualityCallback(field) {
-	var newQuality = field.addQuality();
-	const typeSelect = document.getElementById("typeSelect");
-	newQuality.type = typeSelect.value;
-	editQualityCallback(field, newQuality);
-}
-
-/**
  * Add a new ProjectedField, then open the edit menu for that field. Set the 
  * model and type values using whatever values were previously selected
  */
@@ -682,9 +677,6 @@ function addFieldCallback() {
 
 	const modelSelect = document.getElementById("modelSelect");
 	newField.model = modelSelect.value;
-
-	const typeSelect = document.getElementById("typeSelect");
-	newField.type = typeSelect.value; 
 
 	editFieldCallback(newField);
 }
@@ -728,6 +720,19 @@ function fieldDoneCallback() {
 }
 
 /**
+ * Populates the quality editor with a given Quality's data, then opens the 
+ * quality editor menu
+ * @param {ProjectedField} field - the projected field which has the quality to 
+ * 		be edited as one of its "qualities"
+ * @param {Quality} quality - the quality to be edited 
+ */
+function editQualityCallback(field, quality) {
+	viewFieldCallback(field);
+	populateQualityEditor(field, quality);
+	openQualityEditor();
+}
+
+/**
  * Finish working with the surveyManager's currentField and return to the 
  * main menu
  */
@@ -747,48 +752,21 @@ function qualifyDoneCallback() {
 			[okFunction]
 		); 
 	}
-	else {
-		saveQualityFromEditor();
-		openList();
-	}	
+	openList();
 }
 
-/**
- * Checks if the current quality is complete, then if it is, duplicates that
- * quality and opens a new quality editor for the duplicate
- */
-function qualifyAnotherCallback() {
-	if (
-		!document.getElementById("belowSkinCheck").checked
-		&& !document.getElementById("atSkinCheck").checked
-		&& !document.getElementById("aboveSkinCheck").checked
-	) {
-		const okFunction = function() {
-			openQualityEditor();
-		}
-		
-		openAlert(
-			"You must select at least one depth before continuing.",
-			["Go Back"],
-			[okFunction]
-		); 
+function updateQualityCallback() {
+	createQualityIfNone();
+
+	const intensitySlider = document.getElementById("intensitySlider");
+	surveyManager.currentQuality.intensity = parseFloat(intensitySlider.value);
+
+	const depthSelected = document.querySelectorAll("input[name=\"skinLevelCheckSet\"]:checked");
+	surveyManager.currentQuality.depth = [];
+	for (let i = 0; i < depthSelected.length; i++) {
+		surveyManager.currentQuality.depth.push(depthSelected[i].value);
 	}
-	else {
-		saveQualityFromEditor();
-
-		const field = surveyManager.currentField;
-		viewFieldCallback(field);
-
-		const currentFieldIdx = field.qualities.indexOf(
-			surveyManager.currentQuality
-		);
-		const newQuality =  field.duplicateQuality(currentFieldIdx);
-		surveyManager.currentQuality = newQuality;
-		populateQualityEditor(field, newQuality);
-
-		openQualityEditor();
-	}	
-} 
+}
 
 /**
  * Return to the list without saving changes from the current editor
@@ -820,27 +798,6 @@ function fieldDeleteCallback() {
 }
 
 /**
- * Delete the currentField from the current survey
- */
-function qualifyDeleteCallback() {
-	const deleteNoFunction = function() {
-		openQualityEditor();
-	}
-
-	const deleteYesFunction = function() {
-		surveyManager.currentField.deleteQuality(
-			surveyManager.currentQuality);
-		openList();
-	}
-
-	openAlert(
-		"Are you sure you want to delete this quality?",
-		["No", "Yes"],
-		[deleteNoFunction, deleteYesFunction]
-	);
-}
-
-/**
  * Call for the model corresponding to the selected option to be loaded
  */
 function modelSelectChangeCallback() {
@@ -848,20 +805,6 @@ function modelSelectChangeCallback() {
 	performModelReplacement(
 		modelSelect.value
 	);
-}
-
-/**
- * Get the current selected quality and update its name to match the type select
- */
-function typeSelectCallback() {
-	const selectedQualities = 
-		document.getElementsByClassName("selectedQuality");
-	for (let i = 0; i < selectedQualities.length; i++) {
-		selectedQualities[i].innerHTML = (
-			typeSelect.value.charAt(0).toUpperCase() 
-			+ typeSelect.value.slice(1)
-		);
-	}
 }
 
 /**
@@ -909,8 +852,7 @@ window.onload = function() {
 		true, 
 		viewFieldCallback, 
 		editFieldCallback,
-		editQualityCallback,
-		addQualityCallback
+		editQualityCallback
 	);
 
     // Start the websocket
@@ -977,17 +919,6 @@ window.onload = function() {
 	const qualifyDoneButton = document.getElementById("qualifyDoneButton");
 	qualifyDoneButton.onpointerup = qualifyDoneCallback;
 
-	const qualifyCancelButton = document.getElementById("qualifyCancelButton");
-	qualifyCancelButton.onpointerup = cancelCallback;
-
-	const qualifyDeleteButton = document.getElementById("qualifyDeleteButton");
-	qualifyDeleteButton.onpointerup = qualifyDeleteCallback;
-
-	const qualifyAnotherButton = document.getElementById(
-		"qualifyAnotherButton"
-	);
-	qualifyAnotherButton.onpointerup = qualifyAnotherCallback;
-
 	const modelSelect = document.getElementById("modelSelect");
 	modelSelect.onchange = modelSelectChangeCallback;
 
@@ -996,18 +927,6 @@ window.onload = function() {
 
 	const redoButton = document.getElementById("redoButton");
 	redoButton.onpointerup = redoCallback;
-
-	const intensitySlider = document.getElementById("intensitySlider");
-	intensitySlider.oninput = function() {
-		if (surveyManager.survey 
-			&& !surveyManager.survey.config.hideScaleValues) {
-			document.getElementById("intensityValue").innerHTML = 
-				intensitySlider.value;
-		}
-		const intensityHidden = document.getElementById("intensityHidden");
-		intensityHidden.value = intensitySlider.value;
-	}
-	intensitySlider.dispatchEvent(new Event("input"));
 
 	const naturalnessSlider = document.getElementById("naturalnessSlider");
 	naturalnessSlider.oninput = function() {
@@ -1043,8 +962,22 @@ window.onload = function() {
 	}
 	fieldIntensitySlider.dispatchEvent(new Event("input"));
 
-	const typeSelect = document.getElementById("typeSelect");
-	typeSelect.oninput = typeSelectCallback;
+	const intensitySlider = document.getElementById("intensitySlider");
+	intensitySlider.oninput = function() {
+		if (surveyManager.survey 
+			&& !surveyManager.survey.config.hideScaleValues) {
+			document.getElementById("intensityValue").innerHTML = 
+				intensitySlider.value;
+		}
+	}
+	intensitySlider.dispatchEvent(new Event("input"));
+
+	const belowSkinCheck = document.getElementById("belowSkinCheck");
+	belowSkinCheck.oninput = updateQualityCallback;
+	const atSkinCheck = document.getElementById("atSkinCheck");
+	atSkinCheck.oninput = updateQualityCallback;
+	const aboveSkinCheck = document.getElementById("aboveSkinCheck");
+	aboveSkinCheck.oninput = updateQualityCallback;
 
 	toggleUndoRedo(false);
 	viewport.animate();

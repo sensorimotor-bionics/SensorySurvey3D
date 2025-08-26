@@ -16,7 +16,7 @@
                 }
             }
         },
-        "typeList" : ["pressure", "poke", "sparkle"],
+        "qualityTypes" : ["pressure", "poke", "sparkle"],
         "hideScaleValues" : false,
         "hidePainSlider" : false,
         "hideFieldIntensitySlider" : false,
@@ -33,7 +33,7 @@
                 }
             }
         },
-        "typeList" : ["sorrow", "elation", "jubilance", "ennui", "maleficence"],
+        "qualityTypes" : ["sorrow", "elation", "jubilance", "ennui", "maleficence"],
         "hideScaleValues" : true,
         "hidePainSlider" : true,
         "hideFieldIntensitySlider" : false,
