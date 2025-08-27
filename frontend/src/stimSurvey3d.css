@@ -156,6 +156,7 @@ html {
     align-items: center;
     white-space: nowrap;
     width: 100%;
+    margin: 8px;
 }
 
 .surveyTable {
@@ -210,6 +211,7 @@ html {
 p {
     font-size: 2.4vh;
     color: white;
+    margin: 12px auto;
 }
 
 label {
