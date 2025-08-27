@@ -489,7 +489,6 @@ function populateQualityEditor(field, qualityType) {
 		}
 	}
 	else {
-		
 		belowSkinCheck.checked = false;
 		atSkinCheck.checked = false;
 		aboveSkinCheck.checked = false;
@@ -501,10 +500,10 @@ function populateQualityEditor(field, qualityType) {
 }
 
 function createQualityIfNone() {
-	if (self.currentField && !surveyManager.currentQuality) {
+	if (surveyManager.currentField && !surveyManager.currentQuality) {
 		surveyManager.currentQuality = surveyManager.currentField.addQuality();
 		surveyManager.currentQuality.type = document.getElementById(
-			"qualityName").toLowerCase();
+			"qualityName").innerHTML.toLowerCase();
 		return true;
 	}
 	return false;
@@ -944,7 +943,6 @@ window.onload = function() {
 		const naturalnessHidden = document.getElementById("naturalnessHidden");
 		naturalnessHidden.value = naturalnessSlider.value;
 	}
-	naturalnessSlider.dispatchEvent(new Event("input"));
 
 	const painSlider = document.getElementById("painSlider");
 	painSlider.oninput = function() {
@@ -955,7 +953,6 @@ window.onload = function() {
 		const painHidden = document.getElementById("painHidden");
 		painHidden.value = painSlider.value;
 	}
-	painSlider.dispatchEvent(new Event("input"));
 
 	const fieldIntensitySlider = document.getElementById("fieldIntensitySlider");
 	fieldIntensitySlider.oninput = function() {
@@ -966,7 +963,6 @@ window.onload = function() {
 		const fieldIntensityHidden = document.getElementById("fieldIntensityHidden");
 		fieldIntensityHidden.value = fieldIntensitySlider.value;
 	}
-	fieldIntensitySlider.dispatchEvent(new Event("input"));
 
 	const intensitySlider = document.getElementById("intensitySlider");
 	intensitySlider.oninput = function() {
@@ -975,10 +971,8 @@ window.onload = function() {
 			document.getElementById("intensityValue").innerHTML = 
 				intensitySlider.value;
 		}
-
-		updateQualityCallback
+		updateQualityCallback();
 	}
-	intensitySlider.dispatchEvent(new Event("input"));
 
 	const belowSkinCheck = document.getElementById("belowSkinCheck");
 	belowSkinCheck.oninput = updateQualityCallback;
