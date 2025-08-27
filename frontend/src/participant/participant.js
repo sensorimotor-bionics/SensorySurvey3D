@@ -716,7 +716,7 @@ function fieldDoneCallback() {
 
 		const continueFunction = function() {
 			saveFieldFromEditor();
-			openList();
+			editQualityCallback(surveyManager.currentField);
 		}
 		
 		openAlert(
@@ -727,7 +727,7 @@ function fieldDoneCallback() {
 	}
 	else { 
 		saveFieldFromEditor();  
-		openList();
+		editQualityCallback(surveyManager.currentField);
 	}
 }
 
