@@ -489,14 +489,18 @@ function populateQualityEditor(field, qualityType) {
 		}
 	}
 	else {
-		belowSkinCheck.checked = false;
-		atSkinCheck.checked = false;
-		aboveSkinCheck.checked = false;
 		intensitySlider.value = 5.0;
 	}
 
 	surveyManager.currentField = field;
 	surveyManager.currentQuality = quality;
+
+	if (
+		surveyManager.survey 
+		&& !surveyManager.survey.config.hideScaleValues
+	) {
+		document.getElementById("intensityValue").innerHTML = intensitySlider.value;
+	}
 }
 
 function createQualityIfNone() {
