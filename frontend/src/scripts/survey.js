@@ -445,7 +445,7 @@ export class SurveyTable {
      *      view button is clicked
      * @param {function} editFieldCallbackExternal - the function to be called 
      *      when an edit button is called for a field
-     * @param {function} openQualitiesCallbackExternal - the function to be called 
+     * @param {function} editQualityCallbackExternal - the function to be called 
      *      when the edit qualities button is pressed
      */
     constructor(
@@ -453,12 +453,12 @@ export class SurveyTable {
         isParticipant, 
         viewCallbackExternal, 
         editFieldCallbackExternal,
-        openQualitiesCallbackExternal
+        editQualityCallbackExternal
     ) {
         this._isParticipant = isParticipant;
         this._viewCallbackExternal = viewCallbackExternal;
         this._editFieldCallbackExternal = editFieldCallbackExternal;
-        this._openQualitiesCallbackExternal = openQualitiesCallbackExternal;
+        this._editQualityCallbackExternal = editQualityCallbackExternal;
         this.parentElement = parentElement;
     }
 
@@ -554,7 +554,12 @@ export class SurveyTable {
             editQualitiesButton.innerHTML = "Edit Qualities";
             editQualitiesButton.classList.add("smallButton");
             editQualitiesButton.addEventListener("pointerup", function() {
-                that._openQualitiesCallbackExternal(field);
+                if (field.qualities.length > 0) {
+                    that._editQualityCallbackExternal(field, field.qualities[0]);
+                }
+                else {
+                    that._editQualityCallbackExternal(field, null);
+                }
             });
             editQualitiesButtonContainer.appendChild(editQualitiesButton);
             chunk.appendChild(editQualitiesButtonContainer);

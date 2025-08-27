@@ -249,7 +249,7 @@ function createQualityButtons() {
 
 	for (let i = 0; i < surveyManager.survey.config.qualityTypes.length; i++) {
 		const quality = surveyManager.survey.config.qualityTypes[i];
-
+		
 		const button = document.createElement("button");
 		button.innerHTML = quality.charAt(0).toUpperCase() + quality.slice(1);
 		button.value = quality;
@@ -724,11 +724,17 @@ function fieldDoneCallback() {
  * quality editor menu
  * @param {ProjectedField} field - the projected field which has the quality to 
  * 		be edited as one of its "qualities"
- * @param {Quality} quality - the quality to be edited 
+ * @param {Quality|null} quality - the quality to be edited
  */
 function editQualityCallback(field, quality) {
 	viewFieldCallback(field);
-	populateQualityEditor(field, quality);
+	if (quality) { populateQualityEditor(field, quality.type); }
+	else { 
+		populateQualityEditor(
+			field, 
+			surveyManager.survey.config.qualityTypes[0]
+		); 
+	}
 	openQualityEditor();
 }
 
@@ -969,6 +975,8 @@ window.onload = function() {
 			document.getElementById("intensityValue").innerHTML = 
 				intensitySlider.value;
 		}
+
+		updateQualityCallback
 	}
 	intensitySlider.dispatchEvent(new Event("input"));
 
