@@ -253,6 +253,7 @@ function createQualityButtons() {
 		const button = document.createElement("button");
 		button.innerHTML = quality.charAt(0).toUpperCase() + quality.slice(1);
 		button.value = quality;
+		button.classList.add("qualityButton");
 
 		button.addEventListener("pointerup", event => {
 			populateQualityEditor(
@@ -500,6 +501,14 @@ function populateQualityEditor(field, qualityType) {
 		&& !surveyManager.survey.config.hideScaleValues
 	) {
 		document.getElementById("intensityValue").innerHTML = intensitySlider.value;
+	}
+
+	const qualityButtons = document.getElementsByClassName("qualityButton");
+	for (let i = 0; i < qualityButtons.length; i++) {
+		if (qualityButtons[i].value == qualityType) {
+			qualityButtons[i].classList.add("selectedButton");
+		}
+		else { qualityButtons[i].classList.remove("selectedButton"); }
 	}
 }
 
