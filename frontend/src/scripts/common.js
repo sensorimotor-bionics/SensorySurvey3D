@@ -29,7 +29,6 @@ export function placeUI(rightleft, topbottom) {
 
     switch(rightleft) {
         case uiPositions.RIGHT:
-            console.log("right!");
             sidebars[0].style.right = "0px";
             widthbars[0].style.right = sidebarWidth;
             threeDContainer.style.right = style.getPropertyValue("--sideWidth");
@@ -38,7 +37,6 @@ export function placeUI(rightleft, topbottom) {
             threeDContainer.style.left = "auto";
             break;
         case uiPositions.LEFT:
-            console.log("left!");
             sidebars[0].style.right = "auto";
             widthbars[0].style.right = "auto";
             threeDContainer.style.right = "auto";
