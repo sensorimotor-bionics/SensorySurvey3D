@@ -16,7 +16,11 @@
                 }
             }
         },
-        "qualityTypes" : ["pressure", "poke", "sparkle"],
+        "qualityTypes" : ["touch", "pressure", "tingling", "squeezing",
+                        "buzzing", "vibrating", "electrical","stinging", 
+                        "uncomfortable", "contracting", "pleasant", "gentle", 
+                        "harsh", "arousing", "distressing", "warm", "cool",
+                        "itchy", "movement", "stroking", "tapping", "other"],
         "hideScaleValues" : false,
         "hidePainSlider" : false,
         "hideFieldIntensitySlider" : false,
