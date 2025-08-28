@@ -53,7 +53,12 @@ for l = 1:size(axial_landmarks,1)
     z=linspace(point1(3),point2(3),10);
     expanded_landmarks = cat(1,expanded_landmarks,[x;y;z]');
     expanded_values = cat(1,expanded_values,axial_landmarks(l,2).*ones(10,1));
+    % valence_values = cat(1,valence_values,[0.55:0.05:1]);
     valence_values = cat(1,valence_values,ones(10,1));
+
+    % expanded_values = cat(1,expanded_values,axial_landmarks(l,1).*ones(5,1));
+    % expanded_values = cat(1,expanded_values,axial_landmarks(l,2).*ones(5,1));
+    % valence_values = cat(1,valence_values,[1:-.2:0.2]);
 end
 
 for v = 1:size(three_dim_verts,1)
@@ -171,7 +176,7 @@ if viewplot
     % plot3(two_dim_verts(:,1),two_dim_verts(:,2),two_dim_verts(:,3),'.','MarkerSize',30)
     axis equal
 end
-
+store_pl = [];
 %% iteratively adjust medial axis segment lengths
 for dgt = 1:5
     for joint = 1:length(dgt_grouper{dgt})-1
@@ -203,16 +208,15 @@ for dgt = 1:5
 
                 % update the vertex with scaling
                 % remember, must scale outward from the anchor landmark
-                three_dim_verts(idx_dibs(this_vert),:) = (new_position-projection)+scaling_verts(this_vert,:);
+                three_dim_verts(idx_dibs(this_vert),:) = new_position+scaling_verts(this_vert,:);
+            % else % oppositely oriented
+            %     new_position = discrepancy*joint_length_3d*(projection_length/joint_length_3d)*-joint_3d/norm(joint_3d);
             end
+            store_pl(idx_dibs(this_vert)) = projection_length/joint_length_3d;
         end
 
         % will also need to adjust landmarks as we scale
         all_3d(landmark_translator(dgt_grouper{dgt}(end-joint)),:) = discrepancy*joint_length_3d*joint_3d/norm(joint_3d)+offset_for_proj;
-        where_dibs = ismember(dibs,dgt_grouper{dgt}(1:end-joint));
-        discrepancy_vector = (joint_length_3d-joint_length_2d)*joint_3d/norm(joint_3d);
-        three_dim_verts(where_dibs,:) = three_dim_verts(where_dibs,:)-discrepancy_vector;
-        all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint-1)),:) = all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint-1)),:)-discrepancy_vector;
     end
 end
 plot3(scaling_verts(this_vert,1),scaling_verts(this_vert,2),scaling_verts(this_vert,3),'o')
@@ -242,7 +246,9 @@ for dgt = 1:5
         where_dibs = ismember(dibs,dgt_grouper{dgt}(1:end-joint+1));
         how_much_dibs = dibs_valence(where_dibs);
         new_verts = (three_dim_verts(where_dibs,:)-offset_for_rot)*Rz+offset_for_rot-mcp_disc;
+        % three_dim_verts(where_dibs,:) = new_verts.*how_much_dibs + three_dim_verts(where_dibs,:).*(1-how_much_dibs);
         three_dim_verts(where_dibs,:) = new_verts;
+        % three_dim_verts(where_dibs,:) = (three_dim_verts(where_dibs,:)-offset_for_rot)*Rz+offset_for_rot-mcp_disc;
         all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint+1)),:) = (all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint+1)),:)-offset_for_rot)*Rz+offset_for_rot-mcp_disc;
     end
     mcp_disc = all_3d(landmark_translator(dgt_grouper{dgt}(1)),:)-all_2d(landmark_translator(dgt_grouper{dgt}(1)),:);
@@ -256,7 +262,7 @@ figure
 hold on
 plot3(three_dim_verts(:,1),three_dim_verts(:,2),three_dim_verts(:,3),'.')
 plot3(all_3d(:,1),all_3d(:,2),all_3d(:,3),'*')
-plot3(two_dim_verts(:,1),two_dim_verts(:,2),two_dim_verts(:,3),'o','MarkerSize',10)
+% plot3(two_dim_verts(:,1),two_dim_verts(:,2),two_dim_verts(:,3),'o','MarkerSize',10)
 plot3(all_2d(:,1),all_2d(:,2),all_2d(:,3),'^')
 axis equal
 

@@ -1,9 +1,11 @@
-function all_3d = plotmodellandmarks(which_title,landmarks)
+function all_3d = plotmodellandmarks(which_title,landmarks,viewplot)
     all_3d = [];
     
-    figure
-    title(which_title)
-    hold on
+    if viewplot
+        figure
+        title(which_title)
+        hold on
+    end
     
     which_landmarks = {"Tpip","Tmcp",...
         "Idip","Ipip","Imcp",...
@@ -13,7 +15,9 @@ function all_3d = plotmodellandmarks(which_title,landmarks)
     
     for ii = 1:length(which_landmarks)
         this_landmark = landmarks.(which_landmarks{ii});
-        plot3(this_landmark(1),this_landmark(2),this_landmark(3),'r.','MarkerSize',30)
+        if viewplot
+            plot3(this_landmark(1),this_landmark(2),this_landmark(3),'r.','MarkerSize',30)
+        end
         all_3d = cat(2,all_3d,this_landmark);
     end
     
@@ -21,7 +25,9 @@ function all_3d = plotmodellandmarks(which_title,landmarks)
     
     for ii = 1:length(which_landmarks)
         this_landmark = landmarks.(which_landmarks{ii});
-        plot3(this_landmark(1),this_landmark(2),this_landmark(3),'b.','MarkerSize',30)
+        if viewplot
+            plot3(this_landmark(1),this_landmark(2),this_landmark(3),'b.','MarkerSize',30)
+        end
         all_3d = cat(2,all_3d,this_landmark);
     end
     
@@ -29,7 +35,9 @@ function all_3d = plotmodellandmarks(which_title,landmarks)
     
     for ii = 1:length(which_landmarks)
         this_landmark = landmarks.(which_landmarks{ii});
-        plot3(this_landmark(1),this_landmark(2),this_landmark(3),'g.','MarkerSize',30)
+        if viewplot
+            plot3(this_landmark(1),this_landmark(2),this_landmark(3),'g.','MarkerSize',30)
+        end
         all_3d = cat(2,all_3d,this_landmark);
     end
     
