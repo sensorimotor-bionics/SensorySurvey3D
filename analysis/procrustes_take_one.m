@@ -1,3 +1,6 @@
+%% options
+viewplot = false;
+viewfinalplot = true;
 
 %% import 2D and 3D meshes 
 val = importjson("2D_mesh_data.json");
@@ -20,7 +23,6 @@ landmark_2D = importjson("2D_model_procrustes_keypoints.json");
 landmark_3D = importjson("3D_model_procrustes_keypoints.json");
 
 %% plotting 3d model landmarks
-viewplot = false;
 all_3d = plotmodellandmarks('3D Model Landmarks',landmark_3D,viewplot);
 
 %% plotting 2d model landmarks
@@ -78,7 +80,8 @@ if viewplot
     end
 end
 
-%% 2D vs 3D skeletal plotting and alignment tests
+%% 2D vs 3D skeletal plotting and alignment tests:
+
 % initial procrustin'
 % Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c
 [d,Z,transform] = procrustes(all_2d,all_3d);
@@ -103,7 +106,7 @@ if viewplot
     axis equal
 end
 
-% iterative procrustin'
+% iterative procrustin' landmark order, for reference
 % landmarks = {"Tend","Tpip","Tmcp",...
 %     "Iend","Idip","Ipip","Imcp",...
 %     "Mend","Mdip","Mpip","Mmcp",...
@@ -113,39 +116,25 @@ end
 
 landmark_translator = [15,1,2,16,3,4,5,17,6,7,8,18,9,10,11,19,12,13,14,20,21,22,23,24];
 dgt_grouper = {1:3,4:7,8:11,12:15,16:19};
-
-iter_options = [1 2 24;...
-        2 3 24;...
-        4 5 24; 5 6 24; 6 7 24;...
-        8 9 24; 9 10 24; 10 11 24;...
-        12 13 24; 13 14 24; 14 15 24;...
-        16 17 24; 17 18 24; 18 19 24;...
-        20 21 24; 22 23 24];
 all_3d = Z;
 
 %% fixing finger flexion by joint:
 
 for dgt = 1:5
-    % progressing from mcp > pip, pip > dip, dip > end, straighten fingers,
-    % rotating all else out from the joint
-
-    % joint from mcp to pip, ignoring x, find vector from mcp to pip
-    % find angle between that vector and a vector with no z component
-    % if mcp is shifted to (0,0), this is a z of 0
-    % rotate pip and up--dibs (1:end-1)--about mcp
-    
-    % then, joint from pip to dip
-    % rotate dip and up--dibs(1:end-2)--about pip
-    
-    % then, joint from dip to end
-    % rotate end--dibs(1)--about dip
+    % progressing from mcp > pip, pip > dip, dip > end, straighten fingers, rotating all else out from the joint
+    % 1. rotate mcp and up--dibs(1:end)--about mcp
+    % 2. rotate pip and up--dibs(1:end-1)--about pip
+    % 3. rotate dip and end--dibs(1:end-2)--about dip
 
     for joint = 1:length(dgt_grouper{dgt})-1
         offset_for_rot = all_3d(landmark_translator(dgt_grouper{dgt}(end-joint+1)),:);
 
         % find the vector of this joint in the 3d model
+        % ignoring x, find vector from e.g. mcp to pip
         joint_3d = diff(all_3d(landmark_translator([dgt_grouper{dgt}(end-joint+1),dgt_grouper{dgt}(end-joint)]),:));
         no_flexion = joint_3d;
+
+        % find angle between that vector and a vector with no z component
         no_flexion(3) = 0;
 
         if joint_3d(3)<0
@@ -172,7 +161,8 @@ if viewplot
     axis equal
 end
 
-%% iteratively adjust medial axis segment lengths
+%% iteratively adjust medial axis segment lengths:
+
 for dgt = 1:5
     for joint = 1:length(dgt_grouper{dgt})-1
         offset_for_proj = all_3d(landmark_translator(dgt_grouper{dgt}(end-joint+1)),:);
@@ -193,7 +183,7 @@ for dgt = 1:5
 
         for this_vert = 1:size(scaling_verts,1)
             % compute projection
-            % how do we handle a projection which projects behind?
+            % how do we handle a projection which projects behind? for now, ignore
             projection = dot(scaling_verts(this_vert,:)-offset_for_proj,joint_3d)/norm(joint_3d)^2*joint_3d;
             projection_length = sqrt(sum(projection.^2));
 
@@ -215,7 +205,6 @@ for dgt = 1:5
         all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint-1)),:) = all_3d(landmark_translator(dgt_grouper{dgt}(1:end-joint-1)),:)-discrepancy_vector;
     end
 end
-plot3(scaling_verts(this_vert,1),scaling_verts(this_vert,2),scaling_verts(this_vert,3),'o')
 
 %% fixing finger abduction joint by joint:
 
@@ -252,11 +241,12 @@ for dgt = 1:5
     all_3d(landmark_translator(dgt_grouper{dgt}(1)),:) = all_3d(landmark_translator(dgt_grouper{dgt}(1)),:)-mcp_disc;
 end
 
-figure
-hold on
-plot3(three_dim_verts(:,1),three_dim_verts(:,2),three_dim_verts(:,3),'.')
-plot3(all_3d(:,1),all_3d(:,2),all_3d(:,3),'*')
-plot3(two_dim_verts(:,1),two_dim_verts(:,2),two_dim_verts(:,3),'o','MarkerSize',10)
-plot3(all_2d(:,1),all_2d(:,2),all_2d(:,3),'^')
-axis equal
-
+if viewfinalplot
+    figure
+    hold on
+    plot3(three_dim_verts(:,1),three_dim_verts(:,2),three_dim_verts(:,3),'.')
+    plot3(all_3d(:,1),all_3d(:,2),all_3d(:,3),'*')
+    plot3(two_dim_verts(:,1),two_dim_verts(:,2),two_dim_verts(:,3),'o','MarkerSize',10)
+    plot3(all_2d(:,1),all_2d(:,2),all_2d(:,3),'^')
+    axis equal
+end
