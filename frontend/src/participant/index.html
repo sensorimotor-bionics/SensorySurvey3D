@@ -87,10 +87,19 @@
 
             <div id="qualifyTab" class="sidebarTab">
                 <p>Qualities</p>
+
                 <div id="qualityList" class="qualityListContainer"></div>
+
                 <hr style="width:100%;">
+
                 <div id="qualityEditor" class="colContainer">
-                    <p id="qualityName"></p>
+
+                    <div class="rowContainer">
+                        <p id="qualityName"></p>
+                        <button id="qualityResetButton">Reset</button>
+                    </div>
+                    
+
                     <div style="width:80%;">
                         <p class="titleText">Intensity: <span id="intensityValue"></span></p>
                         <div class="rowContainer">
@@ -101,6 +110,7 @@
                             <p style="width: 50%; text-align: right;">Intense</p>
                         </div>
                     </div>
+
                     <form class="rowContainer">
                         <input type="checkbox" id="belowSkinCheck" value="belowSkin" name="skinLevelCheckSet">
                         <label for="belowSkinCheck">Below Skin</label>
@@ -109,9 +119,11 @@
                         <input type="checkbox" id="aboveSkinCheck" value="aboveSkin" name="skinLevelCheckSet">
                         <label for="aboveSkinCheck">Above Skin</label>
                     </form>
+
                     <div class="rowContainer">
                         <button id="qualifyDoneButton">Done</button>
                     </div>
+
                 </div>
             </div>
         </div>

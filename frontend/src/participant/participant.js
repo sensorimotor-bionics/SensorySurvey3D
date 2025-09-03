@@ -510,6 +510,10 @@ function populateQualityEditor(field, qualityType) {
 		}
 		else { qualityButtons[i].classList.remove("selectedButton"); }
 	}
+
+	const resetButton = document.getElementById("qualityResetButton");
+	if (surveyManager.currentQuality) { resetButton.disabled = false; }
+	else { resetButton.disabled = true; }
 }
 
 function createQualityIfNone() {
@@ -517,6 +521,7 @@ function createQualityIfNone() {
 		surveyManager.currentQuality = surveyManager.currentField.addQuality();
 		surveyManager.currentQuality.type = document.getElementById(
 			"qualityName").innerHTML.toLowerCase();
+		document.getElementById("qualityResetButton").disabled = false;
 		return true;
 	}
 	return false;
@@ -786,6 +791,15 @@ function updateQualityCallback() {
 	}
 }
 
+function qualityResetCallback(event) {
+	if (!event.target.disabled) {
+		const currentQualityType = surveyManager.currentQuality.type;
+		if (surveyManager.deleteCurrentQuality()) {
+			populateQualityEditor(surveyManager.currentField, currentQualityType);
+		}
+	}
+}
+
 /**
  * Return to the list without saving changes from the current editor
  */
@@ -936,6 +950,9 @@ window.onload = function() {
 
 	const qualifyDoneButton = document.getElementById("qualifyDoneButton");
 	qualifyDoneButton.onpointerup = qualifyDoneCallback;
+
+	const qualityResetButton = document.getElementById("qualityResetButton");
+	qualityResetButton.onpointerup = qualityResetCallback;
 
 	const modelSelect = document.getElementById("modelSelect");
 	modelSelect.onchange = modelSelectChangeCallback;

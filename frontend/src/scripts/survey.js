@@ -351,6 +351,22 @@ export class SurveyManager {
     }
 
     /**
+     * Delete the current quality from the current field
+     * @returns {boolean} true if success, false if fail
+     */
+    deleteCurrentQuality() {
+        if (
+            this.currentField
+            && this.currentQuality
+            && this.currentField.qualities.includes(this.currentQuality)
+        ) {
+            this.currentField.deleteQuality(this.currentQuality);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Check the current survey for missing information 
      * @returns {string}
      */
@@ -370,7 +386,7 @@ export class SurveyManager {
         }
 
         return "";
-    }   
+    }
 
     /**
      * Submit the currentSurvey to the server via websocket
