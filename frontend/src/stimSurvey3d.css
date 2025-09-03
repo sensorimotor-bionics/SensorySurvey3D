@@ -2,11 +2,11 @@
     --uiElementColor: #dedede;
     --uiElementContrast: #676767;
     --buttonColor: #6973AC;
-    --buttonActiveColor: #4d547e;
+    --buttonHoverColor: #4d547e;
     --warnButtonColor: #B11818;
-    --warnButtonActiveColor: #8C1313;
+    --warnButtonHoverColor: #8C1313;
     --selectedButtonColor: #587C90;
-    --selectedButtonActiveColor: #425D6C;
+    --selectedButtonHoverColor: #425D6C;
     --sideWidth: 25%;
     --widthbarHeight: 64px;
     --highlightText: #F8EE7E;
@@ -85,16 +85,16 @@ html {
     background-color: var(--warnButtonColor);
 }
 
-.warnButton:active {
-    background-color: var(--warnButtonActiveColor);
+.warnButton:hover {
+    background-color: var(--warnButtonHoverColor);
 }
 
 .selectedButton {
     background-color: var(--selectedButtonColor);
 }
 
-.selectedButton:active {
-    background-color: var(--selectedButtonActiveColor);
+.selectedButton:hover {
+    background-color: var(--selectedButtonHoverColor);
 }
 
 .paletteButton {
@@ -241,11 +241,11 @@ button {
 }
 
 button:hover {
-    background-color: var(--uiElementContrast);
+    background-color: var(--buttonHoverColor);
 }
 
 button:active {
-    background-color: var(--buttonActiveColor);
+    background-color: var(--uiElementContrast);
 }
 
 button:disabled {
