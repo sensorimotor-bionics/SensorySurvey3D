@@ -89,12 +89,16 @@ html {
     background-color: var(--warnButtonHoverColor);
 }
 
-.selectedButton {
+.completedButton {
     background-color: var(--selectedButtonColor);
 }
 
-.selectedButton:hover {
+.completedButton:hover {
     background-color: var(--selectedButtonHoverColor);
+}
+
+.selectedButton {
+    border-color: white;
 }
 
 .paletteButton {
@@ -227,7 +231,8 @@ label {
 
 button {
     background-color: var(--buttonColor);
-    border: none;
+    border: solid;
+    border-color: transparent;
     color: white;
     padding: 12px 24px;
     text-align: center;
@@ -238,6 +243,9 @@ button {
     float: left;
     border-radius: 5px;
     font-size: 2.4vh;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 button:hover {
