@@ -191,6 +191,14 @@ export class ProjectedField {
     get vertices() {
         return this._vertices;
     }
+
+    get qualityTypes() { 
+        var qualityTypes = [];
+        for (let i = 0; i < this.qualities.length; i++) {
+            qualityTypes.push(this.qualities[i].type);
+        }
+        return qualityTypes;
+    }
 }
 
 /**

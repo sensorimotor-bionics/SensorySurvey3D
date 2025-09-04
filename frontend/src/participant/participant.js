@@ -504,11 +504,17 @@ function populateQualityEditor(field, qualityType) {
 	}
 
 	const qualityButtons = document.getElementsByClassName("qualityButton");
+	const qualityTypes = field.qualityTypes;
 	for (let i = 0; i < qualityButtons.length; i++) {
 		if (qualityButtons[i].value == qualityType) {
 			qualityButtons[i].classList.add("selectedButton");
 		}
 		else { qualityButtons[i].classList.remove("selectedButton"); }
+
+		if (qualityTypes.includes(qualityButtons[i].value)) {
+			qualityButtons[i].classList.add("completedButton");
+		}
+		else { qualityButtons[i].classList.remove("completedButton"); }
 	}
 
 	const resetButton = document.getElementById("qualityResetButton");
@@ -521,7 +527,16 @@ function createQualityIfNone() {
 		surveyManager.currentQuality = surveyManager.currentField.addQuality();
 		surveyManager.currentQuality.type = document.getElementById(
 			"qualityName").innerHTML.toLowerCase();
+
 		document.getElementById("qualityResetButton").disabled = false;
+
+		const qualityButtons = document.getElementsByClassName("qualityButton");
+		for (let i = 0; i < qualityButtons.length; i++) {
+			if (qualityButtons[i].value == surveyManager.currentQuality.type) {
+				qualityButtons[i].classList.add("completedButton");
+			}
+		}
+
 		return true;
 	}
 	return false;
