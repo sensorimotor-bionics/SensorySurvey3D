@@ -3,9 +3,25 @@
 viewplot = false;
 viewfinalplot = true;
 
-subject = 'BCI03';
-session = [235];
-electrodes = [2 12 14 22 3 41 45 54 9 4 48 10 38 50 36 26 18 6 43 8 39 16 37 34 15 24 27];
+% subject = 'BCI03';
+% session = 235;
+% electrodes = [2 12 14 22 3 41 45 54 9 4 48 10 38 50 36 26 18 6 43 8 39 16 37 34 15 24 27];
+
+subject = 'BCI02';
+session = 925;
+electrodes = [3 10 63 34 4 7 21 57 17 56 13 53 26 30 52];
+
+% session = 925;
+% electrodes_3d = [3 10 63 34 4 7 21 57 17 56 13 53 26 30 52]; % sets 14 3 5 13 15 4 12 24 6 2 25 26 23 22 16
+% electrodes_2d = [61 11 29 59 6 9 38 55 12 54]; % 925 ols data is 25 long, sets 2-26 (sets 7-11, 17-21) (skip OLS rows for the sets above!)
+% 
+% session = 926;
+% electrodes_3d = [36]; % set 17
+% electrodes_2d = [36 56 32 63 30 4 34 7 57 13 53 17 36]; % 926 ols data is 13 long, sets 4-16
+
+% have both 2d and 3d for: 4 7 13 17 30 34 35 53 56 57 63
+% OLSData_BCI02_00925
+% OLSData_BCI02_00926
 
 % for ee = 1:length(electrodes)
 %     figure
@@ -144,12 +160,45 @@ if viewfinalplot
     axis equal
 end
 
+%% flatten aligned 3D mesh
+% classify each point in the mesh as palmar or dorsal 
+% depending on whether z of vertex is higher or lower than z of its reference point
+all_3d_transformed = all_3d(landmark_translator,:);
+all_3d_transformed(23,3) = mean(all_3d([22],3));
+palmar = three_dim_verts(:,3) < all_3d_transformed(dibs,3);
+dorsal = three_dim_verts(:,3) > all_3d_transformed(dibs,3);
+
+three_dim_verts_flattened = three_dim_verts;
+three_dim_verts_flattened(palmar,3) = min(three_dim_verts_flattened(palmar,3));
+three_dim_verts_flattened(dorsal,3) = max(three_dim_verts_flattened(dorsal,3));
+
+% figure
+% hold on
+% plot3(three_dim_verts_flattened(:,1),three_dim_verts_flattened(:,2),three_dim_verts_flattened(:,3),'.')
+
+% figure
+% hold on
+% plot3(three_dim_verts(palmar,1),three_dim_verts(palmar,2),three_dim_verts(palmar,3),'.')
+% plot3(three_dim_verts(dorsal,1),three_dim_verts(dorsal,2),three_dim_verts(dorsal,3),'.')
+% plot3(all_3d_transformed(unique(dibs),1),all_3d_transformed(unique(dibs),2),all_3d_transformed(unique(dibs),3),'k*')
+% plot3(all_3d_transformed(23,1),all_3d_transformed(23,2),all_3d_transformed(23,3),'m*')
+
 %% view annotations on morphed 3D mesh
 for ele = 1:length(documented_electrodes)
     this_ele = documented_electrodes{ele};
     disp_shape_single(three_dim_verts,three_dim_faces,color_map.(this_ele))
     foo = split(this_ele,'_');
     sgtitle(foo(2))
+    % saveas(gcf,['BCI02_3D_annotation_electrode_' char(foo(2)) '.png'])
+end
+
+%% view annotations on flattened 3D mesh
+for ele = 1:length(documented_electrodes)
+    this_ele = documented_electrodes{ele};
+    disp_shape_single(three_dim_verts_flattened,three_dim_faces,color_map.(this_ele))
+    foo = split(this_ele,'_');
+    sgtitle(foo(2))
+    % saveas(gcf,['BCI02_3D_annotation_flat_electrode_' char(foo(2)) '.png'])
 end
 
 %% helper functions

@@ -1,13 +1,13 @@
 function [annotation_record, this_model, model_name] = extract_colormaps(subject,session,electrodes)
-    annotation_paths = dir('BCI*.json');
 
-    % POINT TO APPROPRIATE FOLDER BASED ON SUBJECT AND SESSION DEETS
-
+    % point to appropriate folder based on subject and session details
+    annotation_paths = dir(['Z:\\SessionData\' subject '\OpenLoopStim\' subject '.data.00' char(string(session)) '\BCI*.json']);
+    base_path = annotation_paths(1).folder;
     annotation_paths = {annotation_paths.name};
     annotation_record = struct();
     
     for electrode = 1:length(electrodes)
-        data = import_json(annotation_paths{electrode});
+        data = import_json([base_path '\' annotation_paths{electrode}]);
         electrode_num = electrodes(electrode);
         electrode_name = ['e_' char(string(electrode_num))];
     
@@ -44,7 +44,11 @@ function [annotation_record, this_model, model_name] = extract_colormaps(subject
                 annotation_record.(this_model).electrodes.(electrode_name).hotspots = [hotspot.x, hotspot.y, hotspot.z];
                 annotation_record.(this_model).electrodes.(electrode_name).naturalness = projected_field.naturalness;
                 annotation_record.(this_model).electrodes.(electrode_name).pain = projected_field.pain;
-                annotation_record.(this_model).electrodes.(electrode_name).qualities = {projected_field.qualities.type};
+                try
+                    annotation_record.(this_model).electrodes.(electrode_name).qualities = {projected_field.qualities.type};
+                catch
+                    annotation_record.(this_model).electrodes.(electrode_name).qualities = {};
+                end
             else
                 if ~ismember(['e_' char(string(electrode_num))],fieldnames(annotation_record.(this_model).electrodes))
                     annotation_record.(this_model).electrodes.(electrode_name).fields = [];
@@ -59,7 +63,11 @@ function [annotation_record, this_model, model_name] = extract_colormaps(subject
                 annotation_record.(this_model).electrodes.(electrode_name).hotspots = cat(1,annotation_record.(this_model).electrodes.(electrode_name).hotspots,[hotspot.x, hotspot.y, hotspot.z]);
                 annotation_record.(this_model).electrodes.(electrode_name).naturalness = cat(1,annotation_record.(this_model).electrodes.(electrode_name).naturalness,projected_field.naturalness);
                 annotation_record.(this_model).electrodes.(electrode_name).pain = cat(1,annotation_record.(this_model).electrodes.(electrode_name).pain,projected_field.pain);
-                annotation_record.(this_model).electrodes.(electrode_name).qualities = [annotation_record.(this_model).electrodes.(electrode_name).qualities projected_field.qualities.type];
+                
+                try
+                    annotation_record.(this_model).electrodes.(electrode_name).qualities = [annotation_record.(this_model).electrodes.(electrode_name).qualities projected_field.qualities.type];
+                catch
+                end
             end
         end
     end
