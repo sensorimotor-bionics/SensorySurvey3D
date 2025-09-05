@@ -265,7 +265,7 @@ input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 8px;
+    height: 12px;
     border-radius: 5px;
     background: var(--uiElementColor);
     outline: none;
@@ -281,16 +281,16 @@ input[type="range"]:hover {
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 24px;
-    height: 24px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: var(--buttonColor);
     cursor: pointer;
 }
   
 input[type="range"]::-moz-range-thumb {
-    width: 24px;
-    height: 24px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: var(--buttonColor);
     cursor: pointer;
