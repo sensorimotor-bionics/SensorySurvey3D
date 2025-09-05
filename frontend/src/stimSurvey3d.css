@@ -7,8 +7,8 @@
     --warnButtonHoverColor: #8C1313;
     --selectedButtonColor: #587C90;
     --selectedButtonHoverColor: #425D6C;
-    --sideWidth: 25%;
-    --widthbarHeight: 64px;
+    --sideWidth: 28%;
+    --widthbarHeight: fit-content;
     --highlightText: #F8EE7E;
 }
 
@@ -21,6 +21,7 @@ html {
 .sidebar {
     height: 100%;
     width: var(--sideWidth);
+    min-width: fit-content;
     position: fixed;
     z-index: 1000;
     background-color: #111;
@@ -69,6 +70,7 @@ html {
     flex-direction: row;
     justify-content: left;
     align-items: center;
+    padding: 0.5vh;
 }
 
 .threeDContainer {
@@ -197,6 +199,7 @@ p {
     font-size: 2.4vh;
     color: white;
     margin: 12px auto;
+    max-width: 28ch;
 }
 
 label {
