@@ -41,6 +41,10 @@ export class Quality {
         this.depth = json.depth;
         this.type = json.type;
     }
+
+    get hasDepth() {
+        return this.depth.length > 0;
+    }
 }
 
 /**

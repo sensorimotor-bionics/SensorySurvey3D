@@ -256,10 +256,12 @@ function createQualityButtons() {
 		button.classList.add("qualityButton");
 
 		button.addEventListener("pointerup", event => {
-			populateQualityEditor(
-				surveyManager.currentField, 
-				event.target.value
-			);
+			if (!alertIfNoDepths()) {
+				populateQualityEditor(
+					surveyManager.currentField, 
+					event.target.value
+				);
+			}
 		});
 
 		qualityList.appendChild(button);
@@ -542,6 +544,23 @@ function createQualityIfNone() {
 	return false;
 }
 
+function alertIfNoDepths() {
+	if (surveyManager.currentQuality && !surveyManager.currentQuality.hasDepth) {
+		const okFunction = function() {
+			openQualityEditor();
+		}
+		
+		openAlert(
+			"You must select at least one depth before continuing.",
+			["Go Back"],
+			[okFunction]
+		); 
+
+		return true;
+	}
+	return false;
+}
+
 /**
  * Sets the waitingInterval variable to a new interval which polls the websocket
  * for a new survey. Also opens the waitingTab
@@ -775,22 +794,9 @@ function editQualityCallback(field, quality) {
  * main menu
  */
 function qualifyDoneCallback() {
-	if (
-		!document.getElementById("belowSkinCheck").checked
-		&& !document.getElementById("atSkinCheck").checked
-		&& !document.getElementById("aboveSkinCheck").checked
-	) {
-		const okFunction = function() {
-			openQualityEditor();
-		}
-		
-		openAlert(
-			"You must select at least one depth before continuing.",
-			["Go Back"],
-			[okFunction]
-		); 
+	if (!alertIfNoDepths()) {
+		openList();
 	}
-	openList();
 }
 
 function updateQualityCallback() {
