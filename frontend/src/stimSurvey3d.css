@@ -132,30 +132,6 @@ html {
     background: none;
 }
 
-.imageInButton {
-    width: 100px;
-}
-
-.colorSquare {
-    height: 25px;
-    width: 25px;
-    outline: 2px solid white;
-}
-
-.waitBox {
-    height: 100%;
-    width: 100%;
-    background-color: rgba(0,0,0,0.5);
-    display: flex;
-    z-index: 1001;
-    position: fixed;
-    justify-content: center;
-    align-items: center;
-    font-size: 6.66vh;
-    top: 0;
-    left: 0;
-}
-
 .rowContainer {
     display: flex; 
     flex-direction: row; 
