@@ -60,27 +60,21 @@ html {
 
 .widthbar {
     height: var(--widthbarHeight);
-    width: calc(100% - var(--sideWidth));
-    position: fixed;
-    z-index: 1000;
+    width: 100%;
     background-color: #111;
-    overflow: hidden;
+    overflow: wrap;
     display: flex;
-    flex-wrap: nowrap;
     flex-direction: row;
     justify-content: left;
     align-items: center;
     padding: 0.5vh;
+    flex-grow: 1;
 }
 
 .threeDContainer {
-    height: calc(100% - var(--widthbarHeight));
-    width: 75%;
-    position: fixed;
-    z-index: 1;
-    left: 25%;
     overflow-x: hidden;
     cursor: crosshair;
+    height: 100%;
 }
 
 .warnButton {
@@ -149,6 +143,14 @@ html {
     white-space: nowrap;
     width: 100%;
     margin: 8px;
+}
+
+.mainColContainer {
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - var(--sideWidth));
+    height: 100%;
+    position: fixed;
 }
 
 .surveyTable {

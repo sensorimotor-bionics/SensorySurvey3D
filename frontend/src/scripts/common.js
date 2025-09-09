@@ -17,8 +17,7 @@ export const uiPositions = Object.freeze({
  */
 export function placeUI(rightleft, topbottom) {
     const sidebars = document.getElementsByClassName("sidebar");
-    const widthbars = document.getElementsByClassName("widthbar");
-    const threeDContainer = document.getElementById("3dContainer");
+    const main = document.getElementsByClassName("mainColContainer");
 
     const sidebarWidth = getComputedStyle(document.body).
                             getPropertyValue("--sideWidth");
@@ -30,19 +29,15 @@ export function placeUI(rightleft, topbottom) {
     switch(rightleft) {
         case uiPositions.RIGHT:
             sidebars[0].style.right = "0px";
-            widthbars[0].style.right = sidebarWidth;
-            threeDContainer.style.right = style.getPropertyValue("--sideWidth");
+            main[0].style.right = sidebarWidth;
             sidebars[0].style.left = "auto";
-            widthbars[0].style.left = "auto";
-            threeDContainer.style.left = "auto";
+            main[0].style.left = "auto";
             break;
         case uiPositions.LEFT:
             sidebars[0].style.right = "auto";
-            widthbars[0].style.right = "auto";
-            threeDContainer.style.right = "auto";
+            main[0].style.right = "auto";
             sidebars[0].style.left = "0px";
-            widthbars[0].style.left = sidebarWidth;
-            threeDContainer.style.left = style.getPropertyValue("--sideWidth");
+            main[0].style.left = sidebarWidth;
             break;
         default:
             console.error("Receieved an invalid position for sidebar");
@@ -51,16 +46,12 @@ export function placeUI(rightleft, topbottom) {
 
     switch(topbottom) {
         case uiPositions.TOP:
-            widthbars[0].style.top = "0px";
-            threeDContainer.style.top = style.getPropertyValue("--widthbarHeight");
-            widthbars[0].style.bottom = "auto";
-            threeDContainer.style.bottom = "auto";
+            main[0].style.top = "0px";
+            main[0].style.bottom = "auto";
             break;
         case uiPositions.BOTTOM:
-            widthbars[0].style.top = "auto";
-            threeDContainer.style.top = "auto";
-            widthbars[0].style.bottom = "0px";
-            threeDContainer.style.bottom = style.getPropertyValue("--widthbarHeight");
+            main[0].style.top = "auto";
+            main[0].style.bottom = "0px";
             break;
         default:
             console.error("Receieved an invalid position for widthbar");
