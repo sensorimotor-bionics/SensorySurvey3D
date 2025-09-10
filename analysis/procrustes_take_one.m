@@ -65,7 +65,7 @@ landmarks = {"Tend","Tpip","Tmcp",...
     "Rend","Rdip","Rpip","Rmcp",...
     "Pend","Pdip","Ppip","Pmcp",...
     "MpP","MpD","WuT","WuP", "EoW"};
-landmark_2D = import_json("2D_model_procrustes_keypoints.json"); % REMOVE HARD-CODING OF DEETS
+landmark_2D = import_json("2D_model_procrustes_keypoints_tight.json"); % REMOVE HARD-CODING OF DEETS
 landmark_3D = import_json("3D_model_procrustes_keypoints.json");
 
 all_3d = plot_model_landmarks('3D Model Landmarks',landmark_3D,viewplot); % plot 3D model landmarks
@@ -160,59 +160,222 @@ if viewfinalplot
     axis equal
 end
 
-%% flatten aligned 3D mesh
-% classify each point in the mesh as palmar or dorsal 
-% depending on whether z of vertex is higher or lower than z of its reference point
-all_3d_transformed = all_3d(landmark_translator,:);
-all_3d_transformed(23,3) = mean(all_3d([22],3));
-palmar = three_dim_verts(:,3) < all_3d_transformed(dibs,3);
-dorsal = three_dim_verts(:,3) > all_3d_transformed(dibs,3);
+%% flatten aligned 3D mesh according to normal orientations
+three_dim_triangulation = triangulation(three_dim_faces+1,three_dim_verts);
+three_dim_normals = faceNormal(three_dim_triangulation);
+P = incenter(three_dim_triangulation);
+
+for n = 1:size(three_dim_normals,1)
+    angles_list(n) = acosd(dot(three_dim_normals(n,:),[0 0 1])/(sqrt(dot(three_dim_normals(n,:),three_dim_normals(n,:)))*sqrt(dot([0 0 1],[0 0 1]))));
+end
+error_space = 0;
+
+if viewplot
+    figure
+    hold on
+    quiver3(P(angles_list<=90-error_space,1),P(angles_list<=90-error_space,2),P(angles_list<=90-error_space,3), ...
+     three_dim_normals(angles_list<=90-error_space,1),three_dim_normals(angles_list<=90-error_space,2),three_dim_normals(angles_list<=90-error_space,3),0.5,'color','r');
+    quiver3(P(angles_list>=90+error_space,1),P(angles_list>=90+error_space,2),P(angles_list>=90+error_space,3), ...
+     three_dim_normals(angles_list>=90+error_space,1),three_dim_normals(angles_list>=90+error_space,2),three_dim_normals(angles_list>=90+error_space,3),0.5,'color','c');
+end
+
+is_palmar = angles_list>=90+error_space;
+is_dorsal = angles_list<=90-error_space;
 
 three_dim_verts_flattened = three_dim_verts;
-three_dim_verts_flattened(palmar,3) = min(three_dim_verts_flattened(palmar,3));
-three_dim_verts_flattened(dorsal,3) = max(three_dim_verts_flattened(dorsal,3));
 
-% figure
-% hold on
-% plot3(three_dim_verts_flattened(:,1),three_dim_verts_flattened(:,2),three_dim_verts_flattened(:,3),'.')
+for n = 1:size(three_dim_normals,1)
+    this_face = three_dim_faces(n,:)+1;
+    for v = 1:length(this_face)
+        if is_palmar(n)
+            three_dim_verts_flattened(this_face(v),3) = -0.1;
+        else
+            three_dim_verts_flattened(this_face(v),3) = 0.1;
+        end
+    end
+end
 
-% figure
+if viewplot
+    figure
+    hold on
+    plot3(three_dim_verts_flattened(:,1),three_dim_verts_flattened(:,2),three_dim_verts_flattened(:,3),'.')
+end
+
+%% view annotations on flattened 3D mesh
+ref_img_path = fullfile(pwd(), 'ReferenceImages');
+[palmar_mask, palmar_template, dorsal_mask, dorsal_template] = GetHandMasks();
+[palmar_segments, dorsum_segments] = GetHandSegments();
+orig_size = size(palmar_mask);
+
+[palm_ref_img, ~, palm_ref_alpha] = imread(fullfile(ref_img_path, 'TopLayer-handpcontour.png'));
+palm_ref_img = imresize(palm_ref_img, orig_size);
+palm_ref_alpha = imresize(palm_ref_alpha, orig_size);
+
+[dor_ref_img, ~, dor_ref_alpha] = imread(fullfile(ref_img_path, 'TopLayer-contour.png'));
+
+translation_adjustment = [100,30];
+scaling_factor = 1140/(max(all_2d(:,2))-min(all_2d(:,2)));
+
+three_dim_verts_shifted = three_dim_verts_flattened;
+three_dim_verts_shifted(:,1) = (three_dim_verts_flattened(:,1)-min(all_2d(:,1))).*scaling_factor+translation_adjustment(1);
+three_dim_verts_shifted(:,2) = (three_dim_verts_flattened(:,2)-min(all_2d(:,2))).*scaling_factor+translation_adjustment(2);
+three_dim_verts_shifted(:,3) = three_dim_verts_flattened(:,3).*scaling_factor;
+
+two_dim_verts_shifted = two_dim_verts;
+two_dim_verts_shifted(:,1) = (two_dim_verts(:,1)-min(all_2d(:,1))).*scaling_factor+translation_adjustment(1);
+two_dim_verts_shifted(:,2) = (two_dim_verts(:,2)-min(all_2d(:,2))).*scaling_factor+translation_adjustment(2);
+two_dim_verts_shifted(:,3) = two_dim_verts(:,3).*scaling_factor;
+
+% disp_shape_single(two_dim_verts_shifted,two_dim_faces,[0 1 0],50,-50)
+% subplot(1,2,1)
 % hold on
-% plot3(three_dim_verts(palmar,1),three_dim_verts(palmar,2),three_dim_verts(palmar,3),'.')
-% plot3(three_dim_verts(dorsal,1),three_dim_verts(dorsal,2),three_dim_verts(dorsal,3),'.')
-% plot3(all_3d_transformed(unique(dibs),1),all_3d_transformed(unique(dibs),2),all_3d_transformed(unique(dibs),3),'k*')
-% plot3(all_3d_transformed(23,1),all_3d_transformed(23,2),all_3d_transformed(23,3),'m*')
+% image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+% subplot(1,2,2)
+% hold on
+% image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+temp_background = zeros([orig_size 3]);
+
+if viewfinalplot
+    for ele = 1:length(documented_electrodes)
+        this_ele = documented_electrodes{ele};
+        foo = split(this_ele,'_');
+
+        figure; set(gcf,'position',[0,0,1106,600])
+        subplot(1,2,1); hold on
+        imagesc(temp_background)
+        axis tight; axis equal
+        subplot(1,2,2); hold on
+        imagesc(temp_background)
+        axis tight; axis equal
+
+        [~,~] = disp_shape_single(three_dim_verts_shifted,three_dim_faces,color_map.(this_ele),0,0); % +/- 0.1001*scaling_factor
+
+        cdata = print('-RGBImage','-r300','-noui');
+        d = cdata(:,1:size(cdata,2)/2,:);
+        del_row = sum(d(:,:,1)~=0,2)==size(d,2);
+        del_col = sum(d(:,:,1)~=0,1)==size(d,1);
+        d(del_row,:,:) = [];
+        d(:,del_col,:) = [];
+        temp = double(d(:,:,1));
+        dorsal{double(string(cell2mat(foo(2))))} = temp(1:orig_size(1),1:orig_size(2)); % enforce proper sizing
+        
+        p = cdata(:,size(cdata,2)/2+1:end,:);
+        del_row = sum(p(:,:,1)~=0,2)==size(p,2);
+        del_col = sum(p(:,:,1)~=0,1)==size(p,1);
+        p(del_row,:,:) = [];
+        p(:,del_col,:) = [];
+        temp = double(p(:,:,1));
+        palmar{double(string(cell2mat(foo(2))))} = temp(1:orig_size(1),1:orig_size(2)); % enforce proper sizing
+
+        sgtitle(foo(2))
+    end
+end
+
+% what proportion of annotated normals are beyond 30 deg of camera angle
+% (invisible to camera or squashed in a 2D representation)?
+
+%% throw away colors outside of the lines...
+
+%% compare 2D and 3D heatmaps...
+% also need morph between dorsum illustration and palmar illustration... won't be inherently aligned here
+load("BCI02_ProcessedPFs_PalmarIdx.mat"); % ConsolidatedPFs
+PFs_palmar = ConsolidatedPFs;
+load("BCI02_ProcessedPFs_DorsumIdx.mat"); % ConsolidatedPFs
+PFs_dorsal = ConsolidatedPFs;
+
+for ele = 1:length(documented_electrodes)
+    this_ele = documented_electrodes{ele};
+    foo = split(this_ele,'_');
+    this_ele = double(string(cell2mat(foo(2))));
+
+    figure; set(gcf,'position',[0,0,2500,1500])
+    h = subplot(2,2,1); % dorsal
+    temp_dorsal_2D = flipud(PFs_dorsal(this_ele).PixelFreqMap);
+    imagesc(temp_dorsal_2D)
+    hold on
+    image([0,orig_size(2)],[orig_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
+    axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0])
+    title('2D annotation - dorsal')
+    
+    h = subplot(2,2,2); % palmar
+    temp_palmar_2D = flipud(fliplr(PFs_palmar(this_ele).PixelFreqMap));
+    imagesc(temp_palmar_2D)
+    hold on
+    image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+    axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]); set(h,'CameraPosition',[0,0,-10*1200])
+    title('2D annotation - palmar')
+    
+    h = subplot(2,2,3); % dorsal
+    temp_dorsal_3D = flipud(dorsal{double(string(cell2mat(foo(2))))});
+    imagesc(temp_dorsal_3D.* flipud(fliplr(palmar_mask)))
+    hold on
+    image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+    axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0])
+    title('3D annotation - dorsal')
+
+    h = subplot(2,2,4); % palmar
+    temp_palmar_3D = flipud(fliplr(palmar{double(string(cell2mat(foo(2))))}));
+    imagesc(temp_palmar_3D.* flipud(fliplr(palmar_mask)))
+    hold on
+    image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+    axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]); set(h,'CameraPosition',[0,0,-10*1200])
+    title('3D annotation - palmar')
+
+    % Jaccard index: area of overlap / area of union
+    separator = 0.6;
+    temp_palmar_2D = temp_palmar_2D./max(temp_palmar_2D);
+    temp_palmar_2D(temp_palmar_2D>=separator) = 1;
+    temp_palmar_2D(temp_palmar_2D<separator) = 0;
+    summary_palmar = temp_palmar_2D+temp_palmar_3D.* flipud(fliplr(palmar_mask))./255;
+    overlap_palmar = sum(summary_palmar==2,'all');
+    union_palmar = sum(summary_palmar>0,'all');
+
+    temp_dorsal_2D = temp_dorsal_2D./max(temp_dorsal_2D);
+    temp_dorsal_2D(temp_dorsal_2D>=separator) = 1;
+    temp_dorsal_2D(temp_dorsal_2D<separator) = 0;
+    summary_dorsal = temp_dorsal_2D.* flipud(dorsal_mask)+temp_dorsal_3D.* flipud(fliplr(palmar_mask))./255;
+    overlap_dorsal = sum(summary_dorsal==2,'all');
+    union_dorsal = sum(summary_dorsal>0,'all');
+
+    if union_palmar == 0
+        union_palmar = 1;
+    end
+
+    if union_dorsal == 0
+        union_dorsal = 1;
+    end
+
+    sgtitle([{['electrode ' cell2mat(foo(2))]} {['dorsum jaccard: ' char(string(overlap_dorsal/union_dorsal))]} {['palmar jaccard: ' char(string(overlap_palmar/union_palmar))]}])
+    % saveas(gcf,['BCI02_comparative_annotation_electrode_' char(foo(2)) '.png'])
+end
 
 %% view annotations on morphed 3D mesh
 for ele = 1:length(documented_electrodes)
     this_ele = documented_electrodes{ele};
-    disp_shape_single(three_dim_verts,three_dim_faces,color_map.(this_ele))
+    [~,~] = disp_shape_single(three_dim_verts,three_dim_faces,color_map.(this_ele),0,0);
     foo = split(this_ele,'_');
     sgtitle(foo(2))
     % saveas(gcf,['BCI02_3D_annotation_electrode_' char(foo(2)) '.png'])
 end
 
-%% view annotations on flattened 3D mesh
-for ele = 1:length(documented_electrodes)
-    this_ele = documented_electrodes{ele};
-    disp_shape_single(three_dim_verts_flattened,three_dim_faces,color_map.(this_ele))
-    foo = split(this_ele,'_');
-    sgtitle(foo(2))
-    % saveas(gcf,['BCI02_3D_annotation_flat_electrode_' char(foo(2)) '.png'])
-end
-
 %% helper functions
-function disp_shape_single(verts,faces,colors)
-    figure;
+function [dorsal, palmar] = disp_shape_single(verts,faces,colors,front_dist,back_dist)
+    % figure;
+    % set(gcf,'position',[0,0,1500,500])
     for persp = 1:2
         h = subplot(1,2,persp);
-        % h = gca;
-        hp = patch('vertices',verts,'faces',faces+1,'parent',h); hold(h,'on');
+        temp_verts = verts;
+
+        if persp == 1
+            temp_verts(:,3) = verts(:,3)+back_dist;
+        elseif persp == 2
+            temp_verts(:,3) = verts(:,3)+front_dist;
+        end
+        
+        hp = patch('vertices',temp_verts,'faces',faces+1,'parent',h); hold(h,'on');
         hp.EdgeColor = 'none'; 
         hp.FaceColor = 'flat';
         hp.FaceVertexCData = colors;
-        % hp.FaceVertexAlphaData = 1;
-        % hp.FaceAlpha = 'none';
         hp.FaceLighting = 'flat';
         material(hp,[0.5 0.5 0.0 20 0.5]);
     
@@ -230,7 +393,10 @@ function disp_shape_single(verts,faces,colors)
         set(h,'CameraUpVector',[0 1 0])
 
         if persp == 2
-            set(h,'CameraPosition',[0,0,-10])
+            set(h,'CameraPosition',h.CameraPosition.*[1 1 -1])
+            palmar = getframe;
+        else
+            dorsal = getframe;
         end
     end
 end

@@ -1,13 +1,23 @@
 function [annotation_record, this_model, model_name] = extract_colormaps(subject,session,electrodes)
-
-    % point to appropriate folder based on subject and session details
-    annotation_paths = dir(['Z:\\SessionData\' subject '\OpenLoopStim\' subject '.data.00' char(string(session)) '\BCI*.json']);
-    base_path = annotation_paths(1).folder;
-    annotation_paths = {annotation_paths.name};
+    base_paths = {};
+    annotation_paths = {};
     annotation_record = struct();
-    
+
+    for sess = 1:length(session)
+        % point to appropriate folder(s) based on subject and session details
+        current_paths = dir(['Z:\\SessionData\' subject '\OpenLoopStim\' subject '.data.00' char(string(session(sess))) '\BCI*.json']);
+        base_paths = [base_paths {current_paths.folder}];
+        annotation_paths = [annotation_paths {current_paths.name}];
+    end
+
+    if length(annotation_paths)~=length(electrodes)
+        this_model = '';
+        model_name = '';
+        return
+    end
+
     for electrode = 1:length(electrodes)
-        data = import_json([base_path '\' annotation_paths{electrode}]);
+        data = import_json([base_paths{electrode} '\' annotation_paths{electrode}]);
         electrode_num = electrodes(electrode);
         electrode_name = ['e_' char(string(electrode_num))];
     
