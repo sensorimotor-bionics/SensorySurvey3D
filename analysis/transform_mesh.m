@@ -1,4 +1,4 @@
-function [two_dim_verts_shifted, two_dim_faces, three_dim_verts_shifted, three_dim_faces] = transform_mesh(mesh_2D,landmarks_2D,mesh_3D,landmarks_3D,which_side)
+function [two_dim, three_dim] = transform_mesh(mesh_2D,landmarks_2D,mesh_3D,landmarks_3D,which_side)
 
     %% options
     viewplot = false;
@@ -27,6 +27,26 @@ function [two_dim_verts_shifted, two_dim_faces, three_dim_verts_shifted, three_d
     
     all_3d = plot_model_landmarks('3D Model Landmarks',landmark_3D,viewplot); % plot 3D model landmarks
     all_2d = plot_model_landmarks('2D Model Landmarks',landmark_2D,viewplot); % plot 2D model landmarks
+
+    % figure
+    % disp_shape_single(three_dim_verts,three_dim_faces)
+    % hold on
+    % plot3(all_3d(:,1),all_3d(:,2),all_3d(:,3),'^','MarkerSize',15,'LineWidth',2)
+    % 
+    % for ii = 1:36
+    %     camorbit(10,0,'data',[1 1 0])
+    %     drawnow
+    %     % pause(0.2)
+    % 
+    %     frame = getframe(gcf);
+    %     img =  frame2im(frame);
+    %     [img,cmap] = rgb2ind(img,256);
+    %     if ii == 1
+    %         imwrite(img,cmap,'animation.gif','gif','LoopCount',Inf,'DelayTime',.1);
+    %     else
+    %         imwrite(img,cmap,'animation.gif','gif','WriteMode','append','DelayTime',.1);
+    %     end
+    % end
     
     %% 3D mesh dibs assignment
     dibs = nan(size(three_dim_verts,1),1);
@@ -98,13 +118,13 @@ function [two_dim_verts_shifted, two_dim_faces, three_dim_verts_shifted, three_d
     all_3d = Z;
     
     %% fixing finger flexion by joint
-    [three_dim_verts,all_3d] = correct_flexion(three_dim_verts,all_3d,landmark_translator,dgt_grouper,dibs,viewplot);
+    [three_dim_verts,all_3d] = correct_flexion(three_dim_verts,three_dim_faces,all_3d,landmark_translator,dgt_grouper,dibs,viewplot);
     
     %% iteratively adjust medial axis segment lengths
-    [three_dim_verts,all_3d] = correct_medial_axis(three_dim_verts,all_3d,all_2d,landmark_translator,dgt_grouper,dibs);
+    [three_dim_verts,all_3d] = correct_medial_axis(three_dim_verts,three_dim_faces,all_3d,all_2d,landmark_translator,dgt_grouper,dibs);
     
     %% fixing finger abduction joint by joint
-    [three_dim_verts,all_3d] = correct_abduction(three_dim_verts,all_3d,all_2d,landmark_translator,dgt_grouper,dibs);
+    [three_dim_verts,all_3d] = correct_abduction(three_dim_verts,three_dim_faces,all_3d,all_2d,landmark_translator,dgt_grouper,dibs);
     
     %% assess 2D/3D mesh alignment
     if viewfinalplot
@@ -126,23 +146,21 @@ function [two_dim_verts_shifted, two_dim_faces, three_dim_verts_shifted, three_d
         angles_list(n) = acosd(dot(three_dim_normals(n,:),[0 0 1])/(sqrt(dot(three_dim_normals(n,:),three_dim_normals(n,:)))*sqrt(dot([0 0 1],[0 0 1]))));
     end
     error_space = 0;
+    is_palmar = angles_list>=90+error_space;
+    is_dorsal = angles_list<=90-error_space;
+    is_oblique = angles_list>60&angles_list<120;
     
     if viewplot
         figure
         hold on
-        quiver3(P(angles_list<=90-error_space,1),P(angles_list<=90-error_space,2),P(angles_list<=90-error_space,3), ...
-         three_dim_normals(angles_list<=90-error_space,1),three_dim_normals(angles_list<=90-error_space,2),three_dim_normals(angles_list<=90-error_space,3),0.5,'color','r');
-        quiver3(P(angles_list>=90+error_space,1),P(angles_list>=90+error_space,2),P(angles_list>=90+error_space,3), ...
-         three_dim_normals(angles_list>=90+error_space,1),three_dim_normals(angles_list>=90+error_space,2),three_dim_normals(angles_list>=90+error_space,3),0.5,'color','c');
+        quiver3(P(is_dorsal,1),P(is_dorsal,2),P(is_dorsal,3), ...
+         three_dim_normals(is_dorsal,1),three_dim_normals(is_dorsal,2),three_dim_normals(is_dorsal,3),0.5,'color','r');
+        quiver3(P(is_palmar,1),P(is_palmar,2),P(is_palmar,3), ...
+         three_dim_normals(is_palmar,1),three_dim_normals(is_palmar,2),three_dim_normals(is_palmar,3),0.5,'color','c');
+        quiver3(P(is_oblique,1),P(is_oblique,2),P(is_oblique,3), ...
+         three_dim_normals(is_oblique,1),three_dim_normals(is_oblique,2),three_dim_normals(is_oblique,3),0.5,'color','k','LineWidth',1);
+        h = gca; axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]);
     end
-    
-    is_palmar = angles_list>=90+error_space;
-    is_dorsal = angles_list<=90-error_space;
-    is_oblique = angles_list
-    
-    %% TODO 
-    % what proportion of annotated normals are beyond 30 deg of camera angle
-    % (invisible to camera or squashed in a 2D representation)?
 
     %%
     three_dim_verts_flattened = three_dim_verts;
@@ -169,12 +187,17 @@ function [two_dim_verts_shifted, two_dim_faces, three_dim_verts_shifted, three_d
     if strcmp(which_side,"palmar")
         translation_adjustment = [100,30];
     elseif strcmp(which_side,"dorsal")
-        translation_adjustment = [180,25];
+        translation_adjustment = [160,25];
     else
         translation_adjustment = [0,0];
     end
     scaling_factor = 1140/(max(all_2d(:,2))-min(all_2d(:,2)));
-    
+
+    % all_2d_shifted = all_2d;
+    % all_2d_shifted(:,1) = (all_2d(:,1)-min(all_2d(:,1))).*scaling_factor+translation_adjustment(1);
+    % all_2d_shifted(:,2) = (all_2d(:,2)-min(all_2d(:,2))).*scaling_factor+translation_adjustment(2);
+    % all_2d_shifted(:,3) = all_2d(:,3).*scaling_factor;
+
     three_dim_verts_shifted = three_dim_verts_flattened;
     three_dim_verts_shifted(:,1) = (three_dim_verts_flattened(:,1)-min(all_2d(:,1))).*scaling_factor+translation_adjustment(1);
     three_dim_verts_shifted(:,2) = (three_dim_verts_flattened(:,2)-min(all_2d(:,2))).*scaling_factor+translation_adjustment(2);
@@ -184,4 +207,37 @@ function [two_dim_verts_shifted, two_dim_faces, three_dim_verts_shifted, three_d
     two_dim_verts_shifted(:,1) = (two_dim_verts(:,1)-min(all_2d(:,1))).*scaling_factor+translation_adjustment(1);
     two_dim_verts_shifted(:,2) = (two_dim_verts(:,2)-min(all_2d(:,2))).*scaling_factor+translation_adjustment(2);
     two_dim_verts_shifted(:,3) = two_dim_verts(:,3).*scaling_factor;
+
+    three_dim.faces = three_dim_faces;
+    three_dim.verts = three_dim_verts;
+    three_dim.oblique = is_oblique;
+    three_dim.verts_flat = three_dim_verts_shifted;
+    two_dim.faces = two_dim_faces;
+    two_dim.verts = two_dim_verts;
+    two_dim.verts_flat = two_dim_verts_shifted;
+end
+
+function disp_shape_single(verts,faces)
+    h = gca;
+    temp_verts = verts;
+    
+    hp = patch('vertices',temp_verts,'faces',faces+1,'parent',h); hold(h,'on');
+    hp.EdgeColor = [0 0.5 0]; 
+    hp.FaceColor = [0 1 0];
+    hp.FaceAlpha = 0.5;
+    hp.FaceLighting = 'flat';
+    material(hp,[0 .5 .0 20 .5]);
+
+    ch = get(h,'children');
+    lightExists = sum(arrayfun(@(x) contains(class(ch(x)),'Light'),1:length(ch)));
+    supported_positions = [1 1 1; 1 1 -1; 1 -1 1; 1 -1 -1; -1 1 1; -1 1 -1; -1 -1 1; -1 -1 -1];
+    if ~lightExists
+        for ii = 1:size(supported_positions,1)
+            light('parent',h,'Position',supported_positions(ii,:)); 
+        end
+    end
+    
+    axis(h,'off'); axis(h,'equal');
+    set(h,'Projection','perspective')
+    set(h,'CameraUpVector',[0 1 0])
 end

@@ -46,12 +46,11 @@ mesh_2D = "2D_mesh_data.json";
 landmarks_2D = "2D_model_procrustes_keypoints_tight.json";
 mesh_3D = [model_name '.json'];
 landmarks_3D = "3D_model_procrustes_keypoints.json";
-
-[two_dim_verts,two_dim_faces,three_dim_verts,three_dim_faces] = transform_mesh(mesh_2D,landmarks_2D,mesh_3D,landmarks_3D,"palmar");
+[two_dim,three_dim] = transform_mesh(mesh_2D,landmarks_2D,mesh_3D,landmarks_3D,"palmar");
 
 %% transform 3D mesh to 2D dorsal (keep dorsum only)
 landmarks_2D = "2D_model_procrustes_keypoints_dorsum_tight.json";
-[~,~,three_dim_verts_dorsum,three_dim_faces_dorsum] = transform_mesh(mesh_2D,landmarks_2D,mesh_3D,landmarks_3D,"dorsal");
+[~,three_dim_dorsum] = transform_mesh(mesh_2D,landmarks_2D,mesh_3D,landmarks_3D,"dorsal");
 
 %% view annotations on flattened 3D mesh
 ref_img_path = fullfile(pwd(), 'ReferenceImages');
@@ -65,7 +64,7 @@ palm_ref_img = imresize(palm_ref_img, orig_size);
 palm_ref_alpha = imresize(palm_ref_alpha, orig_size);
 [dor_ref_img, ~, dor_ref_alpha] = imread(fullfile(ref_img_path, 'TopLayer-contour.png'));
 
-% disp_shape_single(two_dim_verts,two_dim_faces,[0 1 0],50,-50)
+% disp_shape_single(two_dim.verts_flat,two_dim.faces,[0 1 0],50,-50)
 % subplot(1,2,1)
 % hold on
 % image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
@@ -74,10 +73,16 @@ palm_ref_alpha = imresize(palm_ref_alpha, orig_size);
 % image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
 
 % figure
-% disp_shape_single(three_dim_verts_dorsum,three_dim_faces_dorsum,[0 1 0],130,-130)
+% disp_shape_single(three_dim_dorsum.verts_flat,three_dim_dorsum.faces,[0 1 0],130,-130)
 % subplot(1,2,1)
 % hold on
 % image([0,orig_size(2)],[orig_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
+% 
+% figure
+% disp_shape_single(three_dim.verts_flat,three_dim.faces,[0 1 0],130,-130)
+% subplot(1,2,2)
+% hold on
+% image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
 
 for ele = 1:length(documented_electrodes)
     this_ele = documented_electrodes{ele};
@@ -91,7 +96,7 @@ for ele = 1:length(documented_electrodes)
     imagesc(temp_background)
     axis tight; axis equal
 
-    disp_shape_single(three_dim_verts,three_dim_faces,color_map.(this_ele),0,0);
+    disp_shape_single(three_dim.verts_flat,three_dim.faces,color_map.(this_ele),0,0);
 
     cdata = print('-RGBImage','-r300','-noui');
     p = cdata(:,size(cdata,2)/2+1:end,:);
@@ -113,7 +118,7 @@ for ele = 1:length(documented_electrodes)
     imagesc(temp_background)
     axis tight; axis equal
 
-    disp_shape_single(three_dim_verts_dorsum,three_dim_faces_dorsum,color_map.(this_ele),0,0);
+    disp_shape_single(three_dim_dorsum.verts_flat,three_dim_dorsum.faces,color_map.(this_ele),0,0);
 
     cdata = print('-RGBImage','-r300','-noui');
     d = cdata(:,1:size(cdata,2)/2,:);
@@ -202,14 +207,76 @@ for ele = 1:length(documented_electrodes)
         union_dorsal = 1;
     end
 
-    sgtitle([{['electrode ' cell2mat(foo(2))]} {['dorsum jaccard: ' char(string(overlap_dorsal/union_dorsal))]} {['palmar jaccard: ' char(string(overlap_palmar/union_palmar))]}])
+    sgtitle([{['electrode ' cell2mat(foo(2))]} {['dorsum jaccard: ' char(string(round(overlap_dorsal/union_dorsal,2)))]} {['palmar jaccard: ' char(string(round(overlap_palmar/union_palmar,2)))]}])
     % saveas(gcf,[subject '_comparative_annotation_electrode_' char(foo(2)) '.png'])
+    close all
+end
+
+%% what proportion of annotated normals are oblique?
+% (invisible to camera or squashed in a 2D representation)
+
+% need to calculate the area of each face
+for f = 1:size(three_dim.faces)
+    verts = three_dim.verts(three_dim.faces(f,:)+1,:);
+    % magnitude of cross product is the positive area of the parallelogram having A and B as sides
+    A = verts(2,:)-verts(1,:);
+    B = verts(3,:)-verts(1,:);
+    three_dim.face_area(f) = norm(cross(A,B))/2;
+end
+
+oblique_proportion = nan(64,1);
+
+for ele = 1:length(documented_electrodes)
+    this_ele = documented_electrodes{ele};
+    foo = split(this_ele,'_');
+
+    this_map = color_map.(this_ele);
+    annotated_faces = sum(ismember(three_dim.faces,find(this_map(:,1)>0)),2)==3;
+
+    % sum areas of oblique faces which are annotated
+    oblique_area = sum(three_dim.face_area(annotated_faces'&three_dim.oblique));
+    % sum areas of camera-facing faces which are annotated
+    non_oblique_area = sum(three_dim.face_area(annotated_faces'&~three_dim.oblique));
+    % calculate proportion of annotated area that is oblique
+    oblique_proportion(double(string(cell2mat(foo(2))))) = oblique_area/(oblique_area+non_oblique_area);
+end
+
+nanmean(oblique_proportion)
+nanstd(oblique_proportion)
+
+figure;
+histogram(oblique_proportion(~isnan(oblique_proportion)),0:.2:1)
+ylim([0 4.2])
+xlabel('proportion of annotation occluded')
+ylabel('number of electrodes')
+title('3D annotation visibility')
+% saveas(gcf,[subject '_annotation_visibility.png'])
+% saveas(gcf,[subject '_annotation_visibility.svg'])
+
+for ele = 1:length(documented_electrodes)
+    try
+    this_ele = documented_electrodes{ele};
+    foo = split(this_ele,'_');
+
+    figure; set(gcf,'position',[0,0,1109,600])
+    subplot(1,2,1); hold on
+    axis tight; axis equal
+    subplot(1,2,2); hold on
+    axis tight; axis equal
+
+    disp_shape_single(three_dim.verts_flat,three_dim.faces,color_map.(this_ele),0,0);
+
+    sgtitle([foo(2) ['proportion occluded: ' char(string(round(oblique_proportion(double(string(foo(2)))),2)))]])
+    % saveas(gcf,[subject '_occlusion_electrode_' char(foo(2)) '.png'])
+    catch
+    end
+    close all
 end
 
 %% view annotations on morphed 3D mesh
 for ele = 1:length(documented_electrodes)
     this_ele = documented_electrodes{ele};
-    disp_shape_single(three_dim_verts,three_dim_faces,color_map.(this_ele),0,0);
+    disp_shape_single(three_dim.verts_flat,three_dim.faces,color_map.(this_ele),0,0);
     foo = split(this_ele,'_');
     sgtitle(foo(2))
     % saveas(gcf,[subject '_3D_annotation_electrode_' char(foo(2)) '.png'])
