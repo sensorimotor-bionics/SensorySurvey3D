@@ -17,22 +17,27 @@ export const uiPositions = Object.freeze({
  */
 export function placeUI(rightleft, topbottom) {
     const sidebars = document.getElementsByClassName("sidebar");
-    const widthbars = document.getElementsByClassName("widthbar");
-    const threeDContainer = document.getElementById("3dContainer");
+    const main = document.getElementsByClassName("mainColContainer");
 
     const sidebarWidth = getComputedStyle(document.body).
                             getPropertyValue("--sideWidth");
+
+    const style = window.getComputedStyle(document.body);
 
     sidebars[0].style.top = "0px";
 
     switch(rightleft) {
         case uiPositions.RIGHT:
             sidebars[0].style.right = "0px";
-            widthbars[0].style.right = sidebarWidth;
+            main[0].style.right = sidebarWidth;
+            sidebars[0].style.left = "auto";
+            main[0].style.left = "auto";
             break;
         case uiPositions.LEFT:
+            sidebars[0].style.right = "auto";
+            main[0].style.right = "auto";
             sidebars[0].style.left = "0px";
-            widthbars[0].style.left = sidebarWidth;
+            main[0].style.left = sidebarWidth;
             break;
         default:
             console.error("Receieved an invalid position for sidebar");
@@ -41,14 +46,12 @@ export function placeUI(rightleft, topbottom) {
 
     switch(topbottom) {
         case uiPositions.TOP:
-            widthbars[0].style.top = "0px";
-            threeDContainer.style.top = getComputedStyle(document.body).
-                                        getPropertyValue("--widthbarHeight");
+            main[0].style.top = "0px";
+            main[0].style.bottom = "auto";
             break;
         case uiPositions.BOTTOM:
-            widthbars[0].style.bottom = "0px";
-            threeDContainer.style.bottom = getComputedStyle(document.body).
-                                            getPropertyValue("--widthbarHeight");
+            main[0].style.top = "auto";
+            main[0].style.bottom = "0px";
             break;
         default:
             console.error("Receieved an invalid position for widthbar");

@@ -93,7 +93,7 @@ class ProjectedField():
     hotSpot: dict = field(default_factory = dict)
     naturalness: float = -1.0
     pain: float = -1.0
-    itch: float = -1.0
+    intensity: float = -1.0
     qualities: list[Quality] = field(default_factory = list)
 
     def toDict(self) -> dict:
@@ -115,7 +115,7 @@ class ProjectedField():
             "hotSpot": self.hotSpot,
             "naturalness": self.naturalness,
             "pain": self.pain,
-            "itch": self.itch,
+            "intensity": self.intensity,
             "qualities": qualitiesDict
         }
     
@@ -134,7 +134,7 @@ class ProjectedField():
         self.hotSpot = dictionary["hotSpot"]
         self.naturalness = dictionary["naturalness"]
         self.pain = dictionary["pain"]
-        self.itch = dictionary["itch"]
+        self.intensity = dictionary["intensity"]
         self.qualities = []
         for quality in dictionary["qualities"]:
             self.qualities.append(Quality())

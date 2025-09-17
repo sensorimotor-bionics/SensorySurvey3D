@@ -3,8 +3,6 @@ import * as VP from '../scripts/surveyViewport'
 import * as SVY from '../scripts/survey'
 import * as COM from '../scripts/common'
 
-document.title = "Participant - SensorySurvey3D"
-
 var viewport;
 var surveyManager;
 var surveyTable;
@@ -114,7 +112,7 @@ function toggleUndoRedo(enabled) {
  * @param {function[]} buttonFunctions - the functions to be used as callbacks
  * 		for each button, 
  */
-function openAlert(message, buttonNames, buttonFunctions) {
+function openAlert(message, buttonNames = [], buttonFunctions = []) {
 	const alertTab = document.getElementById("alertTab");
 	alertTab.innerHTML = "";
 
@@ -146,20 +144,27 @@ function openAlert(message, buttonNames, buttonFunctions) {
  * @param {JSON} hotSpot - a JSON with an x, y, and z property
  */
 function performModelReplacement(
-	filename, 
+	modelName, 
 	colorVertices = null, 
 	color = null,
 	hotSpot = null
 ) {
 	viewport.orbMesh.visible = false;
 	document.getElementById("modelSelect").disabled = true;
+	const preMesh = viewport.currentModelFile;
 	viewport.replaceCurrentMesh(
-		filename,
+		surveyManager.survey.config.models[modelName]["file"],
 		colorVertices,
 		color
 	).then(function() {
 			viewport.orbMesh.visible = false;
-			cameraController.reset();
+			if (preMesh != viewport.currentModelFile) {
+				cameraController.destroyViewsButtons();
+				cameraController.createViewsButtons(
+					surveyManager.survey.config.models[modelName]["views"]
+				);
+				cameraController.goToView(0);
+			}
 			document.getElementById("modelSelect").disabled = false;
 
 			if (hotSpot && hotSpot.x) {
@@ -234,6 +239,36 @@ function populateSelect(selectElement, optionList) {
 }
 
 /**
+ * Clear the quality list container, then fill it with buttons according to the
+ * quality types in the surveyManager's config
+ */
+function createQualityButtons() {
+	const qualityList = document.getElementById("qualityList");
+
+	qualityList.innerHTML = "";
+
+	for (let i = 0; i < surveyManager.survey.config.qualityTypes.length; i++) {
+		const quality = surveyManager.survey.config.qualityTypes[i];
+		
+		const button = document.createElement("button");
+		button.innerHTML = quality.charAt(0).toUpperCase() + quality.slice(1);
+		button.value = quality;
+		button.classList.add("qualityButton");
+
+		button.addEventListener("pointerup", event => {
+			if (!alertIfNoDepths()) {
+				populateQualityEditor(
+					surveyManager.currentField, 
+					event.target.value
+				);
+			}
+		});
+
+		qualityList.appendChild(button);
+	}
+}
+
+/**
  * Take a survey, give it to the survey manager, and prep the UI to display the 
  * information contained in that survey.
  * @param {Survey} survey - the survey whose data is to be used
@@ -242,21 +277,44 @@ function prepSurvey(survey) {
 	// Initialize a survey using the received data
 	surveyManager.survey = new SVY.Survey();
 	surveyManager.survey.fromJSON(survey);
+
+	const modelKeys = Object.keys(surveyManager.survey.config.models);
+	
+	if (modelKeys.length < 2) {
+		document.getElementById("modelSelectContainer").style.display = 'none';
+	}
+	else {
+		document.getElementById("modelSelectContainer").style.display = 'flex';
+	}
+
 	const modelSelect = document.getElementById("modelSelect");
-	// Set the UI to defaults
-	populateSelect(modelSelect, 
-					Object.keys(surveyManager.survey.config.models));
-	populateSelect(document.getElementById("typeSelect"), 
-		surveyManager.survey.config.typeList);
+	populateSelect(modelSelect, modelKeys);
+
+	createQualityButtons();
 	
 	cameraController.reset();
+
+	// Place UI based on config
+	var reportEdge = COM.uiPositions.LEFT;
+	var controlEdge = COM.uiPositions.TOP;
+
+	if (surveyManager.survey.config.reportEdge == "right") {
+		reportEdge = COM.uiPositions.RIGHT;
+	}
+
+	if (surveyManager.survey.config.controlEdge == "bottom") {
+		controlEdge = COM.uiPositions.BOTTOM;
+	}
+
+	COM.placeUI(reportEdge, controlEdge);
+
 	// If the survey has projected fields, fill the survey table
 	// and click the first "view" button
 	if (surveyManager.survey.projectedFields.length > 0) {
 		surveyTable.update(surveyManager.survey, 0);
 		let field = surveyManager.survey.projectedFields[0];
 		performModelReplacement(
-			surveyManager.survey.config.models[field.model],
+			field.model,
 			field.vertices,
 			new THREE.Color("#abcabc"),
 			field.hotSpot
@@ -264,7 +322,7 @@ function prepSurvey(survey) {
 	}
 	else {
 		performModelReplacement(
-			surveyManager.survey.config.models[modelSelect.value],
+			modelSelect.value,
 			null,
 			new THREE.Color("#abcabc")
 		);
@@ -277,27 +335,25 @@ function prepSurvey(survey) {
 		document.getElementById("intensityValue").innerHTML = "";
 		document.getElementById("naturalnessValue").innerHTML = "";
 		document.getElementById("painValue").innerHTML = "";
-		document.getElementById("itchValue").innerHTML = "";
+		document.getElementById("fieldIntensityValue").innerHTML = "";
 	}
 	
 	// Hide pain slider
 	const painDiv = document.getElementById("painDiv");
 	if (surveyManager.survey.config.hidePainSlider) {
 		painDiv.style.display = 'none';
-		console.log("hiding pain!");
 	}
 	else {
-		painDiv.style.display = 'auto'
+		painDiv.style.display = 'inline';
 	}
 
-	// Hide itch slider
-	const itchDiv = document.getElementById("itchDiv");
-	if (surveyManager.survey.config.hideItchSlider) {
-		itchDiv.style.display = 'none';
-		console.log("hiding itch!");
+	// Hide field intensity slider
+	const fieldIntensityDiv = document.getElementById("fieldIntensityDiv");
+	if (surveyManager.survey.config.hideFieldIntensitySlider) {
+		fieldIntensityDiv.style.display = 'none';
 	}
 	else {
-		itchDiv.style.display = 'auto';
+		fieldIntensityDiv.style.display = 'inline';
 	}
 
 	if (waitingInterval) { 
@@ -315,7 +371,7 @@ function populateFieldEditor(field) {
 		const modelSelect = document.getElementById("modelSelect");
 		if (field.model) {
 			performModelReplacement(
-				surveyManager.survey.config.models[modelSelect.value],
+				modelSelect.value,
 				field.vertices,
 				new THREE.Color("#abcabc"),
 				field.hotSpot
@@ -351,17 +407,17 @@ function populateFieldEditor(field) {
 			painHidden.value = field.pain;
 		}
 
-		const itchSlider = document.getElementById("itchSlider");
+		const fieldIntensitySlider = document.getElementById("fieldIntensitySlider");
 
-		if (field.itch >= 0) {
-			itchSlider.value = field.itch;
-			itchSlider.dispatchEvent(new Event("input"));
+		if (field.intensity >= 0) {
+			fieldIntensitySlider.value = field.intensity;
+			fieldIntensitySlider.dispatchEvent(new Event("input"));
 		}
 		else {
-			itchSlider.value = 0.0;
-			itchSlider.dispatchEvent(new Event("input"));
-			const itchHidden = document.getElementById("itchHidden");
-			itchHidden.value = field.itch;
+			fieldIntensitySlider.value = 0.0;
+			fieldIntensitySlider.dispatchEvent(new Event("input"));
+			const fieldIntensityHidden = document.getElementById("fieldIntensityHidden");
+			fieldIntensityHidden.value = field.fieldIntensitySlider;
 		}
 
 		surveyManager.currentField = field;
@@ -393,72 +449,116 @@ function saveFieldFromEditor() {
 	const painHidden = document.getElementById("painHidden");
 	surveyManager.currentField.pain = parseFloat(painHidden.value);
 
-	const itchHidden = document.getElementById("itchHidden");
-	surveyManager.currentField.itch = parseFloat(itchHidden.value);
+	const fieldIntensityHidden = document.getElementById("fieldIntensityHidden");
+	surveyManager.currentField.intensity = parseFloat(fieldIntensityHidden.value);
 }
 
 /**
  * Take a Quality and populate its data in the quality editor
- * @param {Quality} quality - the quality whose data will be populated in the
- * 		editor
+ * @param {SVY.ProjectedField} - the projected field whose qualities are being
+ * 		edited
+ * @param {string} qualityType - the quality type whose data will be populated
  */
-function populateQualityEditor(field, quality) {
-	const smallQualityList = document.getElementById("smallQualityList");
-	var quality_positon = field.qualities.indexOf(quality);
-	smallQualityList.replaceChildren(
-		...surveyTable.createQualitiesListChunk(field, quality_positon, "", false).children
-	);
-	
-	const typeSelect = document.getElementById("typeSelect");
-	if (quality.type) {
-		typeSelect.value = quality.type;
-	}
+function populateQualityEditor(field, qualityType) {
+	const quality = field.findQualityOfType(qualityType);
 
-	var belowSkinCheck = document.getElementById("belowSkinCheck");
-	if (quality.depth.includes('belowSkin')) { belowSkinCheck.checked = true }
-	else { belowSkinCheck.checked = false }
+	const qualityName = document.getElementById("qualityName");
+	qualityName.innerHTML = qualityType.charAt(0).toUpperCase() + qualityType.slice(1)
 
-	var atSkinCheck = document.getElementById("atSkinCheck");
-	if (quality.depth.includes('atSkin')) { atSkinCheck.checked = true }
-	else { atSkinCheck.checked = false }
-
-	var aboveSkinCheck = document.getElementById("aboveSkinCheck");
-	if (quality.depth.includes('aboveSkin')) { aboveSkinCheck.checked = true }
-	else { aboveSkinCheck.checked = false }
-
+	const belowSkinCheck = document.getElementById("belowSkinCheck");
+	const atSkinCheck = document.getElementById("atSkinCheck");
+	const aboveSkinCheck = document.getElementById("aboveSkinCheck");
 	const intensitySlider = document.getElementById("intensitySlider");
-	if (quality.intensity >= 0) {
-		intensitySlider.value = quality.intensity;
-		intensitySlider.dispatchEvent(new Event("input"));
+
+	if (quality) {
+		if (quality.depth.includes('belowSkin')) { belowSkinCheck.checked = true }
+		else { belowSkinCheck.checked = false }
+
+		
+		if (quality.depth.includes('atSkin')) { atSkinCheck.checked = true }
+		else { atSkinCheck.checked = false }
+
+		
+		if (quality.depth.includes('aboveSkin')) { aboveSkinCheck.checked = true }
+		else { aboveSkinCheck.checked = false }
+
+		
+		if (quality.intensity >= 0) {
+			intensitySlider.value = quality.intensity;
+			
+		}
+		else {
+			intensitySlider.value = 5.0;
+		}
 	}
 	else {
 		intensitySlider.value = 5.0;
-		intensitySlider.dispatchEvent(new Event("input"));
-		const intensityHidden = document.getElementById("intensityHidden");
-		intensityHidden.value = quality.intensity;
 	}
 
 	surveyManager.currentField = field;
 	surveyManager.currentQuality = quality;
-}
 
-/**
- * Take the values in the relevant editor elements and save them to the
- * corresponding fields in the surveyManager's currentQuality
- */
-function saveQualityFromEditor() {
-	const intensityHidden = document.getElementById("intensityHidden");
-	surveyManager.currentQuality.intensity = parseFloat(intensityHidden.value);
-
-	const depthSelected = 
-		document.querySelectorAll("input[name=\"skinLevelCheckSet\"]:checked");
-	surveyManager.currentQuality.depth = [];
-	for (let i = 0; i < depthSelected.length; i++) {
-		surveyManager.currentQuality.depth.push(depthSelected[i].value);
+	if (
+		surveyManager.survey 
+		&& !surveyManager.survey.config.hideScaleValues
+	) {
+		document.getElementById("intensityValue").innerHTML = intensitySlider.value;
 	}
 
-	const typeSelect = document.getElementById("typeSelect");
-	surveyManager.currentQuality.type = typeSelect.value;
+	const qualityButtons = document.getElementsByClassName("qualityButton");
+	const qualityTypes = field.qualityTypes;
+	for (let i = 0; i < qualityButtons.length; i++) {
+		if (qualityButtons[i].value == qualityType) {
+			qualityButtons[i].classList.add("selectedButton");
+		}
+		else { qualityButtons[i].classList.remove("selectedButton"); }
+
+		if (qualityTypes.includes(qualityButtons[i].value)) {
+			qualityButtons[i].classList.add("completedButton");
+		}
+		else { qualityButtons[i].classList.remove("completedButton"); }
+	}
+
+	const resetButton = document.getElementById("qualityResetButton");
+	if (surveyManager.currentQuality) { resetButton.disabled = false; }
+	else { resetButton.disabled = true; }
+}
+
+function createQualityIfNone() {
+	if (surveyManager.currentField && !surveyManager.currentQuality) {
+		surveyManager.currentQuality = surveyManager.currentField.addQuality();
+		surveyManager.currentQuality.type = document.getElementById(
+			"qualityName").innerHTML.toLowerCase();
+
+		document.getElementById("qualityResetButton").disabled = false;
+
+		const qualityButtons = document.getElementsByClassName("qualityButton");
+		for (let i = 0; i < qualityButtons.length; i++) {
+			if (qualityButtons[i].value == surveyManager.currentQuality.type) {
+				qualityButtons[i].classList.add("completedButton");
+			}
+		}
+
+		return true;
+	}
+	return false;
+}
+
+function alertIfNoDepths() {
+	if (surveyManager.currentQuality && !surveyManager.currentQuality.hasDepth) {
+		const okFunction = function() {
+			openQualityEditor();
+		}
+		
+		openAlert(
+			"You must select at least one depth before continuing.",
+			["Go Back"],
+			[okFunction]
+		); 
+
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -508,6 +608,7 @@ function processSubmissionResult(success) {
 	if (success) {
 		startWaiting();
 		viewport.clearMeshStorage();
+		cameraController.destroyViewsButtons();
 
 		var okFunction = function() {
 			COM.openSidebarTab("waitingTab");
@@ -550,6 +651,8 @@ function submitCallback() {
 		}
 
 		var yesButton = function() {
+			openAlert("Submitting...")
+
 			const usedMeshes = surveyManager.survey.usedMeshFilenames;
 			const storedMeshes = viewport.storedMeshNames;
 
@@ -558,7 +661,7 @@ function submitCallback() {
 			if (!usedMeshes.isSubsetOf(storedMeshes)) {
 				const diff = usedMeshes.difference(storedMeshes);
 				for (let key of diff) {
-					promises.push(viewport.loadMeshIntoStorage(key));
+					promises.push(viewport.loadMeshIntoStorage(key["file"]));
 				}
 			}
 
@@ -615,34 +718,6 @@ function viewFieldCallback(field) {
 }
 
 /**
- * Populates the quality editor with a given Quality's data, then opens the 
- * quality editor menu
- * @param {ProjectedField} field - the projected field which has the quality to 
- * 		be edited as one of its "qualities"
- * @param {Quality} quality - the quality to be edited 
- */
-function editQualityCallback(field, quality) {
-	if (surveyManager.currentQuality) {
-		saveQualityFromEditor();
-	}
-	viewFieldCallback(field);
-	populateQualityEditor(field, quality);
-	openQualityEditor();
-}
-
-/**
- * Add a quality to the given field, then open the quality editor to edit
- * that new quality
- * @param {ProjectedField} field 
- */
-function addQualityCallback(field) {
-	var newQuality = field.addQuality();
-	const typeSelect = document.getElementById("typeSelect");
-	newQuality.type = typeSelect.value;
-	editQualityCallback(field, newQuality);
-}
-
-/**
  * Add a new ProjectedField, then open the edit menu for that field. Set the 
  * model and type values using whatever values were previously selected
  */
@@ -653,9 +728,6 @@ function addFieldCallback() {
 
 	const modelSelect = document.getElementById("modelSelect");
 	newField.model = modelSelect.value;
-
-	const typeSelect = document.getElementById("typeSelect");
-	newField.type = typeSelect.value; 
 
 	editFieldCallback(newField);
 }
@@ -683,7 +755,7 @@ function fieldDoneCallback() {
 
 		const continueFunction = function() {
 			saveFieldFromEditor();
-			openList();
+			editQualityCallback(surveyManager.currentField);
 		}
 		
 		openAlert(
@@ -694,8 +766,27 @@ function fieldDoneCallback() {
 	}
 	else { 
 		saveFieldFromEditor();  
-		openList();
+		editQualityCallback(surveyManager.currentField);
 	}
+}
+
+/**
+ * Populates the quality editor with a given Quality's data, then opens the 
+ * quality editor menu
+ * @param {ProjectedField} field - the projected field which has the quality to 
+ * 		be edited as one of its "qualities"
+ * @param {Quality|null} quality - the quality to be edited
+ */
+function editQualityCallback(field, quality) {
+	viewFieldCallback(field);
+	if (quality) { populateQualityEditor(field, quality.type); }
+	else { 
+		populateQualityEditor(
+			field, 
+			surveyManager.survey.config.qualityTypes[0]
+		); 
+	}
+	openQualityEditor();
 }
 
 /**
@@ -703,63 +794,32 @@ function fieldDoneCallback() {
  * main menu
  */
 function qualifyDoneCallback() {
-	if (
-		!document.getElementById("belowSkinCheck").checked
-		&& !document.getElementById("atSkinCheck").checked
-		&& !document.getElementById("aboveSkinCheck").checked
-	) {
-		const okFunction = function() {
-			openQualityEditor();
-		}
-		
-		openAlert(
-			"You must select at least one depth before continuing.",
-			["Go Back"],
-			[okFunction]
-		); 
-	}
-	else {
-		saveQualityFromEditor();
+	if (!alertIfNoDepths()) {
 		openList();
-	}	
+	}
 }
 
-/**
- * Checks if the current quality is complete, then if it is, duplicates that
- * quality and opens a new quality editor for the duplicate
- */
-function qualifyAnotherCallback() {
-	if (
-		!document.getElementById("belowSkinCheck").checked
-		&& !document.getElementById("atSkinCheck").checked
-		&& !document.getElementById("aboveSkinCheck").checked
-	) {
-		const okFunction = function() {
-			openQualityEditor();
-		}
-		
-		openAlert(
-			"You must select at least one depth before continuing.",
-			["Go Back"],
-			[okFunction]
-		); 
+function updateQualityCallback() {
+	createQualityIfNone();
+
+	const intensitySlider = document.getElementById("intensitySlider");
+	surveyManager.currentQuality.intensity = parseFloat(intensitySlider.value);
+
+	const depthSelected = document.querySelectorAll("input[name=\"skinLevelCheckSet\"]:checked");
+	surveyManager.currentQuality.depth = [];
+	for (let i = 0; i < depthSelected.length; i++) {
+		surveyManager.currentQuality.depth.push(depthSelected[i].value);
 	}
-	else {
-		saveQualityFromEditor();
+}
 
-		const field = surveyManager.currentField;
-		viewFieldCallback(field);
-
-		const currentFieldIdx = field.qualities.indexOf(
-			surveyManager.currentQuality
-		);
-		const newQuality =  field.duplicateQuality(currentFieldIdx);
-		surveyManager.currentQuality = newQuality;
-		populateQualityEditor(field, newQuality);
-
-		openQualityEditor();
-	}	
-} 
+function qualityResetCallback(event) {
+	if (!event.target.disabled) {
+		const currentQualityType = surveyManager.currentQuality.type;
+		if (surveyManager.deleteCurrentQuality()) {
+			populateQualityEditor(surveyManager.currentField, currentQualityType);
+		}
+	}
+}
 
 /**
  * Return to the list without saving changes from the current editor
@@ -791,48 +851,13 @@ function fieldDeleteCallback() {
 }
 
 /**
- * Delete the currentField from the current survey
- */
-function qualifyDeleteCallback() {
-	const deleteNoFunction = function() {
-		openQualityEditor();
-	}
-
-	const deleteYesFunction = function() {
-		surveyManager.currentField.deleteQuality(
-			surveyManager.currentQuality);
-		openList();
-	}
-
-	openAlert(
-		"Are you sure you want to delete this quality?",
-		["No", "Yes"],
-		[deleteNoFunction, deleteYesFunction]
-	);
-}
-
-/**
  * Call for the model corresponding to the selected option to be loaded
  */
 function modelSelectChangeCallback() {
 	const modelSelect = document.getElementById("modelSelect");
 	performModelReplacement(
-		surveyManager.survey.config.models[modelSelect.value]
+		modelSelect.value
 	);
-}
-
-/**
- * Get the current selected quality and update its name to match the type select
- */
-function typeSelectCallback() {
-	const selectedQualities = 
-		document.getElementsByClassName("selectedQuality");
-	for (let i = 0; i < selectedQualities.length; i++) {
-		selectedQualities[i].innerHTML = (
-			typeSelect.value.charAt(0).toUpperCase() 
-			+ typeSelect.value.slice(1)
-		);
-	}
 }
 
 /**
@@ -864,12 +889,14 @@ window.onload = function() {
 										new THREE.Color(0x424242),
 										20);
 
-	cameraController = new VP.CameraController(viewport.controls, 
-		viewport.renderer.domElement, 2, 20);
-	cameraController.createZoomSlider(document.getElementById(
-		"cameraControlContainer"));
-	cameraController.createCameraReset(document.getElementById(
-		"cameraControlContainer"));
+	cameraController = new VP.CameraController(
+		viewport.controls, 
+		viewport.renderer.domElement, 
+		2, 
+		20, 
+		document.getElementById("cameraControlContainer")
+	);
+	cameraController.createZoomSlider();
 
     surveyManager = new SVY.SurveyManager(); 
 
@@ -878,8 +905,7 @@ window.onload = function() {
 		true, 
 		viewFieldCallback, 
 		editFieldCallback,
-		editQualityCallback,
-		addQualityCallback
+		editQualityCallback
 	);
 
     // Start the websocket
@@ -946,16 +972,8 @@ window.onload = function() {
 	const qualifyDoneButton = document.getElementById("qualifyDoneButton");
 	qualifyDoneButton.onpointerup = qualifyDoneCallback;
 
-	const qualifyCancelButton = document.getElementById("qualifyCancelButton");
-	qualifyCancelButton.onpointerup = cancelCallback;
-
-	const qualifyDeleteButton = document.getElementById("qualifyDeleteButton");
-	qualifyDeleteButton.onpointerup = qualifyDeleteCallback;
-
-	const qualifyAnotherButton = document.getElementById(
-		"qualifyAnotherButton"
-	);
-	qualifyAnotherButton.onpointerup = qualifyAnotherCallback;
+	const qualityResetButton = document.getElementById("qualityResetButton");
+	qualityResetButton.onpointerup = qualityResetCallback;
 
 	const modelSelect = document.getElementById("modelSelect");
 	modelSelect.onchange = modelSelectChangeCallback;
@@ -965,18 +983,6 @@ window.onload = function() {
 
 	const redoButton = document.getElementById("redoButton");
 	redoButton.onpointerup = redoCallback;
-
-	const intensitySlider = document.getElementById("intensitySlider");
-	intensitySlider.oninput = function() {
-		if (surveyManager.survey 
-			&& !surveyManager.survey.config.hideScaleValues) {
-			document.getElementById("intensityValue").innerHTML = 
-				intensitySlider.value;
-		}
-		const intensityHidden = document.getElementById("intensityHidden");
-		intensityHidden.value = intensitySlider.value;
-	}
-	intensitySlider.dispatchEvent(new Event("input"));
 
 	const naturalnessSlider = document.getElementById("naturalnessSlider");
 	naturalnessSlider.oninput = function() {
@@ -988,7 +994,6 @@ window.onload = function() {
 		const naturalnessHidden = document.getElementById("naturalnessHidden");
 		naturalnessHidden.value = naturalnessSlider.value;
 	}
-	naturalnessSlider.dispatchEvent(new Event("input"));
 
 	const painSlider = document.getElementById("painSlider");
 	painSlider.oninput = function() {
@@ -999,21 +1004,33 @@ window.onload = function() {
 		const painHidden = document.getElementById("painHidden");
 		painHidden.value = painSlider.value;
 	}
-	painSlider.dispatchEvent(new Event("input"));
 
-	const itchSlider = document.getElementById("itchSlider");
-	itchSlider.oninput = function() {
+	const fieldIntensitySlider = document.getElementById("fieldIntensitySlider");
+	fieldIntensitySlider.oninput = function() {
 		if (surveyManager.survey 
 				&& !surveyManager.survey.config.hideScaleValues) {
-			document.getElementById("itchValue").innerHTML = itchSlider.value;
+			document.getElementById("fieldIntensityValue").innerHTML = fieldIntensitySlider.value;
 		}
-		const itchHidden = document.getElementById("itchHidden");
-		itchHidden.value = itchSlider.value;
+		const fieldIntensityHidden = document.getElementById("fieldIntensityHidden");
+		fieldIntensityHidden.value = fieldIntensitySlider.value;
 	}
-	itchSlider.dispatchEvent(new Event("input"));
 
-	const typeSelect = document.getElementById("typeSelect");
-	typeSelect.oninput = typeSelectCallback;
+	const intensitySlider = document.getElementById("intensitySlider");
+	intensitySlider.oninput = function() {
+		if (surveyManager.survey 
+			&& !surveyManager.survey.config.hideScaleValues) {
+			document.getElementById("intensityValue").innerHTML = 
+				intensitySlider.value;
+		}
+		updateQualityCallback();
+	}
+
+	const belowSkinCheck = document.getElementById("belowSkinCheck");
+	belowSkinCheck.oninput = updateQualityCallback;
+	const atSkinCheck = document.getElementById("atSkinCheck");
+	atSkinCheck.oninput = updateQualityCallback;
+	const aboveSkinCheck = document.getElementById("aboveSkinCheck");
+	aboveSkinCheck.oninput = updateQualityCallback;
 
 	toggleUndoRedo(false);
 	viewport.animate();

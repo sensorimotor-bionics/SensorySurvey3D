@@ -9,6 +9,7 @@ export default defineConfig({
   build: {
     outDir: "../dist",
     emptyOutDir: true,
+    minify: false,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
