@@ -98,21 +98,7 @@ html {
 }
 
 .paletteButton {
-    border: 2px solid transparent;
-    background: none; 
-}
-
-.paletteButton:hover {
-    border: 2px solid var(--uiElementColor);
-    border-radius: 5px;
-    cursor: pointer;
-    background: none;
-}
-
-.paletteButton.active {
-    border: 2px solid var(--buttonColor);
-    border-radius: 5px;
-    background: none;
+    min-width: 120px;
 }
 
 .eyeButton {

@@ -88,7 +88,7 @@ export function openSidebarTab(tabID) {
 export function activatePaletteButton(buttonID) {
     var imageButtons = document.getElementsByClassName("paletteButton");
 	for (let i = 0; i < imageButtons.length; i++) {
-        imageButtons[i].classList.remove("active")
+        imageButtons[i].classList.remove("selectedButton")
     }
-	document.getElementById(buttonID).classList.add("active");
+	document.getElementById(buttonID).classList.add("selectedButton");
 }
