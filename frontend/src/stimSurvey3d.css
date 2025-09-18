@@ -204,6 +204,11 @@ p {
     max-width: 28ch;
 }
 
+hr {
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+
 label {
     font-size: 2.4vh;
     color: white;
