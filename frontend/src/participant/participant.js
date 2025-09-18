@@ -197,6 +197,7 @@ function openFieldEditor() {
  */
 function openQualityEditor() {
 	toggleUndoRedo(false);
+	viewport.toOrbit();
 	COM.openSidebarTab("qualifyTab");
 }
 
