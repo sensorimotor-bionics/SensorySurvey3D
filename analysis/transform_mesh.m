@@ -14,6 +14,7 @@ function [two_dim, three_dim] = transform_mesh(mesh_2D,landmarks_2D,mesh_3D,land
     data = import_json(mesh_3D);
     three_dim_verts = data.vertices;
     three_dim_faces = data.faces;
+    three_dim.raw_verts = three_dim_verts;
     
     %% import landmarks
     landmarks = {"Tend","Tpip","Tmcp",...
@@ -155,12 +156,37 @@ function [two_dim, three_dim] = transform_mesh(mesh_2D,landmarks_2D,mesh_3D,land
         hold on
         quiver3(P(is_dorsal,1),P(is_dorsal,2),P(is_dorsal,3), ...
          three_dim_normals(is_dorsal,1),three_dim_normals(is_dorsal,2),three_dim_normals(is_dorsal,3),0.5,'color','r');
-        quiver3(P(is_palmar,1),P(is_palmar,2),P(is_palmar,3), ...
-         three_dim_normals(is_palmar,1),three_dim_normals(is_palmar,2),three_dim_normals(is_palmar,3),0.5,'color','c');
-        quiver3(P(is_oblique,1),P(is_oblique,2),P(is_oblique,3), ...
-         three_dim_normals(is_oblique,1),three_dim_normals(is_oblique,2),three_dim_normals(is_oblique,3),0.5,'color','k','LineWidth',1);
+        quiver3(P(is_palmar,1),P(is_palmar,2),P(is_palmar,3)-.1, ...
+         three_dim_normals(is_palmar,1),three_dim_normals(is_palmar,2),three_dim_normals(is_palmar,3)-.1,0.5,'color','c');
+        % quiver3(P(is_oblique,1),P(is_oblique,2),P(is_oblique,3), ...
+        %  three_dim_normals(is_oblique,1),three_dim_normals(is_oblique,2),three_dim_normals(is_oblique,3),0.5,'color','k','LineWidth',1);
         h = gca; axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]);
     end
+
+    % for ii = 0:36
+    %     % camorbit(10,0,'data',[1 1 0])
+    %     figure; set(gcf,'position',[0,0,1000,1000])
+    %     hold on
+    %     quiver3(P(is_dorsal,1),P(is_dorsal,2),P(is_dorsal,3)-P(is_dorsal,3)*ii/36+.2*ii/36, ...
+    %      three_dim_normals(is_dorsal,1),three_dim_normals(is_dorsal,2),three_dim_normals(is_dorsal,3)-three_dim_normals(is_dorsal,3)*ii/36+.2*ii/36,0.5,'color','r');
+    %     quiver3(P(is_palmar,1),P(is_palmar,2),P(is_palmar,3)-P(is_palmar,3)*ii/36-.2*ii/36, ...
+    %      three_dim_normals(is_palmar,1),three_dim_normals(is_palmar,2),three_dim_normals(is_palmar,3)-three_dim_normals(is_palmar,3)*ii/36-.2*ii/36,0.5,'color','c');
+    %     % quiver3(P(is_oblique,1),P(is_oblique,2),P(is_oblique,3), ...
+    %     %  three_dim_normals(is_oblique,1),three_dim_normals(is_oblique,2),three_dim_normals(is_oblique,3),0.5,'color','k','LineWidth',1);
+    %     h = gca; axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]);
+    %     camorbit(70,40,'data',[1 1 0])
+    %     drawnow
+    %     % pause(0.2)
+    % 
+    %     frame = getframe(gcf);
+    %     img =  frame2im(frame);
+    %     [img,cmap] = rgb2ind(img,256);
+    %     if ii == 1
+    %         imwrite(img,cmap,'animation.gif','gif','LoopCount',Inf,'DelayTime',.1);
+    %     else
+    %         imwrite(img,cmap,'animation.gif','gif','WriteMode','append','DelayTime',.1);
+    %     end
+    % end
 
     %%
     three_dim_verts_flattened = three_dim_verts;

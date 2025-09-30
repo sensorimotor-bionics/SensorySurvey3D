@@ -4,3 +4,7 @@ data/
 frontend/dist/
 __pycache__/
 .vite/
+analysis/antiquated/*
+analysis/test images/*
+analysis/BCI*
+analysis/private_utils/*

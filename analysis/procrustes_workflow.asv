@@ -10,8 +10,20 @@ electrodes = [7 29 53 54 ...
             3 10 63 34 4 7 21 57 17 56 13 53 26 30 52 ...
             36];
 
-% got it such that we're only making comparisons with 2D annotations from 2025...
+% session = 925;
+% electrodes_3d = [3 10 63 34 4 7 21 57 17 56 13 53 26 30 52]; % sets 14 3 5 13 15 4 12 24 6 2 25 26 23 22 16
+% electrodes_2d = [61 11 29 59 6 9 38 55 12 54]; % 925 ols data is 25 long, sets 2-26 (sets 7-11, 17-21) (skip OLS rows for the sets above!)
+% 
+% session = 926;
+% electrodes_3d = [36]; % set 17
+% electrodes_2d = [36 56 32 63 30 4 34 7 57 13 53 17 36]; % 926 ols data is 13 long, sets 4-16
+
 % have both 2d and 3d for: 4 7 13 17 30 34 35 53 56 57 63
+% OLSData_BCI02_00925
+% OLSData_BCI02_00926
+
+% got it such that we're only making comparisons with 2D annotations from
+% 2025...
 
 %% import 3D mesh and annotation colormaps
 % parse jsons from session to determine colormaps
@@ -34,7 +46,7 @@ end
 
 %% transform 3D mesh to 2D palmar (keep both sides)
 mesh_2D = "2D_mesh_data.json";
-landmarks_2D = "2D_model_procrustes_keypoints_palm_tight.json";
+landmarks_2D = "2D_model_procrustes_keypoints_tight.json";
 mesh_3D = [model_name '.json'];
 landmarks_3D = "3D_model_procrustes_keypoints.json";
 [two_dim,three_dim] = transform_mesh(mesh_2D,landmarks_2D,mesh_3D,landmarks_3D,"palmar");
