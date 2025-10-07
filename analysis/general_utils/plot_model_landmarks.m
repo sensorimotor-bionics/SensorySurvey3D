@@ -40,7 +40,26 @@ function all_3d = plot_model_landmarks(which_title,landmarks,viewplot)
         end
         all_3d = cat(2,all_3d,this_landmark);
     end
+
+    try
+        which_landmarks = {"TpipL","TpipR","TmcpL","TmcpR",...
+            "IdipL","IdipR","IpipL","IpipR",...
+            "MdipL","MdipR","MpipL","MpipR",...
+            "RdipL","RdipR","RpipL","RpipR",...
+            "PdipL","PdipR","PpipL","PpipR"};
     
-    axis equal
+        for ii = 1:length(which_landmarks)
+            this_landmark = landmarks.(which_landmarks{ii});
+            if viewplot
+                plot3(this_landmark(1),this_landmark(2),this_landmark(3),'mo','MarkerSize',10)
+            end
+            all_3d = cat(2,all_3d,this_landmark);
+        end
+    catch
+    end
+    
+    if viewplot
+        axis equal
+    end
     all_3d = all_3d';
 end
