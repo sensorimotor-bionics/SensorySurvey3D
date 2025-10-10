@@ -35,6 +35,8 @@ uvicorn main:app --reload
 By default, this will open the app to 127.0.0.1:8000. If you would like to change this, you may use the --host and --port options to set the IP and port, respectively. See the [uvicorn documentation](https://uvicorn.dev/settings/) for details.
 
 ### Models
+3D models to be available to users must be in the /dist/public/3dmodels folder created as a result of the ```npx vite build``` step. To ensure that they exist after building, place them into the [/src/public/3dmodels](/frontend/src/public/3dmodels/) folder prior to that step. 
+
 Example model meshes are hosted on our [Box](https://uchicago.box.com/s/89r4uojt9xlzgsy6pje75cqkf8g06vye).
 
 For custom models we suggest importing to [Blender](https://www.blender.org/) to trim and process and then using [Instant Meshes.](https://github.com/wjakob/instant-meshes)

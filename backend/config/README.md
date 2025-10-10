@@ -36,7 +36,7 @@ This structure contains information about which 3D models will be available to p
 The name of the model used for the survey. This name will appear in the participant's dropdown menu when selecting which model on which to draw a projected field.
 
 ### File
-The name of the file to load for the model name. The survey will use this name to search in for the file in the dist/3dmodels folder generated as a result of the ```npx vite build``` operation described in [the top-level README.](/README.md)
+The name of the file to load for the model name. The survey will use this name to search in for the file in the /dist/public/3dmodels folder generated as a result of the ```npx vite build``` operation described in [the top-level README.](/README.md)
 
 ### Views
 Views are default camera locations. They are noted as [x, y, z, zoom], where each variable refers to the camera position. Each view will appear to the participant as a clickable button which will snap the camera to the corresponding position.
