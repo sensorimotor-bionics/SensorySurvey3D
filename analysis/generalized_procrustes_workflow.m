@@ -62,3 +62,28 @@ jaccard_record = compute_jaccard(subject,documented_electrodes,palmar,PFs_palmar
 % i.e. annotations which are invisible to camera or squashed in a 2D representation
 three_dim = quantify_oblique_annotations(subject,three_dim,documented_electrodes,color_map);
 
+%% view annotations on morphed 3D mesh
+ref_img_path = fullfile(pwd(), 'reference images');
+[palmar_mask, dorsal_mask] = get_hand_masks();
+orig_size = size(palmar_mask);
+temp_background = zeros([orig_size 3]);
+
+[palm_ref_img, ~, palm_ref_alpha] = imread(fullfile(ref_img_path, 'TopLayer-handpcontour.png'));
+palm_ref_img = imresize(palm_ref_img, orig_size);
+palm_ref_alpha = imresize(palm_ref_alpha, orig_size);
+[dor_ref_img, ~, dor_ref_alpha] = imread(fullfile(ref_img_path, 'TopLayer-contour.png'));
+
+figure
+disp_shape_single(two_dim.verts_flat,two_dim.faces,[0 1 0],50,-50)
+subplot(1,2,1)
+hold on
+image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+subplot(1,2,2)
+hold on
+image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+
+figure
+disp_shape_single(three_dim.verts_flat,three_dim.faces,[0 1 0],130,-130)
+subplot(1,2,2)
+hold on
+image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
