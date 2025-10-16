@@ -334,7 +334,9 @@ export class Survey {
     get usedMeshFilenames() {
         var list = [];
         for (let i = 0; i < this.projectedFields.length; i++) {
-            list.push(this.config.models[this.projectedFields[i].model]);
+            list.push(
+                this.config.models[this.projectedFields[i].model]["file"]
+            );
         }
         return new Set(list);
     }
