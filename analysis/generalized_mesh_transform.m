@@ -1,7 +1,7 @@
 function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D, mesh_3D, landmarks_3D, which_side)
 
     %% options
-    viewplot = false;
+    viewplot = true;
     viewfinalplot = true;    
 
     %% import 2D mesh
@@ -44,8 +44,8 @@ function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D
         "Imcp","Ipip";"Ipip","Idip";"Idip","Iend";...
         "Mmcp","Mpip";"Mpip","Mdip";"Mdip","Mend";...
         "Rmcp","Rpip";"Rpip","Rdip";"Rdip","Rend";...
-        "Pmcp","Ppip";"Ppip","Pdip";"Pdip","Pend";...
-        "WuP","EoW";"WuT","EoW"];
+        "Pmcp","Ppip";"Ppip","Pdip";"Pdip","Pend"];
+        % "WuP","EoW";"WuT","EoW"];
     anchor_landmark = "EoW";
 
     % convert landmarks from strings to indices:

@@ -49,7 +49,7 @@ function [annotation_record, this_model, model_name] = extract_colormaps(subject
                 annotation_record.(this_model).filename = mesh_data.filename;
                 
                 % can't use electrode number directly as a field name
-                annotation_record.(this_model).electrodes.(electrode_name).fields = temp_field; % vertex colors, not face colors...
+                annotation_record.(this_model).electrodes.(electrode_name).fields = temp_field; % vertex colors, not face colors
                 hotspot = projected_field.hotSpot;
                 annotation_record.(this_model).electrodes.(electrode_name).hotspots = [hotspot.x, hotspot.y, hotspot.z];
                 annotation_record.(this_model).electrodes.(electrode_name).naturalness = projected_field.naturalness;

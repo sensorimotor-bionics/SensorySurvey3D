@@ -36,6 +36,7 @@ mesh_2D = "2D_mesh_data.json";
 landmarks_2D = "2D_model_procrustes_keypoints_palm_tight.json";
 mesh_3D = [model_name '.json'];
 landmarks_3D = "3D_model_procrustes_keypoints.json";
+% landmarks_3D = "participant_251013_procrustes_keypoints.json";
 [two_dim,three_dim] = generalized_mesh_transform(mesh_2D,landmarks_2D,mesh_3D,landmarks_3D,"palmar");
 
 %% transform 3D mesh to 2D dorsal (keep dorsum only)
