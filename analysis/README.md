@@ -22,31 +22,33 @@ If use_default_hand_source or conform_to_2D_illustration are false, running gene
 
 ### Recommended primary landmarks for hand models include:
 
-**ID        Description**
-"Tend"    Thumb endpoint: the very tip of the thumb.
-"Tpip"    Thumb proximal interphalangeal: the joint just below the thumbnail.
-"Tmcp"    Thumb metacarpal: the knuckle of the thumb.
-"Iend"    Index endpoint: the very tip of the index finger.
-"Idip"    Index distal interphalangeal: the joint just below the index fingernail.
-"Ipip"    Index proximal interpalangeal: the joint between the Idip and the knuckle of the index finger.
-"Imcp"    Index metacarpal: the knuckle of the index finger.
-"Mend"    Middle endpoint: the very tip of the middle finger.
-"Mdip"    Middle distal interphalangeal: the joint just below the middle fingernail.
-"Mpip"    Middle proximal interpalangeal: the joint between the Mdip and the knuckle of the middle finger.
-"Mmcp"    Middle metacarpal: the knuckle of the middle finger.
-"Rend"    Ring endpoint: the very tip of the ring finger.
-"Rdip"    Ring distal interphalangeal: the joint just below the ring fingernail.
-"Rpip"    Ring proximal interpalangeal: the joint between the Rdip and the knuckle of the ring finger.
-"Rmcp"    Ring metacarpal: the knuckle of the ring finger.
-"Pend"    Pinky endpoint: the very tip of the pinky finger.
-"Pdip"    Pinky distal interphalangeal: the joint just below the pinky fingernail.
-"Ppip"    Pinky proximal interpalangeal: the joint between the Pdip and the knuckle of the pinky finger.
-"Pmcp"    Pinky metacarpal: the knuckle of the pinky finger.
-"MpP"    Middle of the hand, palmar side.
-"MpD"    Middle of the hand, dorsal side.
-"WuT"    Wrist under thumb.
-"WuP"    Wrist under pinky.
-"EoW"    End of wrist.
+```
+%% ID     Description
+"Tend"    % Thumb endpoint: the very tip of the thumb.
+"Tpip"    % Thumb proximal interphalangeal: the joint just below the thumbnail.
+"Tmcp"    % Thumb metacarpal: the knuckle of the thumb.
+"Iend"    % Index endpoint: the very tip of the index finger.
+"Idip"    % Index distal interphalangeal: the joint just below the index fingernail.
+"Ipip"    % Index proximal interpalangeal: the joint between the Idip and the knuckle of the index finger.
+"Imcp"    % Index metacarpal: the knuckle of the index finger.
+"Mend"    % Middle endpoint: the very tip of the middle finger.
+"Mdip"    % Middle distal interphalangeal: the joint just below the middle fingernail.
+"Mpip"    % Middle proximal interpalangeal: the joint between the Mdip and the knuckle of the middle finger.
+"Mmcp"    % Middle metacarpal: the knuckle of the middle finger.
+"Rend"    % Ring endpoint: the very tip of the ring finger.
+"Rdip"    % Ring distal interphalangeal: the joint just below the ring fingernail.
+"Rpip"    % Ring proximal interpalangeal: the joint between the Rdip and the knuckle of the ring finger.
+"Rmcp"    % Ring metacarpal: the knuckle of the ring finger.
+"Pend"    % Pinky endpoint: the very tip of the pinky finger.
+"Pdip"    % Pinky distal interphalangeal: the joint just below the pinky fingernail.
+"Ppip"    % Pinky proximal interpalangeal: the joint between the Pdip and the knuckle of the pinky finger.
+"Pmcp"    % Pinky metacarpal: the knuckle of the pinky finger.
+"MpP"     % Middle of the hand, palmar side.
+"MpD"     % Middle of the hand, dorsal side.
+"WuT"     % Wrist under thumb.
+"WuP"     % Wrist under pinky.
+"EoW"     % End of wrist.
+```
 
 An illustration of suggested placements of these landmarks relative to the source or target mesh is presented below. If desired, you can use the Survey 3D graphical user interface to produce an annotation hotspot file detailing the locations of these landmarks relative to the source and target meshes.
 
@@ -54,27 +56,29 @@ An illustration of suggested placements of these landmarks relative to the sourc
 
 ### Recommended accessory landmarks for hand models are width markers, including:
 
-**ID            Description**
-"Tpip_p"      Tpip width marker, pinky side.
-"Tpip_t"      Tpip width marker, thumb side.
-"Tmcp_p"      Tmcp width marker, pinky side.
-"Tmcp_t"      Tmcp width marker, thumb side.
-"Idip_p"      Idip width marker, pinky side.
-"Idip_t"      Idip width marker, thumb side.
-"Ipip_p"      Ipip width marker, pinky side.
-"Ipip_t"      Ipip width marker, thumb side.
-"Mdip_p"      Mdip width marker, pinky side.
-"Mdip_t"      Mdip width marker, thumb side.
-"Mpip_p"      Mpip width marker, pinky side.
-"Mpip_t"      Mpip width marker, thumb side.
-"Rdip_p"      Rdip width marker, pinky side.
-"Rdip_t"      Rdip width marker, thumb side.
-"Rpip_p"      Rpip width marker, pinky side.
-"Rpip_t"      Rpip width marker, thumb side.
-"Pdip_p"      Pdip width marker, pinky side.
-"Pdip_t"      Pdip width marker, thumb side.
-"Ppip_p"      Ppip width marker, pinky side.
-"Ppip_t"      Ppip width marker, thumb side.
+```
+%% ID         Description
+"Tpip_p"      % Tpip width marker, pinky side.
+"Tpip_t"      % Tpip width marker, thumb side.
+"Tmcp_p"      % Tmcp width marker, pinky side.
+"Tmcp_t"      % Tmcp width marker, thumb side.
+"Idip_p"      % Idip width marker, pinky side.
+"Idip_t"      % Idip width marker, thumb side.
+"Ipip_p"      % Ipip width marker, pinky side.
+"Ipip_t"      % Ipip width marker, thumb side.
+"Mdip_p"      % Mdip width marker, pinky side.
+"Mdip_t"      % Mdip width marker, thumb side.
+"Mpip_p"      % Mpip width marker, pinky side.
+"Mpip_t"      % Mpip width marker, thumb side.
+"Rdip_p"      % Rdip width marker, pinky side.
+"Rdip_t"      % Rdip width marker, thumb side.
+"Rpip_p"      % Rpip width marker, pinky side.
+"Rpip_t"      % Rpip width marker, thumb side.
+"Pdip_p"      % Pdip width marker, pinky side.
+"Pdip_t"      % Pdip width marker, thumb side.
+"Ppip_p"      % Ppip width marker, pinky side.
+"Ppip_t"      % Ppip width marker, thumb side.
+```
 
 An illustration of suggested placements of these landmarks relative to the source or target mesh is presented below. If desired, you can also specify these landmarks via the Survey 3D graphical user interface. If accessory landmarks (i.e. width markers) are not detailed in the source or target landmarks files, the system will auto determine finger widths at each of the relevant primary landmarks and use these in iterative procrustes transformations.
 
