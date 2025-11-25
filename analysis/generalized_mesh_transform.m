@@ -1,4 +1,4 @@
-function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D, mesh_3D, landmarks_3D, which_side)
+function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D, mesh_3D, landmarks_3D, primary_landmarks, accessory_landmarks, dependencies, anchor_landmark, which_side)
 
     %% options
     viewplot = true;
@@ -17,36 +17,11 @@ function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D
     three_dim.faces = data.faces;
     
     %% import landmarks
-    % primary landmarks:
-    primary_landmarks = {"Tend","Tpip","Tmcp",...
-        "Iend","Idip","Ipip","Imcp",...
-        "Mend","Mdip","Mpip","Mmcp",...
-        "Rend","Rdip","Rpip","Rmcp",...
-        "Pend","Pdip","Ppip","Pmcp",...
-        "MpP","MpD","WuT","WuP", "EoW"};
-
-    % accessory landmarks (for width determination):
-    accessory_landmarks = {...
-            "TpipL","TpipR","TmcpL","TmcpR",...
-            "IdipL","IdipR","IpipL","IpipR",...
-            "MdipL","MdipR","MpipL","MpipR",...
-            "RdipL","RdipR","RpipL","RpipR",...
-            "PdipL","PdipR","PpipL","PpipR"};
-
     landmark_superset = cat(2,primary_landmarks,accessory_landmarks);
     two_dim.landmark_report = import_json(landmarks_2D);
     three_dim.landmark_report = import_json(landmarks_3D);
     three_dim.landmarks = import_model_landmarks(three_dim.landmark_report,primary_landmarks);
     two_dim.landmarks = import_model_landmarks(two_dim.landmark_report,landmark_superset);
-    
-    % hierarchical dependency definitions:
-    dependencies = ["Tmcp","Tpip";"Tpip","Tend";...
-        "Imcp","Ipip";"Ipip","Idip";"Idip","Iend";...
-        "Mmcp","Mpip";"Mpip","Mdip";"Mdip","Mend";...
-        "Rmcp","Rpip";"Rpip","Rdip";"Rdip","Rend";...
-        "Pmcp","Ppip";"Ppip","Pdip";"Pdip","Pend"];
-        % "WuP","EoW";"WuT","EoW"];
-    anchor_landmark = "EoW";
 
     % convert landmarks from strings to indices:
     dependencies_temp = nan(size(dependencies));
@@ -60,16 +35,20 @@ function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D
     dependencies = dependencies_temp;
         
     %% build proximity maps of mesh to keypoints
+    disp('> Building proximity maps of source mesh to procrustes keypoints.')
     [apply_transform_reference, ~] = determine_dibs(three_dim, primary_landmarks, landmark_superset, dependencies);
 
     %% initial procrustes alignment
+    disp('> Performing initial procrustes alignment.')
     [~,three_dim.landmarks,transform] = procrustes(two_dim.landmarks(1:length(primary_landmarks),:),three_dim.landmarks(1:length(primary_landmarks),:)); % Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c
     three_dim.verts = transform.b*three_dim.verts*transform.T+transform.c(1,:);
 
     %% auto width detection
-    [width_landmarks, ~] = auto_width_detection(three_dim, primary_landmarks, accessory_landmarks, dependencies, transform, which_side);
+    disp('> Performing auto width detection.')
+    [width_landmarks, ~] = auto_width_detection(three_dim, primary_landmarks, accessory_landmarks, dependencies, transform);
 
     %% iterative procrustes
+    disp('> Executing iterative procrustes according to user-specified dependency tree.')
     % for any set of n keypoints, find procrustes transforms to align those keypoints
     % overlying mesh should be morphed based on proximity to present keypoints of interest
     which_dims = [1 2 3];
@@ -128,6 +107,7 @@ function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D
     end
 
     %% partition aligned 3D mesh according to normal orientations
+    disp('> Partitioning into palmar and dorsal planar aspects using normals.')
     [three_dim.oblique, three_dim.is_palmar, three_dim.is_dorsal, three_dim.normals] = partition_by_normals(three_dim, viewplot);
 
     %% flatten aligned 3D mesh according to normal orientations

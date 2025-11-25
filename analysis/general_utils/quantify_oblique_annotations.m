@@ -1,4 +1,4 @@
-function three_dim = quantify_oblique_annotations(subject,three_dim,documented_electrodes,color_map)
+function [three_dim, oblique_proportion] = quantify_oblique_annotations(subject,three_dim,documented_electrodes,color_map)
     % first, calculate the area of each face
     for f = 1:size(three_dim.faces)
         verts = three_dim.verts(three_dim.faces(f,:)+1,:);
@@ -27,7 +27,6 @@ function three_dim = quantify_oblique_annotations(subject,three_dim,documented_e
     
     figure;
     histogram(oblique_proportion(~isnan(oblique_proportion)),0:.2:1)
-    % ylim([0 4.2])
     xlabel('proportion of annotation occluded')
     ylabel('number of electrodes')
     title('3D annotation visibility')

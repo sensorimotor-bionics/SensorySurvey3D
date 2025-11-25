@@ -1,19 +1,20 @@
-function [annotation_record, this_model, model_name] = extract_colormaps(subject,session,electrodes)
+function [annotation_record, this_model, model_name] = extract_colormaps(subject,session,electrodes,data_path_format)
     base_paths = {};
     annotation_paths = {};
     annotation_record = struct();
 
     for sess = 1:length(session)
         % point to appropriate folder(s) based on subject and session details
-        current_paths = dir(['Z:\\SessionData\' subject '\OpenLoopStim\' subject '.data.00' char(string(session(sess))) '\BCI*.json']);
+        current_paths = dir([char(sprintf(data_path_format,subject,subject,session(sess)))]);
+        if isempty(current_paths)
+            current_paths = dir([char(sprintf(data_path_format,subject,session(sess)))]);
+        end
         base_paths = [base_paths {current_paths.folder}];
         annotation_paths = [annotation_paths {current_paths.name}];
     end
 
     if length(annotation_paths)~=length(electrodes)
-        this_model = '';
-        model_name = '';
-        return
+        error('The number of annotation files does not match the number of electrodes specified.')
     end
 
     for electrode = 1:length(electrodes)
@@ -23,8 +24,8 @@ function [annotation_record, this_model, model_name] = extract_colormaps(subject
     
         participant = data.participant;
         model_options =  data.config.models;
-        sensation_types =  data.config.typeList;
-        hide_scale = data.config.hideScaleValues;
+        % sensation_types =  data.config.typeList;
+        % hide_scale = data.config.hideScaleValues;
         
         date = data.date;
         start_time = data.startTime;
@@ -36,7 +37,12 @@ function [annotation_record, this_model, model_name] = extract_colormaps(subject
             this_model = projected_field.model;
             this_model(this_model==' ') = '';
             model_name = model_options.(this_model);
-            model_name(model_name=='.') = '_';
+            try
+                model_name(model_name=='.') = '_';
+            catch
+                model_name = model_name.file;
+                model_name(model_name=='.') = '_';
+            end
             mesh_data = import_json([model_name '.json']);
             
             numverts = size(mesh_data.vertices,1);

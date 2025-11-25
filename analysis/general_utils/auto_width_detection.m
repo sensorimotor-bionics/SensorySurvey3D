@@ -1,4 +1,4 @@
-function [width_landmarks, accessory_width] = auto_width_detection(three_dim, primary_landmarks, accessory_landmarks, dependencies, transform, which_side)
+function [width_landmarks, accessory_width] = auto_width_detection(three_dim, primary_landmarks, accessory_landmarks, dependencies, transform)
     accessory_width = nan(length(accessory_landmarks),3);
 
     for l = 1:size(dependencies,1)
@@ -9,20 +9,15 @@ function [width_landmarks, accessory_width] = auto_width_detection(three_dim, pr
             point2 = transform.b*point2'*transform.T+transform.c(1,:);
             m = (point2(2)-point1(2))/(point2(1)-point1(1)); % line passes through a point and has a slope equal to -1/(slope)
             b = point1(2) - (-1/m)*point1(1); % solve y = mx+b for b, use new slope and b 
-            perp_l = point1;
-            perp_l(1) = perp_l(1)+.03;
-            perp_l(2) = (-1/m)*perp_l(1)+b;
-            perp_r = point1;
-            perp_r(1) = perp_r(1)-.03;
-            perp_r(2) = (-1/m)*perp_r(1)+b;
+            perp_p = point1;
+            perp_p(1) = perp_p(1)+.03;
+            perp_p(2) = (-1/m)*perp_p(1)+b;
+            perp_t = point1;
+            perp_t(1) = perp_t(1)-.03;
+            perp_t(2) = (-1/m)*perp_t(1)+b;
             try
-                if strcmp(which_side,"dorsal") % come back and fix this later...
-                    accessory_width(strcmp([accessory_landmarks{:}],strcat(primary_landmarks{dependencies(l,1)},"L")),:) = perp_r;
-                    accessory_width(strcmp([accessory_landmarks{:}],strcat(primary_landmarks{dependencies(l,1)},"R")),:) = perp_l;
-                elseif strcmp(which_side,"palmar")
-                    accessory_width(strcmp([accessory_landmarks{:}],strcat(primary_landmarks{dependencies(l,1)},"L")),:) = perp_l;
-                    accessory_width(strcmp([accessory_landmarks{:}],strcat(primary_landmarks{dependencies(l,1)},"R")),:) = perp_r;
-                end
+                accessory_width(strcmp([accessory_landmarks{:}],strcat(primary_landmarks{dependencies(l,1)},"_p")),:) = perp_p;
+                accessory_width(strcmp([accessory_landmarks{:}],strcat(primary_landmarks{dependencies(l,1)},"_t")),:) = perp_t;
             catch
             end
         end
