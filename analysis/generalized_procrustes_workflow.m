@@ -126,12 +126,28 @@ else
         primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"unsided");
 end
 
+%% annotation viewer
+disp('Launching annotation viewer.')
+disp(' ')
+fig = uifigure('Name','Annotation Viewer','Position',[0 0 600 size(documented_electrodes,1)*23]);
+p = uipanel(fig,'Position',[10 10 400 size(documented_electrodes,1)*22]);
+ax = uiaxes(p,'Position',[10 10 370 size(documented_electrodes,1)*21]);
+title(ax,[subject ' annotations'])
+camorbit(ax,80,0,'data',[1 0 0]);
+cbx = uicheckbox(fig,'Position',[430 size(documented_electrodes,1)*21+10 130 20],'Text','Show Hotspots');
+bg = uibuttongroup(fig,'Position',[420 10 130 size(documented_electrodes,1)*21]);
+cbx.ValueChangedFcn = {@show_hotspots,three_dim,color_map,annotation_record.(this_model),ax,bg};
+bg.SelectionChangedFcn = {@bselection,three_dim,color_map,annotation_record.(this_model),ax,cbx};
+for ii = 1:size(documented_electrodes,1)
+    rbs = uiradiobutton(bg,'Position',[10 (ii-1)*20+10 91 15],'Text',documented_electrodes{ii});
+end
+shape_viewer(three_dim.raw_verts,three_dim.faces,color_map.(bg.Buttons(find([bg.Buttons.Value])).Text)(:,1),ax)
+
 %% view annotations on flattened 3D mesh
 disp(' ')
 disp('Converting palmar and dorsal fits to heatmaps.')
 [palmar_mask, ~] = get_hand_masks();
 [palmar,dorsal] = convert_3D_to_heatmap(three_dim,three_dim_dorsum,documented_electrodes,color_map,size(palmar_mask));
-
 
 
 
