@@ -50,13 +50,10 @@ If use_default_hand_source or conform_to_2D_illustration are false, running gene
 "EoW"     % End of wrist.
 ```
 
-An illustration of suggested placements of these landmarks relative to the source or target mesh is presented below. If desired, you can use the Survey 3D graphical user interface to produce an annotation hotspot file detailing the locations of these landmarks relative to the source and target meshes.
+An illustration of suggested placements of these landmarks relative to the source or target mesh is presented below. Primary landmarks are represented by red dots. If desired, you can use the Survey 3D graphical user interface to produce an annotation hotspot file detailing the locations of these landmarks relative to the source and target meshes.
 
 <img width="500" height="651" alt="Screenshot 2025-11-26 at 3 35 56 PM" src="https://github.com/user-attachments/assets/42964523-a471-4e05-827c-abb1821ad77f" />
 <img width="500" height="538" alt="Screenshot 2025-11-26 at 3 36 29 PM" src="https://github.com/user-attachments/assets/f6ccf24c-338a-4cae-9686-76c65a12fd79" />
-
-
-[ picture of recommended landmark placement for hand ]
 
 ### Recommended accessory landmarks for hand models are width markers, including:
 
@@ -84,9 +81,7 @@ An illustration of suggested placements of these landmarks relative to the sourc
 "Ppip_t"      % Ppip width marker, thumb side.
 ```
 
-An illustration of suggested placements of these landmarks relative to the source or target mesh is presented below. If desired, you can also specify these landmarks via the Survey 3D graphical user interface. If accessory landmarks (i.e. width markers) are not detailed in the source or target landmarks files, the system will auto determine finger widths at each of the relevant primary landmarks and use these in iterative procrustes transformations.
-
-[ picture of recommended landmark placement for hand ]
+In the placement illustrations above, accessory landmarks with "\_p" modifiers are marked with a blue x. Accessory landmarks with "\_t" modifiers are marked with a magenta x. If desired, you can also specify these landmarks via the Survey 3D graphical user interface. If accessory landmarks (i.e. width markers) are not detailed in the source or target landmarks files, the system will auto determine finger widths at each of the relevant primary landmarks and use these in iterative procrustes transformations.
 
 ## Specifying Arbitrary Landmarks
 
