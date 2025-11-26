@@ -53,7 +53,10 @@ If use_default_hand_source or conform_to_2D_illustration are false, running gene
 An illustration of suggested placements of these landmarks relative to the source or target mesh is presented below. Primary landmarks are represented by red dots. If desired, you can use the Survey 3D graphical user interface to produce an annotation hotspot file detailing the locations of these landmarks relative to the source and target meshes.
 
 <img width="500" height="651" alt="Screenshot 2025-11-26 at 3 35 56 PM" src="https://github.com/user-attachments/assets/42964523-a471-4e05-827c-abb1821ad77f" />
+Figure 1: Suggested primary (red dot) and accessory (blue and magenta x) landmarks illustrated on the palmar 2D hand illustration.
+
 <img width="500" height="538" alt="Screenshot 2025-11-26 at 3 36 29 PM" src="https://github.com/user-attachments/assets/f6ccf24c-338a-4cae-9686-76c65a12fd79" />
+Figure 2: Suggested primary (red dot) and accessory (blue and magenta x) landmarks illustrated on the default 3D hand mesh. Landmarks labeled in white are internal to the mesh.
 
 ### Recommended accessory landmarks for hand models are width markers, including:
 
