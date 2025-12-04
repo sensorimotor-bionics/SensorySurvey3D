@@ -3,8 +3,6 @@ import * as VP from '../scripts/surveyViewport'
 import * as SVY from '../scripts/survey'
 import * as COM from '../scripts/common'
 
-document.title = "Experimenter - SensorySurvey3D"
-
 var viewport;
 var cameraController;
 var surveyManager;
@@ -117,7 +115,7 @@ function newSurveyCallback() {
 function viewFieldCallback(field) {
 	if (field.model) {
 		if (viewport.replaceCurrentMesh(
-			surveyManager.survey.config.models[field.model],
+			surveyManager.survey.config.models[field.model]["file"],
 			field.vertices, 
 			new THREE.Color("#abcabc"))) {
 			cameraController.reset();
@@ -151,12 +149,15 @@ window.onload = function() {
 										new THREE.Color(0x535353),
 										20);
 
-	cameraController = new VP.CameraController(viewport.controls, 
-		viewport.renderer.domElement, 2, 20);
-	cameraController.createZoomSlider(document.getElementById(
-		"cameraControlContainer"));
-	cameraController.createCameraReset(document.getElementById(
-		"cameraControlContainer"));
+	cameraController = new VP.CameraController(
+		viewport.controls, 
+		viewport.renderer.domElement, 
+		2, 
+		20, 
+		document.getElementById("cameraControlContainer")
+	);
+	cameraController.createZoomSlider();
+	cameraController.createCameraReset();
 
     surveyManager = new SVY.SurveyManager();
 
