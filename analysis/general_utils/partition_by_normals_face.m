@@ -1,4 +1,4 @@
-function [is_oblique, is_palmar, is_dorsal, three_dim_normals] = partition_by_normals(three_dim, viewplot)
+function [is_oblique, is_palmar, is_dorsal, three_dim_normals] = partition_by_normals_face(three_dim, viewplot)
     three_dim_triangulation = triangulation(three_dim.faces+1,three_dim.verts);
     three_dim_normals = faceNormal(three_dim_triangulation);
     

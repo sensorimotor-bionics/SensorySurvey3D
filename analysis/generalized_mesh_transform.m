@@ -21,7 +21,6 @@ function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D
     two_dim.landmark_report = import_json(landmarks_2D);
     three_dim.landmark_report = import_json(landmarks_3D);
     three_dim.landmarks = import_model_landmarks(three_dim.landmark_report,primary_landmarks);
-    two_dim.landmarks = import_model_landmarks(two_dim.landmark_report,landmark_superset);
 
     % convert landmarks from strings to indices:
     dependencies_temp = nan(size(dependencies));
@@ -33,7 +32,29 @@ function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D
         end
     end
     dependencies = dependencies_temp;
-        
+
+    % before performing auto width detection, need to rotate relative to
+    % long axis...
+    % alternatively, identify which axis to width detect along and go with
+    % that
+    % the proper axis to width detect along is largest between tend and
+    % pend
+
+    % find width detect axis
+    ax_finder = abs(two_dim.landmark_report.Tend-two_dim.landmark_report.Pend);
+    ax_finder = find(ax_finder==max(ax_finder));
+
+    try
+        two_dim.landmarks = import_model_landmarks(two_dim.landmark_report,landmark_superset);
+    catch
+        two_dim.landmarks = import_model_landmarks(two_dim.landmark_report,primary_landmarks);
+        transform.T = eye(3);
+        transform.b = 1;
+        transform.c = [0,0,0];
+        [width_landmarks, ~] = auto_width_detection(two_dim, primary_landmarks, accessory_landmarks, dependencies, transform, ax_finder);
+        two_dim.landmarks = [two_dim.landmarks;width_landmarks];
+    end
+
     %% build proximity maps of mesh to keypoints
     disp('> Building proximity maps of source mesh to procrustes keypoints.')
     [apply_transform_reference, ~] = determine_dibs(three_dim, primary_landmarks, landmark_superset, dependencies);
@@ -43,9 +64,12 @@ function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D
     [~,three_dim.landmarks,transform] = procrustes(two_dim.landmarks(1:length(primary_landmarks),:),three_dim.landmarks(1:length(primary_landmarks),:)); % Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c
     three_dim.verts = transform.b*three_dim.verts*transform.T+transform.c(1,:);
 
+    [~, three_is_palmar, ~, ~] = partition_by_normals_vertex(three_dim, viewplot);
+    [~, two_is_palmar, ~, ~] = partition_by_normals_vertex(two_dim, viewplot);
+
     %% auto width detection
     disp('> Performing auto width detection.')
-    [width_landmarks, ~] = auto_width_detection(three_dim, primary_landmarks, accessory_landmarks, dependencies, transform);
+    [width_landmarks, ~] = auto_width_detection(three_dim, primary_landmarks, accessory_landmarks, dependencies, transform, ax_finder);
 
     %% iterative procrustes
     disp('> Executing iterative procrustes according to user-specified dependency tree.')
@@ -96,6 +120,51 @@ function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D
         three_dim.verts = three_dim_verts_temp;
     end
 
+    %%
+    k = 1;
+    abbr_palm = two_dim.verts(two_is_palmar,:);
+    abbr_dorsum = two_dim.verts(~two_is_palmar,:);
+
+    mdl_palm = createns(abbr_palm,'Distance','euclidean');
+    mdl_dorsum = createns(abbr_dorsum,'Distance','euclidean');
+
+    [IdxNN_palm,D_palm] = knnsearch(mdl_palm,three_dim.verts(three_is_palmar,:),'K',k);
+    [IdxNN_dorsum,D_dorsum] = knnsearch(mdl_dorsum,three_dim.verts(~three_is_palmar,:),'K',k);
+
+    temp_verts = nan([size(three_dim.verts),k]);
+    temp_D = nan([size(three_dim.verts,1),k]);
+
+    for ii = 1:k
+        temp_verts(three_is_palmar,:,ii) = abbr_palm(IdxNN_palm(:,ii),:);
+        temp_verts(~three_is_palmar,:,ii) = abbr_dorsum(IdxNN_dorsum(:,ii),:);
+
+        temp_D(three_is_palmar,ii) = D_palm(:,ii);
+        temp_D(~three_is_palmar,ii) = D_dorsum(:,ii);
+    end
+
+    all_dists = sum(temp_D,2);
+    foo = sum(temp_verts.*repmat(permute(temp_D,[1,3,2]),[1,3,1])./repmat(all_dists,[1,3,k]),3);
+    % three_dim.verts = foo;
+
+    figure
+    plot3(two_dim.verts(two_is_palmar,1),two_dim.verts(two_is_palmar,2),two_dim.verts(two_is_palmar,3),'.')
+    hold on
+    plot3(two_dim.verts(~two_is_palmar,1),two_dim.verts(~two_is_palmar,2),two_dim.verts(~two_is_palmar,3),'.')
+    axis equal
+    
+    figure
+    plot3(three_dim.verts(three_is_palmar,1),three_dim.verts(three_is_palmar,2),three_dim.verts(three_is_palmar,3),'.')
+    hold on
+    plot3(three_dim.verts(~three_is_palmar,1),three_dim.verts(~three_is_palmar,2),three_dim.verts(~three_is_palmar,3),'.')
+    axis equal
+    
+    figure
+    plot3(foo(:,1),foo(:,2),foo(:,3),'.')
+    axis equal
+
+    figure
+    shape_viewer(foo,three_dim.faces,[1,0,0],gca)
+
     %% assess 2D/3D mesh alignment
     if viewfinalplot
         figure
@@ -106,9 +175,25 @@ function [two_dim, three_dim] = generalized_mesh_transform(mesh_2D, landmarks_2D
         axis equal
     end
 
+    figure
+    plot3(three_dim.verts(:,1),three_dim.verts(:,2),three_dim.verts(:,3),'.')
+    hold on
+    plot3(three_dim.landmarks(:,1),three_dim.landmarks(:,2),three_dim.landmarks(:,3),'o')
+    axis equal
+
+    plot3(two_dim.verts(:,1),two_dim.verts(:,2),two_dim.verts(:,3),'.')
+    hold on
+    plot3(two_dim.landmarks(:,1),two_dim.landmarks(:,2),two_dim.landmarks(:,3),'o')
+    axis equal
+
+    figure
+    plot3(temp_verts(:,1),temp_verts(:,2),temp_verts(:,3),'.')
+    axis equal
+
     %% partition aligned 3D mesh according to normal orientations
     disp('> Partitioning into palmar and dorsal planar aspects using normals.')
-    [three_dim.oblique, three_dim.is_palmar, three_dim.is_dorsal, three_dim.normals] = partition_by_normals(three_dim, viewplot);
+    [three_dim.oblique, three_dim.is_palmar, three_dim.is_dorsal, three_dim.normals] = partition_by_normals_face(three_dim, viewplot);
+    [two_dim.oblique, two_dim.is_palmar, two_dim.is_dorsal, two_dim.normals] = partition_by_normals_face(two_dim, viewplot);
 
     %% flatten aligned 3D mesh according to normal orientations
     [two_dim.verts_flat, three_dim.verts_flat] = flatten_by_normals(two_dim, three_dim, which_side);

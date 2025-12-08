@@ -1,27 +1,8 @@
 
 %% enter annotation details
-which_test = 2;
-
-switch which_test
-    case 1
-        subject = 'BCI03'; session = 235;
-        electrodes = [2 12 14 22 3 41 45 54 9 4 48 10 38 50 36 26 18 6 43 8 39 16 37 34 15 24 27];
-        data_path_format = "Z:\\SessionData\\%s\\OpenLoopStim\\%s.data.00%d\\BCI*.json";
-    case 2
-        subject = 'BCI02'; session = [908 925 926];
-        electrodes = [7 29 53 54 ...
-                    3 10 63 34 4 7 21 57 17 56 13 53 26 30 52 ...
-                    36];
-        data_path_format = "Z:\\SessionData\\%s\\OpenLoopStim\\%s.data.00%d\\BCI*.json";
-    case 3
-        % may need to update extract_colormaps with sprintf inputs if different from above
-        subject = 'S113'; session = "2025-11-10";
-        electrodes = [1 1 1 1 1 1 1 1 1 9 9 9 9 9 9 9 9 9 9];
-        data_path_format = ".\\mesh_utils\\participant_251013\\Survey3D_%s_%s_*.json";
-end
-
-conform_to_2D_illustration = true;
-use_default_hand_source = true;
+subject = 'S113';
+conform_to_2D_illustration = false;
+use_default_hand_source = false;
 
 %% define your landmarks
 % primary landmarks:
@@ -45,17 +26,16 @@ dependencies = ["Tmcp","Tpip";"Tpip","Tend";...
     "Imcp","Ipip";"Ipip","Idip";"Idip","Iend";...
     "Mmcp","Mpip";"Mpip","Mdip";"Mdip","Mend";...
     "Rmcp","Rpip";"Rpip","Rdip";"Rdip","Rend";...
-    "Pmcp","Ppip";"Ppip","Pdip";"Pdip","Pend"];
-    % "WuP","EoW";"WuT","EoW"];
+    "Pmcp","Ppip";"Ppip","Pdip";"Pdip","Pend";...
+    "EoW","MpD"];
 
 anchor_landmark = "EoW";
 
 % alternatively, could use Survey3D to produce an annotation hotspot file
 % with all of these landmarks pre-named
-
 % would still have to provide the dependency tree, though
 
-%% identify your source and target meshes
+%% identify your source mesh
 % identify mesh and landmark files for source
 disp(' ')
 
@@ -64,14 +44,74 @@ if use_default_hand_source
     mesh_source = 'Male_Hands_R_rm_5000_glb.json';
     landmarks_source = "3D_model_procrustes_keypoints.json";
 else
-    % landmarks_source = "participant_251013_procrustes_keypoints.json";
     [file,location] = uigetfile('*.json','Select source mesh file','.\mesh_utils\');
     mesh_source = fullfile(location,file);
     [file,location] = uigetfile('*.json','Select source landmark file','.\mesh_utils\');
     landmarks_source = fullfile(location,file);
 end
 
+%% import 3D mesh and annotation colormaps
+
+load("Survey3DData_Recent.mat") % import merged OLSData from multiple sessions
+this_subject = find(strcmp({Survey3DData.Subject},subject)); % which rows correspond to this subject
+Survey3DData = Survey3DData(this_subject); % exclude other subjects from dataset
+documented_electrodes = {Survey3DData.ElectrodeID};
+unique_documented_electrodes = unique(documented_electrodes);
+
+% summarize annotation colormaps
+all_fields = fieldnames(Survey3DData);
+qualities = all_fields(find(strcmp(all_fields,'Model'))+1:end);
+annotation_record = struct();
+color_map = struct();
+
+for ele = 1:length(unique_documented_electrodes)
+    this_ele = unique_documented_electrodes{ele};
+    color_map.(this_ele) = [];
+end
+
+for q = 1:length(qualities)
+    annotation_record.(qualities{q}) = struct();
+    for ele = 1:length(unique_documented_electrodes)
+        this_ele = unique_documented_electrodes{ele};
+        which_rows = find(strcmp(documented_electrodes,this_ele));
+        annotation_record.(qualities{q}).(this_ele) = [];
+
+        for ii = 1:length(which_rows)
+            if ~isempty(Survey3DData(which_rows(ii)).(qualities{q}))
+                annotation_record.(qualities{q}).(this_ele) = cat(2, annotation_record.(qualities{q}).(this_ele), Survey3DData(which_rows(ii)).(qualities{q}).fields);
+            end
+        end
+
+        color_map.(this_ele) = cat(2, color_map.(this_ele), annotation_record.(qualities{q}).(this_ele));
+    end
+end
+
+for ele = 1:length(unique_documented_electrodes)
+    this_ele = unique_documented_electrodes{ele};
+    which_map = nansum(color_map.(this_ele),2);
+    if max(which_map,[],"all")>0
+        which_map = which_map./max(which_map,[],"all");
+    end
+    color_map.(this_ele) = which_map;
+end
+
+%% annotation viewer
+disp('Launching annotation viewer.')
+disp(' ')
+data = import_json(mesh_source);
+three_dim.raw_verts = data.vertices;
+three_dim.faces = data.faces;
+annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,three_dim)
+
+%% annotation viewer by row
+disp('Launching rowwise annotation viewer.')
+disp(' ')
+row_annotation_viewer(Survey3DData,qualities,three_dim)
+
+%% identify your target mesh
 % identify mesh and landmark files for target 
+disp(' ')
+
 if conform_to_2D_illustration
     disp('Conforming to default 2D hand illustrations.')
     mesh_target = "2D_mesh_data.json";
@@ -82,30 +122,6 @@ else
     mesh_target = fullfile(location,file);
     [file,location] = uigetfile('*.json','Select target landmark file','.\mesh_utils\');
     landmarks_target = fullfile(location,file);
-end
-
-%% import 3D mesh and annotation colormaps
-% parse jsons from session to determine colormaps
-spec = '';
-for ii = 1:length(session)
-    spec = [spec char(string(session(ii))) ' '];
-end
-
-fprintf('Extracting colormaps from .json files for subject %s in session(s) %s.\n',subject,spec)
-[annotation_record, this_model, model_name] =  extract_colormaps(subject,session,electrodes,data_path_format);
-documented_electrodes = fieldnames(annotation_record.(this_model).electrodes);
-
-% summarize annotation colormaps
-for ele = 1:length(documented_electrodes)
-    this_ele = documented_electrodes{ele};
-
-    if size(annotation_record.(this_model).electrodes.(this_ele).fields,2)>1
-        which_map = sum(annotation_record.(this_model).electrodes.(this_ele).fields,2);
-        which_map(which_map>1) = 1;
-    else
-        which_map = annotation_record.(this_model).electrodes.(this_ele).fields;
-    end
-    color_map.(this_ele) = [which_map,0.5*ones(size(which_map)),0.2*ones(size(which_map))];
 end
 
 %% transform source mesh to target mesh
@@ -125,23 +141,6 @@ else
     [two_dim,three_dim] = generalized_mesh_transform(mesh_target,landmarks_target,mesh_source,landmarks_source,...
         primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"unsided");
 end
-
-%% annotation viewer
-disp('Launching annotation viewer.')
-disp(' ')
-fig = uifigure('Name','Annotation Viewer','Position',[0 0 600 size(documented_electrodes,1)*23]);
-p = uipanel(fig,'Position',[10 10 400 size(documented_electrodes,1)*22]);
-ax = uiaxes(p,'Position',[10 10 370 size(documented_electrodes,1)*21]);
-title(ax,[subject ' annotations'])
-camorbit(ax,80,0,'data',[1 0 0]);
-cbx = uicheckbox(fig,'Position',[430 size(documented_electrodes,1)*21+10 130 20],'Text','Show Hotspots');
-bg = uibuttongroup(fig,'Position',[420 10 130 size(documented_electrodes,1)*21]);
-cbx.ValueChangedFcn = {@show_hotspots,three_dim,color_map,annotation_record.(this_model),ax,bg};
-bg.SelectionChangedFcn = {@bselection,three_dim,color_map,annotation_record.(this_model),ax,cbx};
-for ii = 1:size(documented_electrodes,1)
-    rbs = uiradiobutton(bg,'Position',[10 (ii-1)*20+10 91 15],'Text',documented_electrodes{ii});
-end
-shape_viewer(three_dim.raw_verts,three_dim.faces,color_map.(bg.Buttons(find([bg.Buttons.Value])).Text)(:,1),ax)
 
 %% view annotations on flattened 3D mesh
 disp(' ')
@@ -184,13 +183,55 @@ figure
 disp_shape_single(two_dim.verts_flat,two_dim.faces,[0 1 0],50,-50)
 subplot(1,2,1)
 hold on
-image([orig_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+image([mask_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
 subplot(1,2,2)
 hold on
-image([orig_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+image([mask_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
 
 figure
 disp_shape_single(three_dim.verts_flat,three_dim.faces,[0 1 0],130,-130)
 subplot(1,2,2)
 hold on
-image([orig_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+image([mask_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+
+
+
+
+
+
+
+
+scaling_factor = 1140/(max(two_dim.landmarks(:,2))-min(two_dim.landmarks(:,2)));
+translation_adjustment = [100,30];
+two_dim_landmarks_shifted = two_dim.landmarks;
+two_dim_landmarks_shifted(:,1) = (two_dim.landmarks(:,1)-min(two_dim.landmarks(:,1))).*scaling_factor+translation_adjustment(1);
+two_dim_landmarks_shifted(:,2) = (two_dim.landmarks(:,2)-min(two_dim.landmarks(:,2))).*scaling_factor+translation_adjustment(2);
+two_dim_landmarks_shifted(:,3) = two_dim.landmarks(:,3).*scaling_factor;
+        
+figure
+hold on
+image([mask_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+plot(two_dim_landmarks_shifted([1:21,24],1),two_dim_landmarks_shifted([1:21,24],2),'r.','MarkerSize',35,'LineWidth',3)
+hold on
+plot(two_dim_landmarks_shifted(25:2:end,1),two_dim_landmarks_shifted(25:2:end,2),'bx','MarkerSize',15,'LineWidth',3)
+plot(two_dim_landmarks_shifted(26:2:end,1),two_dim_landmarks_shifted(26:2:end,2),'mx','MarkerSize',15,'LineWidth',3)
+plot(two_dim_landmarks_shifted(22,1)+15,two_dim_landmarks_shifted(22,2),'r.','MarkerSize',35,'LineWidth',3)
+plot(two_dim_landmarks_shifted(23,1)-15,two_dim_landmarks_shifted(23,2),'r.','MarkerSize',35,'LineWidth',3)
+axis equal
+h = gca;
+axis(h,'off'); axis(h,'equal');
+set(h,'Projection','perspective')
+set(h,'CameraUpVector',[0 1 0])
+set(h,'CameraPosition',h.CameraPosition.*[1 1 -1]);
+
+figure
+hold on
+% shape_viewer(three_dim.verts,three_dim.faces,[0.5 0.5 0.5],gca)
+shape_viewer(three_dim.verts,three_dim.faces,[1 1 1],gca)
+alpha(0.8)
+hold on
+plot3(three_dim.landmarks(1:24,1),three_dim.landmarks(1:24,2),three_dim.landmarks(1:24,3),'r.','MarkerSize',35,'LineWidth',3)
+plot3(three_dim.landmarks(25:2:end,1),three_dim.landmarks(25:2:end,2),three_dim.landmarks(25:2:end,3),'bx','MarkerSize',15,'LineWidth',3)
+plot3(three_dim.landmarks(26:2:end,1),three_dim.landmarks(26:2:end,2),three_dim.landmarks(26:2:end,3),'mx','MarkerSize',15,'LineWidth',3)
+
+% foo = import_model_landmarks(three_dim.landmark_report,primary_landmarks);

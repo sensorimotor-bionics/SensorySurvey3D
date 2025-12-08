@@ -5,6 +5,7 @@ function shape_viewer(verts,faces,colors,who)
     hp.FaceVertexCData = colors;
     hp.FaceColor = 'flat';
     material(hp,[0.5 0.5 0.0 20 0.5]);
+    colormap(h,'summer')
 
     ch = get(h,'children');
     lightExists = sum(arrayfun(@(x) contains(class(ch(x)),'Light'),1:length(ch)));

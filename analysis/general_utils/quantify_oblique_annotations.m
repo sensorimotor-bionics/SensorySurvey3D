@@ -15,7 +15,7 @@ function [three_dim, oblique_proportion] = quantify_oblique_annotations(subject,
         foo = split(this_ele,'_');
     
         this_map = color_map.(this_ele);
-        annotated_faces = sum(ismember(three_dim.faces,find(this_map(:,1)>0)),2)==3;
+        annotated_faces = sum(ismember(three_dim.faces,find(this_map>0)),2)==3;
     
         % sum areas of oblique faces which are annotated
         oblique_area = sum(three_dim.face_area(annotated_faces&three_dim.oblique));

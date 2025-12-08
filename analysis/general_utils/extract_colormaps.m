@@ -1,89 +1,61 @@
-function [annotation_record, this_model, model_name] = extract_colormaps(subject,session,electrodes,data_path_format)
-    base_paths = {};
-    annotation_paths = {};
-    annotation_record = struct();
+function OLS_struct = extract_colormaps(OLS_struct,idx)
+    model = struct();
+    base_path = OLS_struct(idx).Base;
+    annotation_path = OLS_struct(idx).Annotation;
+    electrode_num = OLS_struct(idx).Channel;
 
-    for sess = 1:length(session)
-        % point to appropriate folder(s) based on subject and session details
-        current_paths = dir([char(sprintf(data_path_format,subject,subject,session(sess)))]);
-        if isempty(current_paths)
-            current_paths = dir([char(sprintf(data_path_format,subject,session(sess)))]);
-        end
-        base_paths = [base_paths {current_paths.folder}];
-        annotation_paths = [annotation_paths {current_paths.name}];
-    end
-
-    if length(annotation_paths)~=length(electrodes)
-        error('The number of annotation files does not match the number of electrodes specified.')
-    end
-
-    for electrode = 1:length(electrodes)
-        data = import_json([base_paths{electrode} '\' annotation_paths{electrode}]);
-        electrode_num = electrodes(electrode);
-        electrode_name = ['e_' char(string(electrode_num))];
+    data = import_json([base_path '\' annotation_path]);
+    OLS_struct(idx).ElectrodeID = ['e_' char(string(electrode_num))];
+    model_options =  data.config.models;
+  
+    OLS_struct(idx).Date = data.date;
+    OLS_struct(idx).StartTime = data.startTime;
+    OLS_struct(idx).EndTime = data.endTime;
+    projected_fields = data.projectedFields;
     
-        participant = data.participant;
-        model_options =  data.config.models;
-        % sensation_types =  data.config.typeList;
-        % hide_scale = data.config.hideScaleValues;
+    for pf = 1:length(projected_fields)
+        this_projected_field = struct();
+        projected_field = projected_fields(pf);
+        model.id = projected_field.model;
+        model.id(model.id==' ') = '';
+        model.name = model_options.(model.id);
+        try
+            model.name(model.name=='.') = '_';
+        catch
+            model.name = model.name.file;
+            model.name(model.name=='.') = '_';
+        end
+        mesh_data = import_json([model.name '.json']);
         
-        date = data.date;
-        start_time = data.startTime;
-        end_time = data.endTime;
-        projected_fields = data.projectedFields;
+        numverts = size(mesh_data.vertices,1);
+        temp_field = zeros(numverts,1);
+        temp_field(projected_field.vertices) = 1;
         
-        for pf = 1:length(projected_fields)
-            projected_field = projected_fields(pf);
-            this_model = projected_field.model;
-            this_model(this_model==' ') = '';
-            model_name = model_options.(this_model);
+        if pf==1
+            model.vertices = mesh_data.vertices;
+            model.faces = mesh_data.faces;
+            model.filename = mesh_data.filename;
+            OLS_struct(idx).Model = model;
+        end
+            
+        this_projected_field.fields = temp_field; % vertex colors, not face colors
+        hotspot = projected_field.hotSpot;
+        this_projected_field.hotspots = [hotspot.x, hotspot.y, hotspot.z];
+        this_projected_field.naturalness = projected_field.naturalness;
+        this_projected_field.pain = projected_field.pain;
+        try
+            this_projected_field.qualities = {projected_field.qualities.type};
+        catch
+            this_projected_field.qualities = {'Unspecified'};
+        end
+
+        for q = 1:length(this_projected_field.qualities)
             try
-                model_name(model_name=='.') = '_';
+                OLS_struct(idx).(this_projected_field.qualities{q}) = this_projected_field;
             catch
-                model_name = model_name.file;
-                model_name(model_name=='.') = '_';
-            end
-            mesh_data = import_json([model_name '.json']);
-            
-            numverts = size(mesh_data.vertices,1);
-            temp_field = zeros(numverts,1);
-            temp_field(projected_field.vertices) = 1;
-            
-            if ~ismember(this_model,fieldnames(annotation_record))
-                annotation_record.(this_model).vertices = mesh_data.vertices;
-                annotation_record.(this_model).faces = mesh_data.faces;
-                annotation_record.(this_model).filename = mesh_data.filename;
-                
-                % can't use electrode number directly as a field name
-                annotation_record.(this_model).electrodes.(electrode_name).fields = temp_field; % vertex colors, not face colors
-                hotspot = projected_field.hotSpot;
-                annotation_record.(this_model).electrodes.(electrode_name).hotspots = [hotspot.x, hotspot.y, hotspot.z];
-                annotation_record.(this_model).electrodes.(electrode_name).naturalness = projected_field.naturalness;
-                annotation_record.(this_model).electrodes.(electrode_name).pain = projected_field.pain;
-                try
-                    annotation_record.(this_model).electrodes.(electrode_name).qualities = {projected_field.qualities.type};
-                catch
-                    annotation_record.(this_model).electrodes.(electrode_name).qualities = {};
-                end
-            else
-                if ~ismember(['e_' char(string(electrode_num))],fieldnames(annotation_record.(this_model).electrodes))
-                    annotation_record.(this_model).electrodes.(electrode_name).fields = [];
-                    annotation_record.(this_model).electrodes.(electrode_name).hotspots = [];
-                    annotation_record.(this_model).electrodes.(electrode_name).naturalness = [];
-                    annotation_record.(this_model).electrodes.(electrode_name).pain = [];
-                    annotation_record.(this_model).electrodes.(electrode_name).qualities = {};
-                end
-                        
-                annotation_record.(this_model).electrodes.(electrode_name).fields = cat(2,annotation_record.(this_model).electrodes.(electrode_name).fields,temp_field); % vertex colors, not face colors...
-                hotspot = projected_field.hotSpot;
-                annotation_record.(this_model).electrodes.(electrode_name).hotspots = cat(1,annotation_record.(this_model).electrodes.(electrode_name).hotspots,[hotspot.x, hotspot.y, hotspot.z]);
-                annotation_record.(this_model).electrodes.(electrode_name).naturalness = cat(1,annotation_record.(this_model).electrodes.(electrode_name).naturalness,projected_field.naturalness);
-                annotation_record.(this_model).electrodes.(electrode_name).pain = cat(1,annotation_record.(this_model).electrodes.(electrode_name).pain,projected_field.pain);
-                
-                try
-                    annotation_record.(this_model).electrodes.(electrode_name).qualities = [annotation_record.(this_model).electrodes.(electrode_name).qualities projected_field.qualities.type];
-                catch
-                end
+                temp = this_projected_field.qualities{q};
+                temp(temp==' ') = '_';
+                OLS_struct(idx).(temp) = this_projected_field;
             end
         end
     end
