@@ -31,6 +31,10 @@ def participant() -> Response:
 def experimenter() -> Response:
     return FileResponse(DIST_PATH + r"/experimenter/index.html")
 
+@app.get("/annotation")
+def annotation() -> Response:
+    return FileResponse(DIST_PATH + r"/annotation/index.html")
+
 @app.websocket("/participant-ws")
 async def participant_ws(websocket: WebSocket):
     """

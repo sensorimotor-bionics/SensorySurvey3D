@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Annotation - SensorySurvey3D</title>
+        <link rel="stylesheet" type="text/css" href="../stimSurvey3d.css">
+    </head>
+    <body>
+
+        <div class="sidebar">
+            <div class="scrollContainer">
+                <div id="annotateTab" class="sidebarTab">
+                    <div class="scrollContainerMedium">
+                        <div id="pointListParent"></div>
+                    </div>
+                    <button id="newPointButton">New Point</button>
+                    <div style="height:3vh"></div>
+                    <button id="saveButton">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mainColContainer">
+             <div class="widthbar">
+                <p style="margin: 12px 12px">Zoom</p>
+                <div id="cameraControlContainer" style="display:inherit;justify-content:inherit;align-items:inherit">
+                </div>
+            </div>
+
+            <div id="3dContainer" class="threeDContainer"></div>
+        </div>
+        
+    </body>
+    <script type="module" text="text/javascript" src="annotation.js"></script>
+</html>
