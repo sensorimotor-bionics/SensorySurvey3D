@@ -629,3 +629,97 @@ export class SurveyTable {
         this.parentElement.replaceChildren(...table.children);
     }
 }
+
+/** Class which represents a point in space for an annotation */
+export class AnnotationPoint {
+    /**
+     * Constructor for AnnotationPoint
+     * @param {string} name - the name of the annotation point
+     * @param {number} x - the x position of the annotation point
+     * @param {number} y - the y position of the annotation point
+     * @param {number} z - the z position of the annotation point
+     */
+    constructor(name = "default", x = null, y = null, z = null) {
+        this.name = name;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    /**
+     * Create a JSON object of the point
+     * @returns {JSON}
+     */
+    toJSON() {
+        var output = {
+            name: this.name,
+            x: this.x,
+            y: this.y,
+            z: this.z,
+        }
+
+        return output;
+    }
+
+    /**
+     * Take a JSON object, and use its fields to populate the properties of this
+     * AnnotationPoint object
+     * @param {JSON} json - the object whose fields will be used 
+     */
+    fromJSON(json) {
+        this.name = json.name;
+        this.x = json.x;
+        this.y = json.y;
+        this.z = json.z;
+    }
+}
+
+/** Class which represents a set of annotations made on a mesh */
+export class AnnotationSet {
+    /**
+     * Constructor for AnnotationSet
+     * @param {string} name - the name of the annotation set
+     * @param {object} mesh - the object containing mesh data
+     * @param {AnnotationPoint[]} points - the points associated with this set
+     */
+    constructor(name, mesh, points = []) {
+        this.name = name;
+        this.mesh = mesh;
+        this.points = points;
+    }
+
+    /**
+     * Create a JSON object of the annotation set
+     * @returns {JSON}
+     */
+    toJSON() {
+        var jsonPoints = [];
+        for (let i = 0; i < this.points.length; i++) {
+            jsonPoints.push(this.points[i].toJSON());
+        }
+
+        var output = {
+            name: this.name,
+            mesh: this.config,
+            points: jsonPoints
+        }
+
+        return output;
+    }
+
+    /**
+     * Take a JSON object, and use its fields to populate the properties of this
+     * AnnotationSet object
+     * @param {JSON} json - the object whose fields will be used 
+     */
+    fromJSON(json) {
+        this.name = json.name;
+        this.mesh = json.mesh;
+        this.points = [];
+        for (let i = 0; i < json.points.length; i++) {
+            var point = new AnnotationPoint();
+            point.fromJSON(json.points[i]);
+            this.points.push(point);
+        }
+    }
+}
