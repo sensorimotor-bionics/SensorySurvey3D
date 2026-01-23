@@ -1,6 +1,8 @@
+import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response, FileResponse
+from fastapi.routing import Mount
 from survey3d import Survey, SurveyManager, Mesh
 
 # The app we are serving
@@ -34,6 +36,16 @@ def experimenter() -> Response:
 @app.get("/annotation")
 def annotation() -> Response:
     return FileResponse(DIST_PATH + r"/annotation/index.html")
+
+@app.get("/all-mesh-filenames")
+def all_mesh_filenames() -> dict:
+    filenames = []
+    for route in app.routes: 
+        if isinstance(route, Mount) and route.path.startswith("/3dmodels"):
+            for file in os.listdir(route.app.directory):
+                if file.endswith((".glb", ".gltf")):
+                    filenames.append(file)
+    return {"filenames": filenames}
 
 @app.websocket("/participant-ws")
 async def participant_ws(websocket: WebSocket):
