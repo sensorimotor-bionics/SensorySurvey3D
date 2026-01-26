@@ -1,5 +1,10 @@
-function bselection(bg,eventData,three_dim,ax,cbx,Survey3DData,qualities,qcbx)
-    cla(ax)
+function bselection(bg,eventData,three_dim,ax,cbx,Survey3DData,qualities,qcbx,default_pos)
+    ax.CameraPosition = default_pos;
+    if isa(ax.Children(1),'matlab.graphics.primitive.Patch')
+        delete(ax.Children(1))
+    elseif isa(ax.Children(end),'matlab.graphics.primitive.Patch')
+        delete(ax.Children(end))
+    end
 
     % check the relevant qualities
     this_electrode = find(strcmp({Survey3DData.ElectrodeID},bg.Buttons(find([bg.Buttons.Value])).Text)); % which rows correspond to selected electrode

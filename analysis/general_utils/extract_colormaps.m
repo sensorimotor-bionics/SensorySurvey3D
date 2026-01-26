@@ -24,6 +24,7 @@ function OLS_struct = extract_colormaps(OLS_struct,idx)
         catch
             model.name = model.name.file;
             model.name(model.name=='.') = '_';
+            model.name(model.name=='/') = '_';
         end
         mesh_data = import_json([model.name '.json']);
         
@@ -36,6 +37,7 @@ function OLS_struct = extract_colormaps(OLS_struct,idx)
             model.faces = mesh_data.faces;
             model.filename = mesh_data.filename;
             OLS_struct(idx).Model = model;
+            OLS_struct(idx).ModelName = model.name;
         end
             
         this_projected_field.fields = temp_field; % vertex colors, not face colors
@@ -51,11 +53,12 @@ function OLS_struct = extract_colormaps(OLS_struct,idx)
 
         for q = 1:length(this_projected_field.qualities)
             try
-                OLS_struct(idx).(this_projected_field.qualities{q}) = this_projected_field;
+                temp = this_projected_field.qualities{q};
+                OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]) = this_projected_field;
             catch
                 temp = this_projected_field.qualities{q};
                 temp(temp==' ') = '_';
-                OLS_struct(idx).(temp) = this_projected_field;
+                OLS_struct(idx).([upper(temp(1)) lower(temp(2:end))]) = this_projected_field;
             end
         end
     end

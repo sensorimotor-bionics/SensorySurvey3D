@@ -10,5 +10,6 @@ analysis/BCI*
 analysis/private_utils/*
 analysis/mesh_utils/Pro1/*
 analysis/mesh_utils/S113/*
+analysis/mesh_utils/CRS09/*
 analysis/OLS/*
 analysis/External/*

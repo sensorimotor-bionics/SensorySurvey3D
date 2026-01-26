@@ -15,6 +15,12 @@ function disp_shape_single(verts,faces,colors,front_dist,back_dist)
         hp.FaceVertexCData = colors;
         hp.FaceLighting = 'flat';
         material(hp,[0.5 0.5 0.0 20 0.5]);
+
+        if sum(colors)==0
+            colormap([0,0,0])
+        else
+            colormap('gray')
+        end
     
         ch = get(h,'children');
         lightExists = sum(arrayfun(@(x) contains(class(ch(x)),'Light'),1:length(ch)));
@@ -26,7 +32,7 @@ function disp_shape_single(verts,faces,colors,front_dist,back_dist)
         end
         
         axis(h,'off'); axis(h,'equal');
-        set(h,'Projection','perspective')
+        set(h,'Projection','orthographic')
         set(h,'CameraUpVector',[0 1 0])
 
         if persp == 2

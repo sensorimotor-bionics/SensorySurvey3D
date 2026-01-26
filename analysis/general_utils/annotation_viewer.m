@@ -1,9 +1,12 @@
-function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,three_dim)
+function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,three_dim,subject,mesh_source)
     fig = uifigure('Name','Annotation Viewer','Position',[0 0 660 max([size(unique_documented_electrodes,2)*23,400])]);
     p = uipanel(fig,'Position',[10 10 400 max([size(unique_documented_electrodes,2)*22,380])]);
     ax = uiaxes(p,'Position',[10 10 380 max([size(unique_documented_electrodes,2)*21,360])]);
-    % title(ax,[subject ' Annotations'])
-    % camorbit(ax,80,0,'data',[1 0 0]);
+    title(ax,[subject ' ' mesh_source ' Annotations'], 'Interpreter', 'none')
+    camorbit(ax,180,0,'data',[1 0 0]);
+    camorbit(ax,45,0,'data',[0 1 0]);
+    ax.NextPlot = 'add';
+    default_pos = ax.CameraPosition;
 
     % cbx = uicheckbox(fig,'Position',[430 size(unique_documented_electrodes,2)*21+10 130 20],'Text','Show Hotspots');
     uitextarea(fig,'Position',[420 max([size(unique_documented_electrodes,2)*21,360])+10 230 20],'Value','Parsed Electrode Details',...
@@ -23,7 +26,7 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
     expand(qcbx)
     
     % cbx.ValueChangedFcn = {@show_hotspots,three_dim,color_map,annotation_record,ax,bg};
-    bg.SelectionChangedFcn = {@bselection,three_dim,ax,cbx,Survey3DData,qualities,qcbx};
+    bg.SelectionChangedFcn = {@bselection,three_dim,ax,cbx,Survey3DData,qualities,qcbx,default_pos};
     
     this_electrode = find(strcmp({Survey3DData.ElectrodeID},bg.Buttons(find([bg.Buttons.Value])).Text)); % which rows correspond to selected electrode
     appropriate_fields = [];

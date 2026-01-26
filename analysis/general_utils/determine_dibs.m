@@ -31,7 +31,6 @@ function [apply_transform_reference, dibs] = determine_dibs(three_dim, primary_l
     dibs_valence = distance_record-min(distance_record,[],1);
     dibs_valence = dibs_valence./repmat(max(dibs_valence,[],1),[size(three_dim.verts,1),1]);
     dibs_valence = 1-dibs_valence;
-    % dibs_valence = dibs_valence.^4; % if you want to define some sort of falloff...
 
     apply_transform_reference = nan(size(three_dim.verts,1),length(landmark_superset));
     for l = 1:length(landmark_superset)
@@ -42,9 +41,23 @@ function [apply_transform_reference, dibs] = determine_dibs(three_dim, primary_l
         end
     end
 
-    % winner takes all
-    apply_transform = zeros(size(apply_transform_reference));
+    % winner takes all-ish
     winner_takes_all = apply_transform_reference==repmat(max(apply_transform_reference,[],2),[1,size(apply_transform_reference,2)]);
-    apply_transform(winner_takes_all) = apply_transform_reference(winner_takes_all);
-    apply_transform_reference = apply_transform./sum(apply_transform,2);
+    winner_takes_all = double(winner_takes_all);
+
+    for r = 1:length(winner_takes_all)
+        this_winner = find(winner_takes_all(r,:)==max(winner_takes_all(r,:)));
+
+        for w = 1:length(this_winner)
+            considered_winner = this_winner(1);
+            winner_partners_1 = find(dependencies(:,1)==considered_winner);
+            winner_partners_2 = find(dependencies(:,2)==considered_winner);
+            winner_takes_all(r,dependencies(winner_partners_1,2)) = apply_transform_reference(r,dependencies(winner_partners_1,2)).^10; % can't just be 1, needs a falloff
+            winner_takes_all(r,dependencies(winner_partners_2,1)) = apply_transform_reference(r,dependencies(winner_partners_2,1)).^10;
+        end
+    end
+
+    apply_transform_reference = apply_transform_reference.*winner_takes_all;
+    apply_transform_reference(apply_transform_reference<0.01) = 0;
+    apply_transform_reference = apply_transform_reference./sum(apply_transform_reference,2);
 end
