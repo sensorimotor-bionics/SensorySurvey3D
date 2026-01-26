@@ -6,11 +6,11 @@ import * as COM from '../scripts/common';
 var viewport;
 var cameraController;
 
-var annotationSet;
+var landmarkSet;
 
 /* BUTTON CALLBACKS */
 
-function startAnnotationCallback() {
+function startLandmarksCallback() {
     const nameInput = document.getElementById("nameInput");
     const name = nameInput.value;
 
@@ -20,7 +20,7 @@ function startAnnotationCallback() {
         
     )
 
-    annotationSet = SVY.AnnotationSet(
+    landmarkSet = SVY.LandmarkSet(
         name,
 
     )
@@ -50,8 +50,8 @@ window.onload = function() {
     COM.placeUI(COM.uiPositions.LEFT, COM.uiPositions.TOP);
 
     /* EVENT LISTENERS */
-    const startAnnotationButton = document.getElementById("startAnnotationButton");
-    startAnnotationButton.onpointerup = startAnnotationCallback;
+    const startLandmarksButton = document.getElementById("startLandmarksButton");
+    startLandmarksButton.onpointerup = startLandmarksCallback;
 
     viewport.animate();
 }

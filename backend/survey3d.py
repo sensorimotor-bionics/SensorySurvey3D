@@ -336,7 +336,7 @@ class SurveyManager():
             return False
 
 @dataclass
-class AnnotationPoint():
+class Landmark():
     """
     A class which represents an annotated point in 3D space
     """
@@ -354,13 +354,13 @@ class AnnotationPoint():
         }
 
 @dataclass  
-class AnnotationSet():
+class LandmarkSet():
     """
-    A class which represents a set of annotations made on a mesh
+    A class which represents a set of  made on a mesh
     """
     name: str
     mesh: Mesh
-    points: list[AnnotationPoint] = field(default_factory=list)
+    points: list[Landmark] = field(default_factory=list)
 
     def toDict(self) -> dict:
         return {
@@ -373,10 +373,10 @@ class AnnotationSet():
             raise OSError(f"Cannot save to non-directory path: {path}")
         
         if len(self.points) == 0:
-            raise ValueError("Cannot save annotation set with 0 points")
+            raise ValueError("Cannot save landmarks set with 0 points")
         
-        filename = f"Survey3DAnnotation_{self.mesh.filename}_{self.name}.json"
-        print(f"Saving annotations to {filename}...")
+        filename = f"Survey3DLandmarks_{self.mesh.filename}_{self.name}.json"
+        print(f"Saving landmarks to {filename}...")
         with open(os.path.join(path, filename), 'w') as file:
             json.dump(self.toDict(), file, indent = 4)
         return True

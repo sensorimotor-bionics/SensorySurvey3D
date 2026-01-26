@@ -630,14 +630,14 @@ export class SurveyTable {
     }
 }
 
-/** Class which represents a point in space for an annotation */
-export class AnnotationPoint {
+/** Class which represents a point in space for an landmark */
+export class Landmark {
     /**
-     * Constructor for AnnotationPoint
-     * @param {string} name - the name of the annotation point
-     * @param {number} x - the x position of the annotation point
-     * @param {number} y - the y position of the annotation point
-     * @param {number} z - the z position of the annotation point
+     * Constructor for Landmark
+     * @param {string} name - the name of the landmark point
+     * @param {number} x - the x position of the landmark point
+     * @param {number} y - the y position of the landmark point
+     * @param {number} z - the z position of the landmark point
      */
     constructor(name = "default", x = null, y = null, z = null) {
         this.name = name;
@@ -663,7 +663,7 @@ export class AnnotationPoint {
 
     /**
      * Take a JSON object, and use its fields to populate the properties of this
-     * AnnotationPoint object
+     * Landmark object
      * @param {JSON} json - the object whose fields will be used 
      */
     fromJSON(json) {
@@ -674,13 +674,13 @@ export class AnnotationPoint {
     }
 }
 
-/** Class which represents a set of annotations made on a mesh */
-export class AnnotationSet {
+/** Class which represents a set of landmarks made on a mesh */
+export class LandmarkSet {
     /**
-     * Constructor for AnnotationSet
-     * @param {string} name - the name of the annotation set
+     * Constructor for LandmarkSet
+     * @param {string} name - the name of the landmark set
      * @param {object} mesh - the object containing mesh data
-     * @param {AnnotationPoint[]} points - the points associated with this set
+     * @param {Landmark[]} points - the points associated with this set
      */
     constructor(name, mesh, points = []) {
         this.name = name;
@@ -689,7 +689,7 @@ export class AnnotationSet {
     }
 
     /**
-     * Create a JSON object of the annotation set
+     * Create a JSON object of the landmark set
      * @returns {JSON}
      */
     toJSON() {
@@ -709,7 +709,7 @@ export class AnnotationSet {
 
     /**
      * Take a JSON object, and use its fields to populate the properties of this
-     * AnnotationSet object
+     * LandmarkSet object
      * @param {JSON} json - the object whose fields will be used 
      */
     fromJSON(json) {
@@ -717,7 +717,7 @@ export class AnnotationSet {
         this.mesh = json.mesh;
         this.points = [];
         for (let i = 0; i < json.points.length; i++) {
-            var point = new AnnotationPoint();
+            var point = new Landmark();
             point.fromJSON(json.points[i]);
             this.points.push(point);
         }
