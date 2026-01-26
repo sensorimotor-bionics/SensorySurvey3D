@@ -360,20 +360,20 @@ class LandmarkSet():
     """
     name: str
     mesh: Mesh
-    points: list[Landmark] = field(default_factory=list)
+    landmarks: list[Landmark] = field(default_factory=list)
 
     def toDict(self) -> dict:
         return {
             "mesh": self.mesh.toDict(),
-            "points": [p.toDict() for p in self.points], 
+            "landmarks": [p.toDict() for p in self.landmarks], 
         }
     
     def save(self, path: PathLike):
         if not os.path.isdir(path):
             raise OSError(f"Cannot save to non-directory path: {path}")
         
-        if len(self.points) == 0:
-            raise ValueError("Cannot save landmarks set with 0 points")
+        if len(self.landmarks) == 0:
+            raise ValueError("Cannot save landmarks set with 0 landmarks")
         
         filename = f"Survey3DLandmarks_{self.mesh.filename}_{self.name}.json"
         print(f"Saving landmarks to {filename}...")

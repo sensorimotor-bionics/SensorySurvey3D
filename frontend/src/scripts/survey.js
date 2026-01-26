@@ -680,12 +680,12 @@ export class LandmarkSet {
      * Constructor for LandmarkSet
      * @param {string} name - the name of the landmark set
      * @param {object} mesh - the object containing mesh data
-     * @param {Landmark[]} points - the points associated with this set
+     * @param {Landmark[]} landmarks - the landmarks associated with this set
      */
-    constructor(name, mesh, points = []) {
+    constructor(name, mesh, landmarks = []) {
         this.name = name;
         this.mesh = mesh;
-        this.points = points;
+        this.landmarks = landmarks;
     }
 
     /**
@@ -693,15 +693,15 @@ export class LandmarkSet {
      * @returns {JSON}
      */
     toJSON() {
-        var jsonPoints = [];
-        for (let i = 0; i < this.points.length; i++) {
-            jsonPoints.push(this.points[i].toJSON());
+        var jsonLandmarks = [];
+        for (let i = 0; i < this.landmarks.length; i++) {
+            jsonLandmarks.push(this.landmarks[i].toJSON());
         }
 
         var output = {
             name: this.name,
             mesh: this.config,
-            points: jsonPoints
+            landmarks: jsonLandmarks
         }
 
         return output;
@@ -715,11 +715,11 @@ export class LandmarkSet {
     fromJSON(json) {
         this.name = json.name;
         this.mesh = json.mesh;
-        this.points = [];
-        for (let i = 0; i < json.points.length; i++) {
-            var point = new Landmark();
-            point.fromJSON(json.points[i]);
-            this.points.push(point);
+        this.landmarks = [];
+        for (let i = 0; i < json.landmarks.length; i++) {
+            var landmark = new Landmark();
+            landmark.fromJSON(json.landmarks[i]);
+            this.landmarks.push(landmark);
         }
     }
 }
