@@ -3,8 +3,14 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast,
-         CONTAINED, INTERSECTED, NOT_INTERSECTED } from 'three-mesh-bvh';
+import { 
+    computeBoundsTree, 
+    disposeBoundsTree, 
+    acceleratedRaycast,
+    CONTAINED, 
+    INTERSECTED, 
+    NOT_INTERSECTED 
+} from 'three-mesh-bvh';
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
@@ -13,7 +19,7 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 /**
  * @enum {controlStates}
  */
-const controlStates = Object.freeze({
+export const controlStates = Object.freeze({
     ORBIT: 0,
     PAN: 1,
     PAINT: 2,

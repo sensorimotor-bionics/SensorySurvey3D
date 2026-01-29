@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import * as VP from '../scripts/surveyViewport';
+import * as LVP from '../scripts/landmarkViewport';
 import * as SVY from '../scripts/survey';
 import * as COM from '../scripts/common';
 
@@ -30,10 +30,12 @@ function startLandmarksCallback() {
 
 window.onload = function() {
     // Initialize required classes
-    viewport = new VP.SurveyViewport(document.getElementById("3dContainer"),
-                                        new THREE.Color(0xffffff),
-                                        new THREE.Color(0x535353),
-                                        20);
+    viewport = new LVP.LandmarkViewport(
+        document.getElementById("3dContainer"),
+        new THREE.Color(0xffffff),
+        new THREE.Color(0x535353),
+        20
+    );
 
     cameraController = new VP.CameraController(
         viewport.controls, 
