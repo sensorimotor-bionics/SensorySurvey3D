@@ -1,9 +1,10 @@
 import os
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from asyncio import run
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response, FileResponse
 from fastapi.routing import Mount
-from survey3d import Survey, SurveyManager, Mesh
+from survey3d import SurveyManager, LandmarkSet, Landmark
 
 # The app we are serving
 app = FastAPI()
@@ -36,6 +37,27 @@ def experimenter() -> Response:
 @app.get("/landmarks")
 def landmarks() -> Response:
     return FileResponse(DIST_PATH + r"/landmarks/index.html")
+
+@app.post("/save-landmark-set")
+def save_landmark_set(request: Request) -> dict[str, bool]:
+    data = run(request.json())
+    lset = LandmarkSet(
+        data["name"], 
+        data["mesh"], 
+        [
+            Landmark(
+                l["name"], 
+                l["x"], 
+                l["y"], 
+                l["z"]
+            ) for l in data["landmarks"]
+        ],
+    )
+    try:
+        lset.save(DATA_PATH)
+        return {"result": True}
+    except:
+        return {"result": False}
 
 @app.get("/all-mesh-filenames")
 def all_mesh_filenames() -> dict:
