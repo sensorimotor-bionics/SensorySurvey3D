@@ -10,6 +10,9 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
+/**
+ * @enum {controlStates}
+ */
 const controlStates = Object.freeze({
     ORBIT: 0,
     PAN: 1,
@@ -547,6 +550,118 @@ export class SurveyViewport {
     }
 
     /**
+     * Perform an update on the mesh based on the given control state
+     * @param {controlStates} controlState - the control state which will inform behavior
+     */
+    doMeshUpdateForControlState(controlState) {
+        // Get information from currentMesh
+        const geometry = this.currentMesh.geometry;
+        const indexAttr = geometry.index;
+
+        // Change update behavior depending on current controlState
+        switch(controlState) {
+            case controlStates.ORBIT:
+                this.brushMesh.visible = false;
+                break;
+            case controlStates.PAN:
+                this.brushMesh.visible = false;
+                break;
+            case controlStates.PAINT:
+                if (this.brushActive) {
+                    this.brushMesh.scale.setScalar(this.brushSize);
+                    
+                    this.raycaster.setFromCamera(this.pointer, this.camera);
+                    const res = this.raycaster.intersectObject(
+                        this.currentMesh, true);
+                    
+                    // If the raycaster hits anything
+                    if (res.length) {
+                        this.brushMesh.position.copy(res[0].point);
+                        this.brushMesh.visible = true;
+
+                        const indices = this.getMeshIndicesFromSphere( 
+                            this.brushMesh.position, this.brushSize,
+                            this.currentMesh);
+
+                        // If the pointer is down, draw
+                        if (this.pointerDownViewport) {
+                            for (let i = 0; i < indices.length; i++) {
+                                const vertex = indexAttr.getX(indices[i]);
+                                this.populateColorOnVertex(new THREE.Color(
+                                    "#abcabc"), this.currentMesh, vertex);
+                            }
+
+                            if (!this.currentEvent) {
+                                this.currentEvent = new ViewportEvent(
+                                    this.controlState);
+                            }
+                        }
+                    }
+                    else {
+                        this.brushMesh.visible = false;
+                    }
+                }
+                else {
+                    this.brushMesh.visible = false;
+                }
+                break;
+            case controlStates.ERASE:
+                if (this.brushActive) {
+                    this.brushMesh.scale.setScalar(this.brushSize);
+                    
+                    this.raycaster.setFromCamera(this.pointer, this.camera);
+                    const res = this.raycaster.intersectObject(
+                        this.currentMesh, true);
+                    
+                    // If the raycaster hits anything
+                    if (res.length) {
+                        this.brushMesh.position.copy(res[0].point);
+                        this.brushMesh.visible = true;
+
+                        const indices = this.getMeshIndicesFromSphere( 
+                            this.brushMesh.position, this.brushSize,
+                            this.currentMesh);
+
+                        // If the pointer is down, draw
+                        if (this.pointerDownViewport) {
+                            for (let i = 0; i < indices.length; i++) {
+                                const vertex = indexAttr.getX(indices[i]);
+                                this.populateColorOnVertex(this.defaultColor, 
+                                    this.currentMesh, vertex);
+                            }
+
+                            if (!this.currentEvent) {
+                                this.currentEvent = new ViewportEvent(
+                                    this.controlState);
+                            }
+                        }
+                    }
+                    else {
+                        this.brushMesh.visible = false;
+                    }
+                }
+                else {
+                    this.brushMesh.visible = false;
+                }
+                break;
+            case controlStates.ORB_PLACE:
+                if (this.pointerDownViewport) {
+                    this.raycaster.setFromCamera(this.pointer, this.camera);
+                    const res = this.raycaster.intersectObject(
+                        this.currentMesh, true);
+                    
+                    // If the raycaster hits anything
+                    if (res.length) {
+                        this.orbMesh.position.copy(res[0].point);
+                        this.orbMesh.visible = true;
+                    }
+                    else { this.orbMesh.visible = false; }
+                }
+                break;
+        }
+    }
+
+    /**
      * Queues the next frame and handles control inputs depending on the current
      * controlState. Must be called once to begin animating the scene.
      */
@@ -558,113 +673,8 @@ export class SurveyViewport {
         this.controls.update();
 
         if (this.currentMesh) {
-            // Get information from currentMesh
-            const geometry = this.currentMesh.geometry;
-            const indexAttr = geometry.index;
-
-            // Change update behavior depending on current controlState
-            switch(this.controlState) {
-                case controlStates.ORBIT:
-                    this.brushMesh.visible = false;
-                    break;
-                case controlStates.PAN:
-                    this.brushMesh.visible = false;
-                    break;
-                case controlStates.PAINT:
-                    if (this.brushActive) {
-                        this.brushMesh.scale.setScalar(this.brushSize);
-                        
-                        this.raycaster.setFromCamera(this.pointer, this.camera);
-                        const res = this.raycaster.intersectObject(
-                            this.currentMesh, true);
-                        
-                        // If the raycaster hits anything
-                        if (res.length) {
-                            this.brushMesh.position.copy(res[0].point);
-                            this.brushMesh.visible = true;
-
-                            const indices = this.getMeshIndicesFromSphere( 
-                                this.brushMesh.position, this.brushSize,
-                                this.currentMesh);
-
-                            // If the pointer is down, draw
-                            if (this.pointerDownViewport) {
-                                for (let i = 0; i < indices.length; i++) {
-                                    const vertex = indexAttr.getX(indices[i]);
-                                    this.populateColorOnVertex(new THREE.Color(
-                                        "#abcabc"), this.currentMesh, vertex);
-                                }
-
-                                if (!this.currentEvent) {
-                                    this.currentEvent = new ViewportEvent(
-                                        this.controlState);
-                                }
-                            }
-                        }
-                        else {
-                            this.brushMesh.visible = false;
-                        }
-                    }
-                    else {
-                        this.brushMesh.visible = false;
-                    }
-                    break;
-                case controlStates.ERASE:
-                    if (this.brushActive) {
-                        this.brushMesh.scale.setScalar(this.brushSize);
-                        
-                        this.raycaster.setFromCamera(this.pointer, this.camera);
-                        const res = this.raycaster.intersectObject(
-                            this.currentMesh, true);
-                        
-                        // If the raycaster hits anything
-                        if (res.length) {
-                            this.brushMesh.position.copy(res[0].point);
-                            this.brushMesh.visible = true;
-
-                            const indices = this.getMeshIndicesFromSphere( 
-                                this.brushMesh.position, this.brushSize,
-                                this.currentMesh);
-
-                            // If the pointer is down, draw
-                            if (this.pointerDownViewport) {
-                                for (let i = 0; i < indices.length; i++) {
-                                    const vertex = indexAttr.getX(indices[i]);
-                                    this.populateColorOnVertex(this.defaultColor, 
-                                        this.currentMesh, vertex);
-                                }
-
-                                if (!this.currentEvent) {
-                                    this.currentEvent = new ViewportEvent(
-                                        this.controlState);
-                                }
-                            }
-                        }
-                        else {
-                            this.brushMesh.visible = false;
-                        }
-                    }
-                    else {
-                        this.brushMesh.visible = false;
-                    }
-                    break;
-                case controlStates.ORB_PLACE:
-                    if (this.pointerDownViewport) {
-                        this.raycaster.setFromCamera(this.pointer, this.camera);
-                        const res = this.raycaster.intersectObject(
-                            this.currentMesh, true);
-                        
-                        // If the raycaster hits anything
-                        if (res.length) {
-                            this.orbMesh.position.copy(res[0].point);
-                            this.orbMesh.visible = true;
-                        }
-                        else { this.orbMesh.visible = false; }
-                    }
-                    break;
-            }
+            this.doMeshUpdateForControlState(this.controlState);
         }
-        
 
         // Render the scene as seen from the camera
         this.renderer.render(this.scene, this.camera);
