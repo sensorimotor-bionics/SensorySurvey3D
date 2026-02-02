@@ -45,7 +45,7 @@ export class LandmarkViewport extends SurveyViewport {
 
         this.orbs = [];
         this.currentOrb = null;
-        this.newMode = false;
+        this.placeMode = false;
     }
 
     get currentOrb() {
@@ -74,7 +74,7 @@ export class LandmarkViewport extends SurveyViewport {
                 
                 // If the raycaster hits anything
                 if (res.length) {
-                    if (this.newMode) {
+                    if (this.placeMode) {
                         this.currentOrb = this.orbMesh.clone();
                         this.scene.add(this.currentOrb);
                     }
@@ -87,5 +87,20 @@ export class LandmarkViewport extends SurveyViewport {
         else {
             super.doMeshUpdateForControlState(controlState);
         }
+    }
+
+    toOrbit() {
+        super.toOrbit();
+        this.placeMode = false;
+    }
+
+    toPan() { 
+        super.toPan();
+        this.placeMode = false;
+    }
+
+    toOrbPlace() {
+        super.toOrbPlace();
+        this.placeMode = true;
     }
 }

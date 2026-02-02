@@ -82,5 +82,23 @@ window.onload = function() {
     const startLandmarksButton = document.getElementById("startLandmarksButton");
     startLandmarksButton.onpointerup = startLandmarksCallback;
 
+    const orbitButton = document.getElementById("orbitButton");
+    orbitButton.onpointerup = function() {
+        viewport.toOrbit();
+        COM.activatePaletteButton("orbitButton");
+    }
+
+    const panButton = document.getElementById("panButton");
+    panButton.onpointerup = function() {
+        viewport.toPan();
+        COM.activatePaletteButton("panButton");
+    }
+
+    const placeButton = document.getElementById("placeButton");
+    placeButton.onpointerup = function() {
+        viewport.toOrbPlace();
+        COM.activatePaletteButton("placeButton");
+    }
+
     viewport.animate();
 }
