@@ -46,7 +46,7 @@ const brushMaterial = new THREE.MeshStandardMaterial( {
     emissiveIntensity: 0.5,
 } );
 
-const orbMaterial = new THREE.MeshStandardMaterial( {
+export const orbMaterial = new THREE.MeshStandardMaterial( {
     color: 0xE97A16,
     roughness: 0.75,
     metalness: 0,
