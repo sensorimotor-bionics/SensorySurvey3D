@@ -1,6 +1,10 @@
 import * as _ from 'lodash';
 import * as THREE from 'three';
-import { SurveyViewport } from './surveyViewport';  
+import { 
+    SurveyViewport,
+    controlStates,
+    orbMaterial,
+} from './surveyViewport';  
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
@@ -12,6 +16,9 @@ import {
     INTERSECTED, 
     NOT_INTERSECTED 
 } from 'three-mesh-bvh';
+
+const selectedOrbMaterial = orbMaterial.clone();
+selectedOrbMaterial.color = 0x40EDB3;
 
 export class LandmarkViewport extends SurveyViewport {
     /**
@@ -37,5 +44,48 @@ export class LandmarkViewport extends SurveyViewport {
         );
 
         this.orbs = [];
+        this.currentOrb = null;
+        this.newMode = false;
+    }
+
+    get currentOrb() {
+        return this._currentOrb;
+    }
+
+    set currentOrb(value) {
+        if (this._currentOrb != null) {
+            this._currentOrb.material = orbMaterial;
+        }
+        this._currentOrb = value;
+        if (this._currentOrb != null) {
+            this._currentOrb.material = selectedOrbMaterial;
+        }
+    }
+
+    doMeshUpdateForControlState(controlState) {
+        if (controlState == controlStates.ORB_PLACE) {
+            this.brushMesh.visible = true;
+            if (this.pointerDownViewport) {
+                this.raycaster.setFromCamera(this.pointer, this.camera);
+                const res = this.raycaster.intersectObject(
+                    this.currentMesh, 
+                    true
+                );
+                
+                // If the raycaster hits anything
+                if (res.length) {
+                    if (this.newMode) {
+                        this.currentOrb = this.orbMesh.clone();
+                        this.scene.add(this.currentOrb);
+                    }
+                    this.currentOrb.position.copy(res[0].point);
+                    this.currentOrb.visible = true;
+                }
+                else { this.currentOrb.visible = false; }
+            }
+        }
+        else {
+            super.doMeshUpdateForControlState(controlState);
+        }
     }
 }

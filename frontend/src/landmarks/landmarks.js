@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as VP from '../scripts/surveyViewport';
 import * as LVP from '../scripts/landmarkViewport';
 import * as SVY from '../scripts/survey';
 import * as COM from '../scripts/common';
@@ -15,15 +16,39 @@ function startLandmarksCallback() {
     const name = nameInput.value;
 
     const modelSelect = document.getElementById("modelSelect");
-    viewport.replaceCurrentMesh(
-        modelSelect.value,
-        
-    )
+    
+    startLandmarkSet(name, modelSelect.value);
+}
 
-    landmarkSet = SVY.LandmarkSet(
-        name,
+/* STATE CONTROL */
 
-    )
+async function populateModelDropdown() {
+    const modelSelect = document.getElementById("modelSelect");
+    modelSelect.innerHTML = "";
+
+    const response = await fetch("/all-mesh-filenames");
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    for (var fn in result.filenames) {
+        const newOption = document.createElement("option");
+        newOption.innerHTML = result.filenames[fn];
+        newOption.value = result.filenames[fn];
+
+        modelSelect.appendChild(newOption);
+    }
+}
+
+function startLandmarkSet(name, model, landmarks = null) {
+    viewport.replaceCurrentMesh(model);
+    landmarkSet = new SVY.LandmarkSet(name, modelSelect.value, landmarks);
+    COM.openSidebarTab("editTab");
+}
+
+function saveLandmarkSet() {
+
 }
 
 /* STARTUP CODE */
@@ -46,6 +71,8 @@ window.onload = function() {
     );
     cameraController.createZoomSlider();
     cameraController.createCameraReset();
+
+    populateModelDropdown();
 
     /* ARRANGE USER INTERFACE */
     COM.openSidebarTab("setupTab");
