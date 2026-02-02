@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from asyncio import run
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.staticfiles import StaticFiles
@@ -18,9 +19,9 @@ DIST_PATH = r"../frontend/dist/"
 manager = SurveyManager(CONFIG_PATH, DATA_PATH)
 
 # Mount files
-app.mount("/assets", StaticFiles(directory=DIST_PATH + r"/assets", html=True))
-app.mount("/images", StaticFiles(directory=DIST_PATH + r"/images", html=True))
-app.mount("/3dmodels", StaticFiles(directory=DIST_PATH + r"/3dmodels", html=True))
+app.mount("/assets", StaticFiles(directory=DIST_PATH + r"assets", html=True))
+app.mount("/images", StaticFiles(directory=DIST_PATH + r"images", html=True))
+app.mount("/3dmodels", StaticFiles(directory=DIST_PATH + r"3dmodels", html=True))
 
 @app.get("/")
 def home() -> Response:
@@ -64,9 +65,15 @@ def all_mesh_filenames() -> dict:
     filenames = []
     for route in app.routes: 
         if isinstance(route, Mount) and route.path.startswith("/3dmodels"):
-            for file in os.listdir(route.app.directory):
-                if file.endswith((".glb", ".gltf")):
-                    filenames.append(file)
+            route_directory = Path(route.app.directory)
+            route_prefix = route.path.split("/3dmodels")[-1][1:]
+            if route_prefix: route_prefix = route_prefix + "/"
+            for root, dirs, files in os.walk(route_directory):
+                for file in files:
+                    if file.endswith((".glb", ".gltf")):
+                        file_path = Path(root) / file
+                        relative_path = file_path.relative_to(route_directory)
+                        filenames.append(route_prefix + str(relative_path).replace("\\", "/"))
     return {"filenames": filenames}
 
 @app.websocket("/participant-ws")
