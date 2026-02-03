@@ -29,12 +29,15 @@ export class LandmarkViewport extends SurveyViewport {
      *      background
      * @param {THREE.Color} defaultColor - the default color of the mesh
      * @param {number} eventQueueLength - the length of the event queue
+     * @param {function} newOrbPlaceCallback - the function to be called after a
+     *      new orb is placed
      */
     constructor(
         parentElement, 
         backgroundColor, 
         defaultColor, 
-        eventQueueLength
+        eventQueueLength,
+        newOrbPlaceCallback,
     ) {
         super(
             parentElement, 
@@ -46,6 +49,8 @@ export class LandmarkViewport extends SurveyViewport {
         this.orbs = [];
         this.currentOrb = null;
         this.placeMode = false;
+
+        this.newOrbPlaceCallback = newOrbPlaceCallback;
     }
 
     get currentOrb() {
@@ -77,6 +82,7 @@ export class LandmarkViewport extends SurveyViewport {
                     if (this.placeMode) {
                         this.currentOrb = this.orbMesh.clone();
                         this.scene.add(this.currentOrb);
+                        this.newOrbPlaceCallback();
                     }
                     this.currentOrb.position.copy(res[0].point);
                     this.currentOrb.visible = true;
