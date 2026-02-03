@@ -315,6 +315,12 @@ input[type="checkbox"]:not(:disabled):checked {
     )   
 }
 
+input[type="text"] {
+    font-size: 2vh;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
 select {
     height: 32px;
     font-size: 1.5vh;

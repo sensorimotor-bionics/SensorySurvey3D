@@ -12,8 +12,8 @@ var landmarkSet;
 /* BUTTON CALLBACKS */
 
 function startLandmarksCallback() {
-    const nameInput = document.getElementById("nameInput");
-    const name = nameInput.value;
+    const initNameInput = document.getElementById("initNameInput");
+    const name = initNameInput.value;
 
     const modelSelect = document.getElementById("modelSelect");
     
@@ -44,6 +44,8 @@ async function populateModelDropdown() {
 function startLandmarkSet(name, model, landmarks = null) {
     viewport.replaceCurrentMesh(model);
     landmarkSet = new SVY.LandmarkSet(name, modelSelect.value, landmarks);
+    const nameInput = document.getElementById("nameInput");
+    nameInput.value = name;
     COM.openSidebarTab("editTab");
 }
 
@@ -81,6 +83,13 @@ window.onload = function() {
     /* EVENT LISTENERS */
     const startLandmarksButton = document.getElementById("startLandmarksButton");
     startLandmarksButton.onpointerup = startLandmarksCallback;
+
+    const nameInput = document.getElementById("nameInput");
+    nameInput.onchange = function(e) {
+        if (landmarkSet != null) {
+            landmarkSet.name = e.target.value;
+        }
+    }
 
     const orbitButton = document.getElementById("orbitButton");
     orbitButton.onpointerup = function() {
