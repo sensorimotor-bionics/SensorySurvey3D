@@ -7,7 +7,7 @@ import * as COM from '../scripts/common';
 var viewport;
 var cameraController;
 
-var landmarkSet;
+var landmarkSet = null;
 
 /* BUTTON CALLBACKS */
 
@@ -41,7 +41,7 @@ async function populateModelDropdown() {
     }
 }
 
-function startLandmarkSet(name, model, landmarks = null) {
+function startLandmarkSet(name, model, landmarks = []) {
     viewport.replaceCurrentMesh(model);
     landmarkSet = new SVY.LandmarkSet(name, modelSelect.value, landmarks);
     const nameInput = document.getElementById("nameInput");
@@ -49,8 +49,45 @@ function startLandmarkSet(name, model, landmarks = null) {
     COM.openSidebarTab("editTab");
 }
 
+function newLandmarkInSet() {
+    if (landmarkSet != null) {
+        landmarkSet.landmarks.push(new SVY.Landmark());
+        const landmarkListParent = document.getElementById("landmarkListParent");
+        landmarkListParent.innerHTML = "";
+        landmarkListParent.appendChild(generateLandmarkList());
+    }
+}
+
 function saveLandmarkSet() {
 
+}
+
+function generateLandmarkList() {
+    if (landmarkSet != null) {
+        const landmarkList = document.createElement("div");
+        for (var i in landmarkSet.landmarks) {
+            const landmarkRow = document.createElement("div");
+            landmarkRow.classList.add("surveyTableRow");
+
+            const nameInput = document.createElement("input");
+            nameInput.onchange = function(e) {
+                if (landmarkSet != null && i < landmarkSet.length) {
+                    landmarkSet[i].name = e.target.value;
+                }
+            }.bind(i);
+            nameInput.onfocus = function(e) {
+                if (landmarkSet != null && i < viewport.orbs) {
+                    viewport.currentOrb = viewport.orbs[i];
+                }
+            }.bind(i);
+            
+
+            landmarkRow.appendChild(nameInput);
+
+            landmarkList.appendChild(landmarkRow);
+        }
+        return landmarkList;
+    }
 }
 
 /* STARTUP CODE */
@@ -61,7 +98,8 @@ window.onload = function() {
         document.getElementById("3dContainer"),
         new THREE.Color(0xffffff),
         new THREE.Color(0x535353),
-        20
+        20,
+        newLandmarkInSet
     );
 
     cameraController = new VP.CameraController(

@@ -49,6 +49,7 @@ export class LandmarkViewport extends SurveyViewport {
         this.orbs = [];
         this.currentOrb = null;
         this.placeMode = false;
+        this.orbHeld = false;
 
         this.newOrbPlaceCallback = newOrbPlaceCallback;
     }
@@ -67,6 +68,13 @@ export class LandmarkViewport extends SurveyViewport {
         }
     }
 
+    onPointerUp(event) {
+        super.onPointerUp(event);
+        if (this.orbHeld) {
+            this.orbHeld = false;
+        }
+    }
+
     doMeshUpdateForControlState(controlState) {
         if (controlState == controlStates.ORB_PLACE) {
             this.brushMesh.visible = true;
@@ -79,11 +87,13 @@ export class LandmarkViewport extends SurveyViewport {
                 
                 // If the raycaster hits anything
                 if (res.length) {
-                    if (this.placeMode) {
+                    if (this.placeMode && !this.orbHeld) {
                         this.currentOrb = this.orbMesh.clone();
                         this.scene.add(this.currentOrb);
+                        this.orbs.push(this.currentOrb);
                         this.newOrbPlaceCallback();
                     }
+                    this.orbHeld = true;
                     this.currentOrb.position.copy(res[0].point);
                     this.currentOrb.visible = true;
                 }

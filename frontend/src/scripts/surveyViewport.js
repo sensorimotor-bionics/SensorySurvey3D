@@ -513,7 +513,7 @@ export class SurveyViewport {
 
         this.meshStorage = {};
 
-        this.pointerDownViewport = true;
+        this.pointerDownViewport = false;
 
         // Create lilGUI
         this.gui = new GUI();
@@ -773,13 +773,13 @@ export class SurveyViewport {
 
     /**
      * Behavior for when the user's pointer goes up anywhere on the document
-     * @param {Event} e - the event whose data will inform the pointer up 
+     * @param {Event} event - the event whose data will inform the pointer up 
      *      behavior
      */
-    onPointerUp(e) { 
+    onPointerUp(event) { 
         this.pointerDownViewport = false;
 
-        if (e.pointerType === "touch" || e.pointerType === "pen") {
+        if (event.pointerType === "touch" || event.pointerType === "pen") {
             this.brushActive = false;
         }
 
