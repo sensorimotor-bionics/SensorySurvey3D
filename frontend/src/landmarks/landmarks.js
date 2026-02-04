@@ -59,7 +59,16 @@ function newLandmarkInSet() {
 }
 
 function saveLandmarkSet() {
-
+    if (landmarkSet) {
+        try { landmarkSet.validate(); }
+        catch (e) {
+            COM.openAlert(
+                `Cannot save landmark set: ${e.message}`,
+                ["Ok"],
+                [function() {COM.openSidebarTab("editTab")}],
+            )
+        } 
+    }
 }
 
 function generateLandmarkList() {
@@ -146,6 +155,9 @@ window.onload = function() {
         viewport.toOrbPlace();
         COM.activatePaletteButton("placeButton");
     }
+
+    const saveButton = document.getElementById("saveButton");
+    saveButton.onpointerup = saveLandmarkSet;
 
     viewport.animate();
 }
