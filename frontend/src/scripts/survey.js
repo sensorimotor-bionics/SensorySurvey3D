@@ -688,6 +688,21 @@ export class LandmarkSet {
         this.landmarks = landmarks;
     }
 
+    validate() {
+        if (this.name.length == 0) {
+            throw new Error("Missing name");
+        }
+        else if (this.mesh == null) {
+            throw new Error("No mesh");
+        }
+        else if (this.landmarks.length == 0) {
+            throw new Error("Zero landmarks");
+        }
+        else {
+            return true;
+        }
+    }
+
     /**
      * Create a JSON object of the landmark set
      * @returns {JSON}
