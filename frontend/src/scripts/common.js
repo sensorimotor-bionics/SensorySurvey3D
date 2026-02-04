@@ -121,5 +121,5 @@ export function openAlert(message, buttonNames = [], buttonFunctions = []) {
 	alertTab.appendChild(messageParagraph);
 	alertTab.appendChild(buttonRow);
 
-	COM.openSidebarTab("alertTab");
+	openSidebarTab("alertTab");
 }	
