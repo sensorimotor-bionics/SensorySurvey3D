@@ -646,6 +646,13 @@ export class Landmark {
         this.z = z;
     }
 
+    validate() {
+        if (this.name.length == 0) {
+            throw new Error("Missing name");
+        }
+        return true;
+    }
+
     /**
      * Create a JSON object of the point
      * @returns {JSON}
@@ -698,9 +705,17 @@ export class LandmarkSet {
         else if (this.landmarks.length == 0) {
             throw new Error("Zero landmarks");
         }
-        else {
-            return true;
+        
+        var erroredLandmarks = 0;
+        for (var i in this.landmarks) {
+            try { landmarks[i].validate(); }
+            catch { erroredLandmarks += 1; }
         }
+        if (erroredLandmarks > 0) {
+            throw new Error(`${erroredLandmarks} with missing names`)
+        }
+
+        return true;
     }
 
     /**
