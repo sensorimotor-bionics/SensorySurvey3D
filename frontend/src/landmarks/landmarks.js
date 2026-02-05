@@ -49,12 +49,16 @@ function startLandmarkSet(name, model, landmarks = []) {
     COM.openSidebarTab("editTab");
 }
 
+function updateLandmarkList() {
+    const landmarkListParent = document.getElementById("landmarkListParent");
+    landmarkListParent.innerHTML = "";
+    landmarkListParent.appendChild(generateLandmarkList());
+}
+
 function newLandmarkInSet() {
     if (landmarkSet != null) {
         landmarkSet.landmarks.push(new SVY.Landmark());
-        const landmarkListParent = document.getElementById("landmarkListParent");
-        landmarkListParent.innerHTML = "";
-        landmarkListParent.appendChild(generateLandmarkList());
+        updateLandmarkList();
     }
 }
 
@@ -86,6 +90,12 @@ function generateLandmarkList() {
 
             const number = i;
 
+            function makeLandmarkCurrent(event) {
+                if (landmarkSet != null && number < viewport.orbs.length) {
+                    viewport.currentOrb = viewport.orbs[number];
+                }
+            }
+
             const nameInput = document.createElement("input");
             nameInput.onchange = function(e) {
                 if (
@@ -95,14 +105,27 @@ function generateLandmarkList() {
                     landmarkSet.landmarks[number].name = e.target.value;
                 }
             }.bind(number);
-            nameInput.onfocus = function(e) {
-                if (landmarkSet != null && number < viewport.orbs) {
-                    viewport.currentOrb = viewport.orbs[number];
+            nameInput.onfocus = makeLandmarkCurrent.bind(number);
+
+            const deleteButton = document.createElement("button");
+            deleteButton.innerHTML = "Delete";
+            deleteButton.classList.add("smallButton");
+            deleteButton.onpointerup = function(e) {
+                if (
+                    landmarkSet != null 
+                    && number < landmarkSet.landmarks.length
+                    && number < viewport.orbs.length
+                ) {
+                    landmarkSet.landmarks.splice(number, 1);
+                    viewport.orbs[number].removeFromParent();
+                    viewport.orbs.splice(number, 1);
+                    updateLandmarkList();
                 }
             }.bind(number);
-            
+            deleteButton.onmouseover = makeLandmarkCurrent.bind(number);
 
             landmarkRow.appendChild(nameInput);
+            landmarkRow.appendChild(deleteButton);
 
             landmarkList.appendChild(landmarkRow);
         }
