@@ -66,7 +66,13 @@ function saveLandmarkSet() {
                 `Cannot save landmark set: ${e.message}`,
                 ["Ok"],
                 [function() {COM.openSidebarTab("editTab")}],
-            )
+            );
+            return;
+        }
+        for (var i in viewport.orbs) {
+            landmarkSet.landmarks[i].x = viewport.orbs[i].position.x;
+            landmarkSet.landmarks[i].y = viewport.orbs[i].position.y;
+            landmarkSet.landmarks[i].z = viewport.orbs[i].position.z;
         } 
     }
 }
