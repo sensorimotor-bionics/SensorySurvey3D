@@ -712,7 +712,7 @@ export class LandmarkSet {
             catch { erroredLandmarks += 1; }
         }
         if (erroredLandmarks > 0) {
-            throw new Error(`${erroredLandmarks} with missing names`)
+            throw new Error(`${erroredLandmarks} with missing names`);
         }
 
         return true;
