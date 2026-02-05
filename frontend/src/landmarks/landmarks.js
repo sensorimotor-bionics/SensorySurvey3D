@@ -84,17 +84,22 @@ function generateLandmarkList() {
             const landmarkRow = document.createElement("div");
             landmarkRow.classList.add("surveyTableRow");
 
+            const number = i;
+
             const nameInput = document.createElement("input");
             nameInput.onchange = function(e) {
-                if (landmarkSet != null && i < landmarkSet.length) {
-                    landmarkSet[i].name = e.target.value;
+                if (
+                    landmarkSet != null 
+                    && number < landmarkSet.landmarks.length
+                ) {
+                    landmarkSet.landmarks[number].name = e.target.value;
                 }
-            }.bind(i);
+            }.bind(number);
             nameInput.onfocus = function(e) {
-                if (landmarkSet != null && i < viewport.orbs) {
-                    viewport.currentOrb = viewport.orbs[i];
+                if (landmarkSet != null && number < viewport.orbs) {
+                    viewport.currentOrb = viewport.orbs[number];
                 }
-            }.bind(i);
+            }.bind(number);
             
 
             landmarkRow.appendChild(nameInput);
