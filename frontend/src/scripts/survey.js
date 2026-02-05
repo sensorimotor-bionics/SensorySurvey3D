@@ -639,7 +639,7 @@ export class Landmark {
      * @param {number} y - the y position of the landmark point
      * @param {number} z - the z position of the landmark point
      */
-    constructor(name = "default", x = null, y = null, z = null) {
+    constructor(name = "", x = null, y = null, z = null) {
         this.name = name;
         this.x = x;
         this.y = y;
@@ -708,7 +708,7 @@ export class LandmarkSet {
         
         var erroredLandmarks = 0;
         for (var i in this.landmarks) {
-            try { landmarks[i].validate(); }
+            try { this.landmarks[i].validate(); }
             catch { erroredLandmarks += 1; }
         }
         if (erroredLandmarks > 0) {
