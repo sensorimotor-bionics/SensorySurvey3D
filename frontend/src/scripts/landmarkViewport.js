@@ -97,7 +97,6 @@ export class LandmarkViewport extends SurveyViewport {
                     this.currentOrb.position.copy(res[0].point);
                     this.currentOrb.visible = true;
                 }
-                else { this.currentOrb.visible = false; }
             }
         }
         else {
