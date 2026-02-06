@@ -1,11 +1,12 @@
 import os
+from typing import Any
 from pathlib import Path
 from asyncio import run
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response, FileResponse
 from fastapi.routing import Mount
-from survey3d import SurveyManager, LandmarkSet, Landmark
+from survey3d import SurveyManager, Mesh, LandmarkSet, Landmark
 
 # The app we are serving
 app = FastAPI()
@@ -40,25 +41,30 @@ def landmarks() -> Response:
     return FileResponse(DIST_PATH + r"/landmarks/index.html")
 
 @app.post("/save-landmark-set")
-def save_landmark_set(request: Request) -> dict[str, bool]:
-    data = run(request.json())
-    lset = LandmarkSet(
-        data["name"], 
-        data["mesh"], 
-        [
-            Landmark(
-                l["name"], 
-                l["x"], 
-                l["y"], 
-                l["z"]
-            ) for l in data["landmarks"]
-        ],
-    )
+async def save_landmark_set(request: Request) -> dict[str, Any]:
+    print("Saving landmark set...")
+    data = await request.json()
     try:
+        mesh = Mesh()
+        mesh.fromDict(data["mesh"])
+        lset = LandmarkSet(
+            data["name"], 
+            mesh, 
+            [
+                Landmark(
+                    l["name"], 
+                    l["x"], 
+                    l["y"], 
+                    l["z"]
+                ) for l in data["landmarks"]
+            ],
+        )
         lset.save(DATA_PATH)
-        return {"result": True}
-    except:
-        return {"result": False}
+        print("Successfully saved landmark set")
+        return {"result": True, "error": ""}
+    except Exception as e:
+        print(f"Error while saving landmark set: {e}")
+        return {"result": False, "error": str(e)}
 
 @app.get("/all-mesh-filenames")
 def all_mesh_filenames() -> dict:

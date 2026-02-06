@@ -41,9 +41,13 @@ async function populateModelDropdown() {
     }
 }
 
-function startLandmarkSet(name, model, landmarks = []) {
-    viewport.replaceCurrentMesh(model);
-    landmarkSet = new SVY.LandmarkSet(name, modelSelect.value, landmarks);
+async function startLandmarkSet(name, model, landmarks = []) {
+    await viewport.replaceCurrentMesh(model);
+    landmarkSet = new SVY.LandmarkSet(
+        name, 
+        viewport.getMeshParameters(viewport.currentMesh, modelSelect.value), 
+        landmarks
+    );
     const nameInput = document.getElementById("nameInput");
     nameInput.value = name;
     COM.openSidebarTab("editTab");
@@ -62,8 +66,10 @@ function newLandmarkInSet() {
     }
 }
 
-function saveLandmarkSet() {
+async function saveLandmarkSet() {
     if (landmarkSet) {
+        COM.openAlert("Saving...");
+
         try { landmarkSet.validate(); }
         catch (e) {
             COM.openAlert(
@@ -73,11 +79,60 @@ function saveLandmarkSet() {
             );
             return;
         }
+
         for (var i in viewport.orbs) {
             landmarkSet.landmarks[i].x = viewport.orbs[i].position.x;
             landmarkSet.landmarks[i].y = viewport.orbs[i].position.y;
             landmarkSet.landmarks[i].z = viewport.orbs[i].position.z;
-        } 
+        }
+        try {
+            const response = await fetch(
+                "/save-landmark-set",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(landmarkSet.toJSON()),
+                    signal: AbortSignal.timeout(5000)
+                }
+            );
+            
+            if (response.ok) {
+                response.json().then( parsed => {
+                        if (parsed.result) {
+                            COM.openAlert(
+                                "Save successful!",
+                                ["Ok"],
+                                [function() {COM.openSidebarTab("setupTab")}],
+                            );
+                        }
+                        else {
+                            COM.openAlert(
+                                `Error while saving: ${parsed.error}`,
+                                ["Ok"],
+                                [function() {COM.openSidebarTab("editTab")}],
+                            );
+                        }
+                    }
+                )
+                
+            }
+            else {
+                COM.openAlert(
+                    "The request to save encountered an error.",
+                    ["Ok"],
+                    [function() {COM.openSidebarTab("editTab")}],
+                );
+            }
+        }
+        catch {
+            COM.openAlert(
+                "The request to save timed out.",
+                ["Ok"],
+                [function() {COM.openSidebarTab("editTab")}],
+            );
+        }
     }
 }
 

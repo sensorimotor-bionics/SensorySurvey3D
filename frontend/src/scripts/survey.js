@@ -730,7 +730,7 @@ export class LandmarkSet {
 
         var output = {
             name: this.name,
-            mesh: this.config,
+            mesh: this.mesh,
             landmarks: jsonLandmarks
         }
 
