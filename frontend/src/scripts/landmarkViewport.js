@@ -118,4 +118,9 @@ export class LandmarkViewport extends SurveyViewport {
         super.toOrbPlace();
         this.placeMode = true;
     }
+
+    toOrbMove() {
+        super.toOrbPlace();
+        this.placeMode = false;
+    }
 }

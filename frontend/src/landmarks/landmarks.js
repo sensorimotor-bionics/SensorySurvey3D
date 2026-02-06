@@ -128,9 +128,22 @@ function generateLandmarkList() {
             }.bind(number);
             deleteButton.onmouseover = makeLandmarkCurrent.bind(number);
 
+            const moveButton = document.createElement("button");
+            moveButton.innerHTML = "Move";
+            moveButton.id = `landmarkMoveButton${number}`;
+            moveButton.classList.add("smallButton");
+            moveButton.classList.add("paletteButton");
+            moveButton.onpointerup = function(e) {
+                makeLandmarkCurrent.bind(number);
+                viewport.toOrbMove();
+                COM.activatePaletteButton(e.target.id);
+            }.bind(number);
+            moveButton.onmouseover = makeLandmarkCurrent.bind(number);
+
             landmarkRow.appendChild(landmarkLabel);
             landmarkRow.appendChild(nameInput);
             landmarkRow.appendChild(deleteButton);
+            landmarkRow.appendChild(moveButton);
 
             landmarkList.appendChild(landmarkRow);
         }

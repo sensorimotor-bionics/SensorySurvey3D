@@ -162,7 +162,6 @@ html {
 
 .smallButton {
     background-color: var(--buttonColor);
-    border: none;
     color: white;
     padding: 9px 18px;
     text-align: center;
