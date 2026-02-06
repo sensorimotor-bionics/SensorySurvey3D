@@ -85,9 +85,6 @@ function generateLandmarkList() {
     if (landmarkSet != null) {
         const landmarkList = document.createElement("div");
         for (var i in landmarkSet.landmarks) {
-            const landmarkRow = document.createElement("div");
-            landmarkRow.classList.add("surveyTableRow");
-
             const number = i;
 
             function makeLandmarkCurrent(event) {
@@ -95,6 +92,13 @@ function generateLandmarkList() {
                     viewport.currentOrb = viewport.orbs[number];
                 }
             }
+
+            const landmarkRow = document.createElement("div");
+            landmarkRow.classList.add("surveyTableRow");
+
+            const landmarkLabel = document.createElement("p");
+            landmarkLabel.classList.add("smallText");
+            landmarkLabel.innerHTML = `${number}.`;
 
             const nameInput = document.createElement("input");
             nameInput.onchange = function(e) {
@@ -124,6 +128,7 @@ function generateLandmarkList() {
             }.bind(number);
             deleteButton.onmouseover = makeLandmarkCurrent.bind(number);
 
+            landmarkRow.appendChild(landmarkLabel);
             landmarkRow.appendChild(nameInput);
             landmarkRow.appendChild(deleteButton);
 
