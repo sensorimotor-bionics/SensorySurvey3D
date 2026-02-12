@@ -17,8 +17,16 @@ import {
     NOT_INTERSECTED 
 } from 'three-mesh-bvh';
 
-const selectedOrbMaterial = orbMaterial.clone();
-selectedOrbMaterial.color = 0x40EDB3;
+const selectedOrbMaterial = new THREE.MeshStandardMaterial( {
+    color: 0x40EDB3,
+    roughness: 0.75,
+    metalness: 0,
+    transparent: true,
+    opacity: 0.5,
+    premultipliedAlpha: true,
+    emissive: 0x40EDB3,
+    emissiveIntensity: 0.5,
+} );
 
 export class LandmarkViewport extends SurveyViewport {
     /**
