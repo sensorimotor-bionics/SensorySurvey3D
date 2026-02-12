@@ -7,30 +7,29 @@
     <body>
 
         <div class="sidebar">
-            <div class="scrollContainer">
-                <div id="setupTab" class="sidebarTab">
-                    <p>Model:</p>
-                    <select id="modelSelect" style="width:70%"></select>
-                    <p>Set Name:</p>
-                    <input id="initNameInput" type="text">
-                    <button id="startLandmarksButton">Start Landmarks</button>
-                </div>
 
-                <div id="alertTab" class="sidebarTab"></div>
+            <div id="setupTab" class="sidebarTab">
+                <p>Model:</p>
+                <select id="modelSelect" style="width:70%"></select>
+                <p>Set Name:</p>
+                <input id="initNameInput" type="text">
+                <button id="startLandmarksButton">Start Landmarks</button>
+            </div>
 
-                <div id="editTab" class="sidebarTab">
-                    <div class="scrollContainerMedium">
-                        <div id="landmarkListParent"></div>
-                    </div>
-                    <div class="rowContainer">
-                        <button id="orbitButton" class="paletteButton selectedButton">Orbit</button>
-                        <button id="panButton" class="paletteButton">Pan</button>
-                        <button id="placeButton" class="paletteButton">Place</button>
-                    </div>
-                    <div style="height:3vh"></div>
-                    <input id="nameInput" type="text">
-                    <button id="saveButton">Save</button>
+            <div id="alertTab" class="sidebarTab"></div>
+
+            <div id="editTab" class="sidebarTab">
+                <div class="scrollContainerMedium">
+                    <div id="landmarkListParent" class="surveyTable"></div>
                 </div>
+                <div class="rowContainer">
+                    <button id="orbitButton" class="paletteButton selectedButton">Orbit</button>
+                    <button id="panButton" class="paletteButton">Pan</button>
+                    <button id="placeButton" class="paletteButton">Place</button>
+                </div>
+                <div style="height:3vh"></div>
+                <input id="nameInput" type="text">
+                <button id="saveButton">Save</button>
             </div>
         </div>
 

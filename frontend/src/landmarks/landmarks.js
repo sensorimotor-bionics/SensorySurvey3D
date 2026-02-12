@@ -138,7 +138,7 @@ async function saveLandmarkSet() {
 
 function generateLandmarkList() {
     if (landmarkSet != null) {
-        const landmarkList = document.createElement("div");
+        const landmarkList = document.createDocumentFragment();
         for (var i in landmarkSet.landmarks) {
             const number = i;
 
