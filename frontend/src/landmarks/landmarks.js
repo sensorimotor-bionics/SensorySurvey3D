@@ -12,6 +12,10 @@ var landmarkLabels = [];
 
 /* BUTTON CALLBACKS */
 
+/**
+ * Calls for the creation of a new landmark set using the values of initName and 
+ * modelSelect elements
+ */
 function startLandmarksCallback() {
     const initNameInput = document.getElementById("initNameInput");
     const name = initNameInput.value;
@@ -23,6 +27,10 @@ function startLandmarksCallback() {
 
 /* STATE CONTROL */
 
+/**
+ * Make a request to the server for all available mesh filenames, then populate
+ * the modelSelect with child options for each mesh
+ */
 async function populateModelDropdown() {
     const modelSelect = document.getElementById("modelSelect");
     modelSelect.innerHTML = "";
@@ -42,6 +50,13 @@ async function populateModelDropdown() {
     }
 }
 
+/**
+ * Create a landmark set and set up the GUI and viewport for that new set
+ * @param {string} name - the name of the landmark set
+ * @param {string} model - the model the Landmarks will be placed on; will be 
+ *      loaded into the viewport
+ * @param {Landmark[]} landmarks - the initial landmarks for the landmark set
+ */
 async function startLandmarkSet(name, model, landmarks = []) {
     await viewport.replaceCurrentMesh(model);
     landmarkSet = new SVY.LandmarkSet(
@@ -55,12 +70,18 @@ async function startLandmarkSet(name, model, landmarks = []) {
     COM.openSidebarTab("editTab");
 }
 
+/**
+ * Update the landmark list to match the current landmark set
+ */
 function updateLandmarkList() {
     const landmarkListParent = document.getElementById("landmarkListParent");
     landmarkListParent.innerHTML = "";
     landmarkListParent.appendChild(generateLandmarkList());
 }
 
+/**
+ * Push a new landmark to the set, then update the landmark list
+ */
 function newLandmarkInSet() {
     if (landmarkSet != null) {
         landmarkSet.landmarks.push(new SVY.Landmark());
@@ -68,6 +89,10 @@ function newLandmarkInSet() {
     }
 }
 
+/**
+ * Check the validity of the landmark set, POST it to the save-landmark-set
+ * endpoint, then show a message explaining the result of that request
+ */
 async function saveLandmarkSet() {
     if (landmarkSet) {
         COM.openAlert("Saving...");
@@ -138,6 +163,11 @@ async function saveLandmarkSet() {
     }
 }
 
+/**
+ * Create a document fragment whose children are elements allowing the user to
+ * interact and make changes to the landmarks in the current set
+ * @returns {DocumentFragment}
+ */
 function generateLandmarkList() {
     if (landmarkSet != null) {
         const landmarkList = document.createDocumentFragment();
