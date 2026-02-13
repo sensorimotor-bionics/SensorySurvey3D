@@ -178,6 +178,11 @@ html {
     font-size: 1.8vh;
 }
 
+.highlightedText {
+    color: var(--highlightText);
+    font-weight: bolder;
+}
+
 .titleText {
     text-align: center;
 }

@@ -8,6 +8,7 @@ var viewport;
 var cameraController;
 
 var landmarkSet = null;
+var landmarkLabels = [];
 
 /* BUTTON CALLBACKS */
 
@@ -50,6 +51,7 @@ async function startLandmarkSet(name, model, landmarks = []) {
     );
     const nameInput = document.getElementById("nameInput");
     nameInput.value = name;
+    updateLandmarkList();
     COM.openSidebarTab("editTab");
 }
 
@@ -139,21 +141,28 @@ async function saveLandmarkSet() {
 function generateLandmarkList() {
     if (landmarkSet != null) {
         const landmarkList = document.createDocumentFragment();
+        landmarkLabels = [];
         for (var i in landmarkSet.landmarks) {
             const number = i;
 
             function makeLandmarkCurrent(event) {
                 if (landmarkSet != null && number < viewport.orbs.length) {
                     viewport.currentOrb = viewport.orbs[number];
+                    COM.highlightText(landmarkLabels[number]);
                 }
             }
 
             const landmarkRow = document.createElement("div");
             landmarkRow.classList.add("surveyTableRow");
 
-            const landmarkLabel = document.createElement("p");
+            const landmarkLabel = document.createElement("label");
             landmarkLabel.classList.add("smallText");
             landmarkLabel.innerHTML = `${parseInt(number) + 1}.`;
+            landmarkLabels.push(landmarkLabel);
+
+            if (viewport.currentOrb == viewport.orbs[number]) {
+                COM.highlightText(landmarkLabels[number]);
+            }
 
             const nameInput = document.createElement("input");
             nameInput.onchange = function(e) {
