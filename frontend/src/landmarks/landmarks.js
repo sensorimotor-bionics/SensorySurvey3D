@@ -153,7 +153,7 @@ function generateLandmarkList() {
 
             const landmarkLabel = document.createElement("p");
             landmarkLabel.classList.add("smallText");
-            landmarkLabel.innerHTML = `${number}.`;
+            landmarkLabel.innerHTML = `${parseInt(number) + 1}.`;
 
             const nameInput = document.createElement("input");
             nameInput.onchange = function(e) {
