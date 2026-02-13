@@ -152,6 +152,22 @@ function generateLandmarkList() {
                 }
             }
 
+            function makeLandmarkTempCurrent(event) {
+                if (landmarkSet != null && number < viewport.orbs.length) {
+                    viewport.tempCurrentOrb = viewport.orbs[number];
+                    COM.highlightText(landmarkLabels[number]);
+                }
+            }
+
+            function clearTempCurrent(event) {
+                viewport.tempCurrentOrb = null;
+                var i = 0
+                while (viewport.orbs[i] != viewport.currentOrb) {
+                    i++;
+                }
+                COM.highlightText(landmarkLabels[i]);
+            }
+
             const landmarkRow = document.createElement("div");
             landmarkRow.classList.add("surveyTableRow");
 
@@ -190,7 +206,8 @@ function generateLandmarkList() {
                     updateLandmarkList();
                 }
             }.bind(number);
-            deleteButton.onmouseover = makeLandmarkCurrent.bind(number);
+            deleteButton.onmouseover = makeLandmarkTempCurrent.bind(number);
+            deleteButton.onmouseout = clearTempCurrent;
 
             const moveButton = document.createElement("button");
             moveButton.innerHTML = "Move";
@@ -202,7 +219,8 @@ function generateLandmarkList() {
                 viewport.toOrbMove();
                 COM.activatePaletteButton(e.target.id);
             }.bind(number);
-            moveButton.onmouseover = makeLandmarkCurrent.bind(number);
+            moveButton.onmouseover = makeLandmarkTempCurrent.bind(number);
+            moveButton.onmouseout = clearTempCurrent;
 
             landmarkRow.appendChild(landmarkLabel);
             landmarkRow.appendChild(nameInput);

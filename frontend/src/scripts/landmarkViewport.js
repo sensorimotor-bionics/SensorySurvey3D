@@ -56,6 +56,7 @@ export class LandmarkViewport extends SurveyViewport {
 
         this.orbs = [];
         this.currentOrb = null;
+        this.tempCurrentOrb = null;
         this.placeMode = false;
         this.orbHeld = false;
 
@@ -74,6 +75,35 @@ export class LandmarkViewport extends SurveyViewport {
         if (this._currentOrb != null) {
             this._currentOrb.material = selectedOrbMaterial;
         }
+    }
+
+    get tempCurrentOrb() {
+        return this._tempCurrentOrb;
+    }
+
+    set tempCurrentOrb(value) {
+        if (value == this.currentOrb) {
+            this._tempCurrentOrb = null;
+            return;
+        }
+        else if (value == null) {
+            if (this.currentOrb != null) {
+                this.currentOrb.material = selectedOrbMaterial;
+            }
+            if (this._tempCurrentOrb != null) {
+                this._tempCurrentOrb.material = orbMaterial;
+            }
+        }
+        else {
+            if (this.currentOrb != null) {
+                this.currentOrb.material = orbMaterial;
+            }
+            if (this._tempCurrentOrb != null) {
+                this._tempCurrentOrb.material = orbMaterial;
+            }
+            value.material = selectedOrbMaterial;
+        }
+        this._tempCurrentOrb = value;
     }
 
     onPointerUp(event) {
