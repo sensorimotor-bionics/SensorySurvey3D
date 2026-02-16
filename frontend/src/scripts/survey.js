@@ -629,3 +629,127 @@ export class SurveyTable {
         this.parentElement.replaceChildren(...table.children);
     }
 }
+
+/** Class which represents a point in space for an landmark */
+export class Landmark {
+    /**
+     * Constructor for Landmark
+     * @param {string} name - the name of the landmark point
+     * @param {number} x - the x position of the landmark point
+     * @param {number} y - the y position of the landmark point
+     * @param {number} z - the z position of the landmark point
+     */
+    constructor(name = "", x = null, y = null, z = null) {
+        this.name = name;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    validate() {
+        if (this.name.length == 0) {
+            throw new Error("Missing name");
+        }
+        return true;
+    }
+
+    /**
+     * Create a JSON object of the point
+     * @returns {JSON}
+     */
+    toJSON() {
+        var output = {
+            name: this.name,
+            x: this.x,
+            y: this.y,
+            z: this.z,
+        }
+
+        return output;
+    }
+
+    /**
+     * Take a JSON object, and use its fields to populate the properties of this
+     * Landmark object
+     * @param {JSON} json - the object whose fields will be used 
+     */
+    fromJSON(json) {
+        this.name = json.name;
+        this.x = json.x;
+        this.y = json.y;
+        this.z = json.z;
+    }
+}
+
+/** Class which represents a set of landmarks made on a mesh */
+export class LandmarkSet {
+    /**
+     * Constructor for LandmarkSet
+     * @param {string} name - the name of the landmark set
+     * @param {object} mesh - the object containing mesh data
+     * @param {Landmark[]} landmarks - the landmarks associated with this set
+     */
+    constructor(name, mesh, landmarks = []) {
+        this.name = name;
+        this.mesh = mesh;
+        this.landmarks = landmarks;
+    }
+
+    validate() {
+        if (this.name.length == 0) {
+            throw new Error("Missing name");
+        }
+        else if (this.mesh == null) {
+            throw new Error("No mesh");
+        }
+        else if (this.landmarks.length == 0) {
+            throw new Error("Zero landmarks");
+        }
+        
+        var erroredLandmarks = 0;
+        for (var i in this.landmarks) {
+            try { this.landmarks[i].validate(); }
+            catch { erroredLandmarks += 1; }
+        }
+        if (erroredLandmarks > 0) {
+            throw new Error(`${erroredLandmarks} with missing names`);
+        }
+
+        return true;
+    }
+
+    /**
+     * Create a JSON object of the landmark set
+     * @returns {JSON}
+     */
+    toJSON() {
+        var jsonLandmarks = [];
+        for (let i = 0; i < this.landmarks.length; i++) {
+            jsonLandmarks.push(this.landmarks[i].toJSON());
+        }
+
+        var output = {
+            name: this.name,
+            mesh: this.mesh,
+            landmarks: jsonLandmarks
+        }
+
+        return output;
+    }
+
+    /**
+     * Take a JSON object, and use its fields to populate the properties of this
+     * LandmarkSet object
+     * @param {JSON} json - the object whose fields will be used 
+     */
+    fromJSON(json) {
+        this.name = json.name;
+        this.mesh = json.mesh;
+        this.landmarks = [];
+        for (let i = 0; i < json.landmarks.length; i++) {
+            var landmark = new Landmark();
+            landmark.fromJSON(json.landmarks[i]);
+            this.landmarks.push(landmark);
+        }
+    }
+}

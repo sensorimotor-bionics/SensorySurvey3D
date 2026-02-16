@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Landmarks - SensorySurvey3D</title>
+        <link rel="stylesheet" type="text/css" href="../stimSurvey3d.css">
+    </head>
+    <body>
+
+        <div class="sidebar">
+
+            <div id="setupTab" class="sidebarTab">
+                <p>Model:</p>
+                <select id="modelSelect" style="width:70%"></select>
+                <p>Set Name:</p>
+                <input id="initNameInput" type="text">
+                <button id="startLandmarksButton">Start Landmarks</button>
+            </div>
+
+            <div id="alertTab" class="sidebarTab"></div>
+
+            <div id="editTab" class="sidebarTab">
+                <div class="scrollContainerMedium">
+                    <div id="landmarkListParent" class="surveyTable"></div>
+                </div>
+                <div class="rowContainer">
+                    <button id="orbitButton" class="paletteButton selectedButton">Orbit</button>
+                    <button id="panButton" class="paletteButton">Pan</button>
+                    <button id="placeButton" class="paletteButton">Place</button>
+                </div>
+                <div style="height:3vh"></div>
+                <div class="rowContainer">
+                    <label for="nameInput">Set Name: </label>
+                    <input id="nameInput" type="text">
+                </div>
+                <button id="saveButton">Save</button>
+            </div>
+        </div>
+
+        <div class="mainColContainer">
+             <div class="widthbar">
+                <p style="margin: 12px 12px">Zoom</p>
+                <div id="cameraControlContainer" style="display:inherit;justify-content:inherit;align-items:inherit">
+                </div>
+            </div>
+
+            <div id="3dContainer" class="threeDContainer"></div>
+        </div>
+        
+    </body>
+    <script type="module" text="text/javascript" src="landmarks.js"></script>
+</html>

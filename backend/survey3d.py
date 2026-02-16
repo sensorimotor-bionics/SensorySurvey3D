@@ -3,6 +3,8 @@ import json
 from datetime import datetime
 from dataclasses import dataclass, field
 from typing import Sequence
+from os import PathLike
+from pathlib import Path
 
 @dataclass
 class Mesh():
@@ -332,3 +334,51 @@ class SurveyManager():
         else:
             print("Cannot save when there is no survey in manager")
             return False
+
+@dataclass
+class Landmark():
+    """
+    A class which represents an annotated point in 3D space
+    """
+    name: str
+    x: float
+    y: float
+    z: float
+
+    def toDict(self):
+        return {
+            "name": self.name,
+            "x": self.x,
+            "y": self.y,
+            "z": self.z,
+        }
+
+@dataclass  
+class LandmarkSet():
+    """
+    A class which represents a set of  made on a mesh
+    """
+    name: str
+    mesh: Mesh
+    landmarks: list[Landmark] = field(default_factory=list)
+
+    def toDict(self) -> dict:
+        return {
+            "mesh": self.mesh.toDict(),
+            "landmarks": [p.toDict() for p in self.landmarks], 
+        }
+    
+    def save(self, path: PathLike):
+        if not os.path.isdir(path):
+            raise OSError(f"Cannot save to non-directory path: {path}")
+        
+        if len(self.landmarks) == 0:
+            raise ValueError("Cannot save landmarks set with 0 landmarks")
+        
+        filename = f"Survey3DLandmarks_{self.mesh.filename}_{self.name}.json"
+        print(f"Saving landmarks to {filename}...")
+        with open(os.path.join(path, filename), 'w') as file:
+            json.dump(self.toDict(), file, indent = 4)
+        return True
+
+        

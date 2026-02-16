@@ -162,7 +162,6 @@ html {
 
 .smallButton {
     background-color: var(--buttonColor);
-    border: none;
     color: white;
     padding: 9px 18px;
     text-align: center;
@@ -177,6 +176,11 @@ html {
 
 .smallText {
     font-size: 1.8vh;
+}
+
+.highlightedText {
+    color: var(--highlightText);
+    font-weight: bolder;
 }
 
 .titleText {
@@ -313,6 +317,12 @@ input[type="checkbox"]:not(:disabled):checked {
         var(--buttonColor) 0%,
         var(--buttonColor) 50%,
     )   
+}
+
+input[type="text"] {
+    font-size: 2vh;
+    margin-top: 8px;
+    margin-bottom: 8px;
 }
 
 select {
