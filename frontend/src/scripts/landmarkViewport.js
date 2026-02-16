@@ -4,18 +4,7 @@ import {
     SurveyViewport,
     controlStates,
     orbMaterial,
-} from './surveyViewport';  
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { 
-    computeBoundsTree, 
-    disposeBoundsTree, 
-    acceleratedRaycast,
-    CONTAINED, 
-    INTERSECTED, 
-    NOT_INTERSECTED 
-} from 'three-mesh-bvh';
+} from './surveyViewport';
 
 const selectedOrbMaterial = new THREE.MeshStandardMaterial( {
     color: 0x40EDB3,
