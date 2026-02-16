@@ -74,4 +74,9 @@ function plot_oblique_distribution(Survey3DData)
     %     end
     %     close all
     % end
+
+    nanmean(oblique_1)
+    nanstd(oblique_1)
+    nanmean(oblique_2)
+    nanstd(oblique_2)
 end

@@ -29,37 +29,43 @@ function plot_jaccard(Survey3DData,row)
     overlap_dorsum = sum(dorsum_sum==2,'all');
     union_dorsum = sum(dorsum_sum>0,'all');
 
-    figure; set(gcf,'position',[0,0,1200,1200])
-    colormap(c)
-    h = subplot(1,2,1);
-    imagesc(flipud(fliplr(palmar_3D)))
-    hold on
-    image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
-    axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]); set(h,'CameraPosition',[0,0,-10*1200])
-    title('PALMAR 3D')
-    h = subplot(1,2,2);
-    imagesc(flipud(fliplr(palmar_2D)))
-    hold on
-    image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
-    axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]); set(h,'CameraPosition',[0,0,-10*1200])
-    title('PALMAR 2D')
-    sgtitle(['Jaccard: ' char(string(round(overlap_palm/union_palm,2)))])
-    % saveas(gcf,['row_' char(string(row)) '_palmar_jaccard.png'])
+    try
+        figure; set(gcf,'position',[0,0,1200,1200])
+        colormap(c)
+        h = subplot(1,2,1);
+        imagesc(flipud(fliplr(palmar_3D)))
+        hold on
+        image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+        axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]); set(h,'CameraPosition',[0,0,-10*1200])
+        title('PALMAR 3D')
+        h = subplot(1,2,2);
+        imagesc(flipud(fliplr(palmar_2D)))
+        hold on
+        image([orig_size(2),0],[orig_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+        axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]); set(h,'CameraPosition',[0,0,-10*1200])
+        title('PALMAR 2D')
+        sgtitle(['Jaccard: ' char(string(round(overlap_palm/union_palm,2)))])
+        % saveas(gcf,['row_' char(string(row)) '_palmar_jaccard.png'])
+    catch
+    end
 
-    figure; set(gcf,'position',[0,0,1200,1200])
-    colormap(c)
-    h = subplot(1,2,1);
-    imagesc(flipud(dorsal_3D))
-    hold on
-    image([0,orig_size(2)],[orig_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
-    axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0])
-    title('DORSAL 3D')
-    h = subplot(1,2,2);
-    imagesc(flipud(dorsal_2D))
-    hold on
-    image([0,orig_size(2)],[orig_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
-    axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0])
-    title('DORSAL 2D')
-    sgtitle(['Jaccard: ' char(string(round(overlap_dorsum/union_dorsum,2)))])
-    % saveas(gcf,['row_' char(string(row)) '_dorsal_jaccard.png'])
+    try
+        figure; set(gcf,'position',[0,0,1200,1200])
+        colormap(c)
+        h = subplot(1,2,1);
+        imagesc(flipud(dorsal_3D))
+        hold on
+        image([0,orig_size(2)],[orig_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
+        axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0])
+        title('DORSAL 3D')
+        h = subplot(1,2,2);
+        imagesc(flipud(dorsal_2D))
+        hold on
+        image([0,orig_size(2)],[orig_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
+        axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0])
+        title('DORSAL 2D')
+        sgtitle(['Jaccard: ' char(string(round(overlap_dorsum/union_dorsum,2)))])
+        % saveas(gcf,['row_' char(string(row)) '_dorsal_jaccard.png'])
+    catch
+    end
 end

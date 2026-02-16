@@ -99,7 +99,8 @@ plot_jaccard_distribution(Survey3DData);
 plot_jaccard(Survey3DData,15);
 plot_jaccard(Survey3DData,37);
 plot_jaccard(Survey3DData,44);
-plot_jaccard(Survey3DData,39);
+plot_jaccard(Survey3DData,39); % ji 0.5867, obliqueness score 0.4377
+plot_jaccard(Survey3DData,74); % ji 0.1290, obliqueness score 0.7062
 
 % quantify oblique annotations for all subjects
 % i.e. annotations which are invisible to camera or squashed in a 2D representation
@@ -108,3 +109,6 @@ plot_oblique_distribution(Survey3DData);
 plot_obliqueness(Survey3DData,25);
 plot_obliqueness(Survey3DData,30);
 plot_obliqueness(Survey3DData,13);
+
+% compute correlation between jaccard index and obliqueness of annotation...
+plot_correlation_distribution(Survey3DData);

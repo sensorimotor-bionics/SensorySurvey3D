@@ -69,8 +69,9 @@ function plot_jaccard_distribution(Survey3DData)
     title('2D/3D Annotation Jaccard Distance')
     ylabel('2D/3D Annotation Similarity')
     
-    ranksum(dist_palmar_1,dist_dorsal_1)
-    ranksum(dist_palmar_2,dist_dorsal_2)
+    pval(1) = ranksum(dist_palmar_1,dist_dorsal_1);
+    pval(2) = ranksum(dist_palmar_2,dist_dorsal_2);
+    pvals = string(pval)
     
     ylim([0 1])
     text(1.5,0.8,'n.s.','FontSize',14)
@@ -83,6 +84,12 @@ function plot_jaccard_distribution(Survey3DData)
     % add a thing that shows all of the annotations that you're considering
     plot_represented('BCI02',Survey3DData,kept_rows_palmar_1,kept_rows_dorsal_1)
     plot_represented('BCI03',Survey3DData,kept_rows_palmar_2,kept_rows_dorsal_2)
+
+    % want mean and standard dev within subject
+    nanmean([dist_palmar_1;dist_dorsal_1])
+    nanstd([dist_palmar_1;dist_dorsal_1])
+    nanmean([dist_palmar_2;dist_dorsal_2])
+    nanstd([dist_palmar_2;dist_dorsal_2])
 end
 
 %% helper functions
