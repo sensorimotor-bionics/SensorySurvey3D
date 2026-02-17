@@ -25,6 +25,32 @@ function startLandmarksCallback() {
     startLandmarkSet(name, modelSelect.value);
 }
 
+function loadFromFileCallback() {
+    const fileInput = document.getElementById("landmarkFileInput");
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        var data = JSON.parse(e.target.result);
+
+        var landmarks = [];
+        
+        for (let i = 0; i < data.landmarks.length; i++) {
+            var landmark = new SVY.Landmark();
+            landmark.fromJSON(data.landmarks[i]);
+            landmarks.push(landmark);
+        }
+
+        startLandmarkSet(
+            "",
+            data.mesh.filename,
+            landmarks
+        );
+    }
+
+    reader.readAsText(file);
+}
+
 /* STATE CONTROL */
 
 /**
@@ -59,15 +85,29 @@ async function populateModelDropdown() {
  */
 async function startLandmarkSet(name, model, landmarks = []) {
     await viewport.replaceCurrentMesh(model);
+    console.log(landmarks);
     landmarkSet = new SVY.LandmarkSet(
         name, 
-        viewport.getMeshParameters(viewport.currentMesh, modelSelect.value), 
+        viewport.getMeshParameters(viewport.currentMesh, modelSelect.value),
         landmarks
     );
+    console.log(landmarkSet.landmarks);
     const nameInput = document.getElementById("nameInput");
     nameInput.value = name;
+    viewport.resetOrbs();
+    updateOrbsFromLandmarks(landmarkSet.landmarks);
     updateLandmarkList();
     COM.openSidebarTab("editTab");
+}
+
+function updateOrbsFromLandmarks(landmarks) {
+    for (var i = 0; i < landmarks.length; i++) {
+        viewport.placeOrbAtPosition(
+            landmarks[i].x, 
+            landmarks[i].y, 
+            landmarks[i].z
+        );
+    }
 }
 
 /**
@@ -174,7 +214,6 @@ function generateLandmarkList() {
         landmarkLabels = [];
         for (var i in landmarkSet.landmarks) {
             const number = i;
-
             function makeLandmarkCurrent(event) {
                 if (landmarkSet != null && number < viewport.orbs.length) {
                     viewport.currentOrb = viewport.orbs[number];
@@ -220,6 +259,7 @@ function generateLandmarkList() {
                 }
             }.bind(number);
             nameInput.onfocus = makeLandmarkCurrent.bind(number);
+            nameInput.value = landmarkSet.landmarks[number].name;
 
             const deleteButton = document.createElement("button");
             deleteButton.innerHTML = "Delete";
@@ -294,6 +334,9 @@ window.onload = function() {
     /* EVENT LISTENERS */
     const startLandmarksButton = document.getElementById("startLandmarksButton");
     startLandmarksButton.onpointerup = startLandmarksCallback;
+
+    const loadFromFileButton = document.getElementById("loadFromFileButton");
+    loadFromFileButton.onpointerup = loadFromFileCallback;
 
     const nameInput = document.getElementById("nameInput");
     nameInput.onchange = function(e) {

@@ -95,6 +95,22 @@ export class LandmarkViewport extends SurveyViewport {
         this._tempCurrentOrb = value;
     }
 
+    placeOrbAtPosition(x, y, z) {
+        const newOrb = this.orbMesh.clone();
+        this.scene.add(newOrb);
+        this.orbs.push(newOrb);
+        newOrb.position.set(x,y,z);
+        newOrb.visible = true;
+        this.currentOrb = newOrb;
+    }
+
+    resetOrbs() {
+        for (let i = 0; i < this.orbs.length; i++) {
+            this.orbs[i].removeFromParent();
+        }
+        this.orbs = [];
+    }
+
     onPointerUp(event) {
         super.onPointerUp(event);
         if (this.orbHeld) {
