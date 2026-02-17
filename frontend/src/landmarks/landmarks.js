@@ -85,13 +85,11 @@ async function populateModelDropdown() {
  */
 async function startLandmarkSet(name, model, landmarks = []) {
     await viewport.replaceCurrentMesh(model);
-    console.log(landmarks);
     landmarkSet = new SVY.LandmarkSet(
         name, 
         viewport.getMeshParameters(viewport.currentMesh, modelSelect.value),
         landmarks
     );
-    console.log(landmarkSet.landmarks);
     const nameInput = document.getElementById("nameInput");
     nameInput.value = name;
     viewport.resetOrbs();
@@ -203,6 +201,31 @@ async function saveLandmarkSet() {
     }
 }
 
+function makeLandmarkCurrent(number) {
+    if (landmarkSet != null && number < viewport.orbs.length) {
+        viewport.currentOrb = viewport.orbs[number];
+        COM.highlightText(landmarkLabels[number]);
+    }
+}
+
+function makeLandmarkTempCurrent(number) {
+    if (landmarkSet != null && number < viewport.orbs.length) {
+        viewport.tempCurrentOrb = viewport.orbs[number];
+        COM.highlightText(landmarkLabels[number]);
+    }
+}
+
+function clearTempCurrent() {
+    viewport.tempCurrentOrb = null;
+    if (viewport.currentOrb != null) {
+        var i = 0
+        while (viewport.orbs[i] != viewport.currentOrb) {
+            i++;
+        }
+        COM.highlightText(landmarkLabels[i]);
+    }
+}
+
 /**
  * Create a document fragment whose children are elements allowing the user to
  * interact and make changes to the landmarks in the current set
@@ -214,28 +237,6 @@ function generateLandmarkList() {
         landmarkLabels = [];
         for (var i in landmarkSet.landmarks) {
             const number = i;
-            function makeLandmarkCurrent(event) {
-                if (landmarkSet != null && number < viewport.orbs.length) {
-                    viewport.currentOrb = viewport.orbs[number];
-                    COM.highlightText(landmarkLabels[number]);
-                }
-            }
-
-            function makeLandmarkTempCurrent(event) {
-                if (landmarkSet != null && number < viewport.orbs.length) {
-                    viewport.tempCurrentOrb = viewport.orbs[number];
-                    COM.highlightText(landmarkLabels[number]);
-                }
-            }
-
-            function clearTempCurrent(event) {
-                viewport.tempCurrentOrb = null;
-                var i = 0
-                while (viewport.orbs[i] != viewport.currentOrb) {
-                    i++;
-                }
-                COM.highlightText(landmarkLabels[i]);
-            }
 
             const landmarkRow = document.createElement("div");
             landmarkRow.classList.add("surveyTableRow");
@@ -258,7 +259,9 @@ function generateLandmarkList() {
                     landmarkSet.landmarks[number].name = e.target.value;
                 }
             }.bind(number);
-            nameInput.onfocus = makeLandmarkCurrent.bind(number);
+            nameInput.onfocus = function(e) {
+                makeLandmarkCurrent(number);
+            }.bind(number);
             nameInput.value = landmarkSet.landmarks[number].name;
 
             const deleteButton = document.createElement("button");
@@ -270,13 +273,21 @@ function generateLandmarkList() {
                     && number < landmarkSet.landmarks.length
                     && number < viewport.orbs.length
                 ) {
+                    if (viewport.orbs[number] == viewport.currentOrb) {
+                        viewport.currentOrb = null;
+                    }
+                    if (viewport.orbs[number] == viewport.tempCurrentOrb) {
+                        viewport.tempCurrentOrb = null;
+                    }
                     landmarkSet.landmarks.splice(number, 1);
                     viewport.orbs[number].removeFromParent();
                     viewport.orbs.splice(number, 1);
                     updateLandmarkList();
                 }
             }.bind(number);
-            deleteButton.onmouseover = makeLandmarkTempCurrent.bind(number);
+            deleteButton.onmouseover = function(e) {
+                makeLandmarkTempCurrent(number);
+            }.bind(number);
             deleteButton.onmouseout = clearTempCurrent;
 
             const moveButton = document.createElement("button");
@@ -285,11 +296,13 @@ function generateLandmarkList() {
             moveButton.classList.add("smallButton");
             moveButton.classList.add("paletteButton");
             moveButton.onpointerup = function(e) {
-                makeLandmarkCurrent.bind(number);
+                makeLandmarkCurrent(number);
                 viewport.toOrbMove();
                 COM.activatePaletteButton(e.target.id);
             }.bind(number);
-            moveButton.onmouseover = makeLandmarkTempCurrent.bind(number);
+            moveButton.onmouseover = function(e) {
+                makeLandmarkTempCurrent(number);
+            }.bind(number);
             moveButton.onmouseout = clearTempCurrent;
 
             landmarkRow.appendChild(landmarkLabel);
