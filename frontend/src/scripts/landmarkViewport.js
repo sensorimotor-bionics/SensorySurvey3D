@@ -2,7 +2,6 @@ import * as _ from 'lodash';
 import * as THREE from 'three';
 import { 
     SurveyViewport,
-    controlStates,
     orbMaterial,
 } from './surveyViewport';
 
@@ -50,6 +49,15 @@ export class LandmarkViewport extends SurveyViewport {
         this.orbHeld = false;
 
         this.newOrbPlaceCallback = newOrbPlaceCallback;
+    }
+
+    static controlStates = {
+        ORBIT: 0,
+        PAN: 1,
+        PAINT: 2,
+        ERASE: 3,
+        ORB_PLACE: 4,
+        SELECT: 5,
     }
 
     get currentOrb() {
@@ -142,6 +150,17 @@ export class LandmarkViewport extends SurveyViewport {
                 }
             }
         }
+        else if (controlState == this.constructor.controlStates.SELECT) {
+            if (this.pointerDownViewport) {
+                this.raycaster.setFromCamera(this.pointer, this.camera);
+                const res = this.raycaster.intersectObjects(
+                    this.orbs, 
+                    true
+                );
+
+                console.log(res);
+            }
+        }
         else {
             super.doMeshUpdateForControlState(controlState);
         }
@@ -164,6 +183,12 @@ export class LandmarkViewport extends SurveyViewport {
 
     toOrbMove() {
         super.toOrbPlace();
+        this.placeMode = false;
+    }
+
+    toSelect() {
+        this.controlState = this.constructor.controlStates.SELECT;
+        this.controls.enabled = false;
         this.placeMode = false;
     }
 }

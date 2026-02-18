@@ -376,6 +376,12 @@ window.onload = function() {
         COM.activatePaletteButton("placeButton");
     }
 
+    const selectButton = document.getElementById("selectButton");
+    selectButton.onpointerup = function() {
+        viewport.toSelect();
+        COM.activatePaletteButton("selectButton");
+    }
+
     const saveButton = document.getElementById("saveButton");
     saveButton.onpointerup = saveLandmarkSet;
 
