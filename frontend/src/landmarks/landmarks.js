@@ -8,7 +8,19 @@ var viewport;
 var cameraController;
 
 var landmarkSet = null;
-var landmarkLabels = [];
+var landmarkInputs = [];
+
+class LandmarkInputs {
+    constructor(
+        label,
+        deleteButton,
+        moveButton,
+    ) {
+        this.label = label;
+        this.deleteButton = deleteButton;
+        this.moveButton = moveButton;
+    }
+}
 
 /* BUTTON CALLBACKS */
 
@@ -204,25 +216,24 @@ async function saveLandmarkSet() {
 function makeLandmarkCurrent(number) {
     if (landmarkSet != null && number < viewport.orbs.length) {
         viewport.currentOrb = viewport.orbs[number];
-        COM.highlightText(landmarkLabels[number]);
+        viewport.toOrbMove();
+        COM.activatePaletteButton(landmarkInputs[number].moveButton.id)
+        COM.highlightText(landmarkInputs[number].label);
     }
 }
 
 function makeLandmarkTempCurrent(number) {
     if (landmarkSet != null && number < viewport.orbs.length) {
         viewport.tempCurrentOrb = viewport.orbs[number];
-        COM.highlightText(landmarkLabels[number]);
+        COM.highlightText(landmarkInputs[number].label);
     }
 }
 
 function clearTempCurrent() {
     viewport.tempCurrentOrb = null;
     if (viewport.currentOrb != null) {
-        var i = 0
-        while (viewport.orbs[i] != viewport.currentOrb) {
-            i++;
-        }
-        COM.highlightText(landmarkLabels[i]);
+        var index = viewport.getIndexOfOrb(viewport.currentOrb);
+        COM.highlightText(landmarkInputs[index].label);
     }
 }
 
@@ -234,7 +245,7 @@ function clearTempCurrent() {
 function generateLandmarkList() {
     if (landmarkSet != null) {
         const landmarkList = document.createDocumentFragment();
-        landmarkLabels = [];
+        landmarkInputs = [];
         for (var i in landmarkSet.landmarks) {
             const number = i;
 
@@ -244,11 +255,6 @@ function generateLandmarkList() {
             const landmarkLabel = document.createElement("label");
             landmarkLabel.classList.add("smallText");
             landmarkLabel.innerHTML = `${parseInt(number) + 1}.`;
-            landmarkLabels.push(landmarkLabel);
-
-            if (viewport.currentOrb == viewport.orbs[number]) {
-                COM.highlightText(landmarkLabels[number]);
-            }
 
             const nameInput = document.createElement("input");
             nameInput.onchange = function(e) {
@@ -297,8 +303,6 @@ function generateLandmarkList() {
             moveButton.classList.add("paletteButton");
             moveButton.onpointerup = function(e) {
                 makeLandmarkCurrent(number);
-                viewport.toOrbMove();
-                COM.activatePaletteButton(e.target.id);
             }.bind(number);
             moveButton.onmouseover = function(e) {
                 makeLandmarkTempCurrent(number);
@@ -311,6 +315,18 @@ function generateLandmarkList() {
             landmarkRow.appendChild(moveButton);
 
             landmarkList.appendChild(landmarkRow);
+
+            landmarkInputs.push(
+                new LandmarkInputs(
+                    landmarkLabel, 
+                    deleteButton, 
+                    moveButton
+                )
+            );
+
+            if (viewport.currentOrb == viewport.orbs[number]) {
+                COM.highlightText(landmarkInputs[number].label);
+            }
         }
         return landmarkList;
     }
@@ -325,7 +341,10 @@ window.onload = function() {
         new THREE.Color(0xffffff),
         new THREE.Color(0x535353),
         20,
-        newLandmarkInSet
+        newLandmarkInSet,
+        makeLandmarkCurrent,
+        makeLandmarkTempCurrent,
+        clearTempCurrent,
     );
 
     cameraController = new VP.CameraController(
@@ -333,7 +352,7 @@ window.onload = function() {
         viewport.renderer.domElement, 
         2, 
         20, 
-        document.getElementById("cameraControlContainer")
+        document.getElementById("cameraControlContainer"),
     );
     cameraController.createZoomSlider();
     cameraController.createCameraReset();

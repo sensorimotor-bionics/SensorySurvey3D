@@ -34,6 +34,9 @@ export class LandmarkViewport extends SurveyViewport {
         defaultColor, 
         eventQueueLength,
         newOrbPlaceCallback,
+        makeOrbCurrentCallback,
+        makeOrbTempCurrentCallback,
+        clearOrbTempCurrentCallback,
     ) {
         super(
             parentElement, 
@@ -49,6 +52,9 @@ export class LandmarkViewport extends SurveyViewport {
         this.orbHeld = false;
 
         this.newOrbPlaceCallback = newOrbPlaceCallback;
+        this.makeOrbCurrentCallback = makeOrbCurrentCallback;
+        this.makeOrbTempCurrentCallback = makeOrbTempCurrentCallback;
+        this.clearOrbTempCurrentCallback = clearOrbTempCurrentCallback
     }
 
     static controlStates = {
@@ -81,6 +87,7 @@ export class LandmarkViewport extends SurveyViewport {
     set tempCurrentOrb(value) {
         if (value == this.currentOrb && value != null) {
             this._tempCurrentOrb = null;
+            this.currentOrb.material = selectedOrbMaterial;
             return;
         }
         else if (value == null) {
@@ -119,6 +126,17 @@ export class LandmarkViewport extends SurveyViewport {
         this.orbs = [];
     }
 
+    getIndexOfOrb(orb) {
+        var index = -1;
+        for (let i = 0; i < this.orbs.length; i++) {
+            if (orb == this.orbs[i]) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
     onPointerUp(event) {
         super.onPointerUp(event);
         if (this.orbHeld) {
@@ -151,14 +169,28 @@ export class LandmarkViewport extends SurveyViewport {
             }
         }
         else if (controlState == this.constructor.controlStates.SELECT) {
-            if (this.pointerDownViewport) {
-                this.raycaster.setFromCamera(this.pointer, this.camera);
-                const res = this.raycaster.intersectObjects(
-                    this.orbs, 
-                    true
-                );
-
-                console.log(res);
+            this.raycaster.setFromCamera(this.pointer, this.camera);
+            const res = this.raycaster.intersectObjects(
+                this.orbs, 
+                true
+            );
+            if (res.length) {
+                var index = this.getIndexOfOrb(res[0].object);
+                if (this.pointerDownViewport) {
+                    this.currentOrb = res[0].object;
+                    this.makeOrbCurrentCallback(index);
+                }
+                else {
+                    this.clearOrbTempCurrentCallback();
+                    this.tempCurrentOrb = res[0].object;
+                    this.makeOrbTempCurrentCallback(index);
+                }
+            }
+            else {
+                if (this.tempCurrentOrb) {
+                    this.tempCurrentOrb = null;
+                    this.clearOrbTempCurrentCallback();
+                }
             }
         }
         else {
