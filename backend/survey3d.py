@@ -373,7 +373,9 @@ class LandmarkSet():
         if len(self.landmarks) == 0:
             raise ValueError("Cannot save landmarks set with 0 landmarks")
         
-        filename = f"Survey3DLandmarks_{self.mesh.filename}_{self.name}.json"
+        no_slash_mesh_filename = self.mesh.filename.replace("/", "-")
+        
+        filename = f"Survey3DLandmarks_{no_slash_mesh_filename}_{self.name}.json"
         print(f"Saving landmarks to {filename}...")
         with open(os.path.join(path, filename), 'w') as file:
             json.dump(self.toDict(), file, indent = 4)
