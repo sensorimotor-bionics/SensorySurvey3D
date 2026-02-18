@@ -99,11 +99,13 @@ async function startLandmarkSet(name, model, landmarks = []) {
     await viewport.replaceCurrentMesh(model);
     landmarkSet = new SVY.LandmarkSet(
         name, 
-        viewport.getMeshParameters(viewport.currentMesh, modelSelect.value),
+        viewport.getMeshParameters(viewport.currentMesh, model),
         landmarks
     );
     const nameInput = document.getElementById("nameInput");
     nameInput.value = name;
+    const modelSelect = document.getElementById("modelSelect");
+    modelSelect.value = model;
     viewport.resetOrbs();
     updateOrbsFromLandmarks(landmarkSet.landmarks);
     updateLandmarkList();
