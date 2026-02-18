@@ -71,28 +71,44 @@ export class LandmarkViewport extends SurveyViewport {
     }
 
     set tempCurrentOrb(value) {
-        if (value == this.currentOrb) {
+        if (value == this.currentOrb && value != null) {
             this._tempCurrentOrb = null;
             return;
         }
         else if (value == null) {
+            if (this._tempCurrentOrb != null) {
+                this._tempCurrentOrb.material = orbMaterial;
+            }
             if (this.currentOrb != null) {
                 this.currentOrb.material = selectedOrbMaterial;
             }
-            if (this._tempCurrentOrb != null) {
-                this._tempCurrentOrb.material = orbMaterial;
-            }
         }
         else {
-            if (this.currentOrb != null) {
-                this.currentOrb.material = orbMaterial;
-            }
             if (this._tempCurrentOrb != null) {
                 this._tempCurrentOrb.material = orbMaterial;
+            }
+            if (this.currentOrb != null) {
+                this.currentOrb.material = orbMaterial;
             }
             value.material = selectedOrbMaterial;
         }
         this._tempCurrentOrb = value;
+    }
+
+    placeOrbAtPosition(x, y, z) {
+        const newOrb = this.orbMesh.clone();
+        this.scene.add(newOrb);
+        this.orbs.push(newOrb);
+        newOrb.position.set(x,y,z);
+        newOrb.visible = true;
+        this.currentOrb = newOrb;
+    }
+
+    resetOrbs() {
+        for (let i = 0; i < this.orbs.length; i++) {
+            this.orbs[i].removeFromParent();
+        }
+        this.orbs = [];
     }
 
     onPointerUp(event) {

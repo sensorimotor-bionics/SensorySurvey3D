@@ -385,10 +385,6 @@ export class SurveyManager {
      * @returns {string}
      */
     validateSurvey() {
-        // Invalid if there are no projected fields
-        if (this.survey.projectedFields.length == 0) {
-            return "Survey has no projected fields.";
-        }
         // Invalid if there is a projected field without any qualities,
         // unless that field has an empty drawing
         for (let i = 0; i < this.survey.projectedFields.length; i++) {

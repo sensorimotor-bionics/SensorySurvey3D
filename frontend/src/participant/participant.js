@@ -613,6 +613,7 @@ function processSubmissionResult(success) {
  */
 function submitCallback() {
 	toggleButtons(false);
+
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
 		var noButton = function() {
@@ -649,8 +650,13 @@ function submitCallback() {
 			});
 		}
 
+		var confirmText = "Are you sure you want to submit this survey?";
+		if (surveyManager.survey.projectedFields.length == 0) {
+			confirmText = "This survey has no projected fields. " + confirmText;
+		}
+
 		COM.openAlert(
-			"Are you sure you want to submit this survey?",
+			confirmText,
 			["No", "Yes"],
 			[noButton, yesButton]
 		);

@@ -178,15 +178,13 @@ class Survey():
 
         Returns: True if success, False if failure
         """
-        if self.projectedFields:
-            filename = f"Survey3D_{self.participant}_{self.date}_{self.startTime}.json"
-            print(f"Saving survey to {filename}...")
-            with open(os.path.join(path, filename), 'w') as file:
-                json.dump(self.toDict(), file, indent = 4)
-            return True
-        else:
-            print("Survey cannot be saved without any projected fields!")
-            return False
+        if not self.projectedFields:
+            print("Submitted survey has no projected fields.")
+        filename = f"Survey3D_{self.participant}_{self.date}_{self.startTime}.json"
+        print(f"Saving survey to {filename}...")
+        with open(os.path.join(path, filename), 'w') as file:
+            json.dump(self.toDict(), file, indent = 4)
+        return True
         
     def toDict(self) -> dict:
         """

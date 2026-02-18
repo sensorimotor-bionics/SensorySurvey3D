@@ -377,6 +377,7 @@ export class CameraController {
             const button = document.createElement("button");
             button.innerHTML = key;
             button.addEventListener("pointerup", e => {
+                this.controls.reset();
                 this.setCamera(
                     views[key][0], 
                     views[key][1], 

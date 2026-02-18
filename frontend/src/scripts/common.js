@@ -127,9 +127,7 @@ export function openAlert(message, buttonNames = [], buttonFunctions = []) {
 export function highlightText(target) {
     const highlightedText = document.getElementsByClassName("highlightedText");
     if (highlightedText.length) {
-        console.log(highlightedText);
         for (let i = 0; i < highlightedText.length; i++) {
-            console.log(highlightedText[i]);
             highlightedText[i].classList.remove("highlightedText");
         }
     }
