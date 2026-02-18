@@ -455,7 +455,7 @@ export class SurveyViewport {
         // Set up controls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableZoom = false;
-        this.controlState = this.controlStates.ORBIT;
+        this.controlState = this.constructor.controlStates.ORBIT;
         this.toOrbit();
         
         this.pointer = new THREE.Vector2();
@@ -564,13 +564,13 @@ export class SurveyViewport {
 
         // Change update behavior depending on current controlState
         switch(controlState) {
-            case this.controlStates.ORBIT:
+            case this.constructor.controlStates.ORBIT:
                 this.brushMesh.visible = false;
                 break;
-            case this.controlStates.PAN:
+            case this.constructor.controlStates.PAN:
                 this.brushMesh.visible = false;
                 break;
-            case this.controlStates.PAINT:
+            case this.constructor.controlStates.PAINT:
                 if (this.brushActive) {
                     this.brushMesh.scale.setScalar(this.brushSize);
                     
@@ -609,7 +609,7 @@ export class SurveyViewport {
                     this.brushMesh.visible = false;
                 }
                 break;
-            case this.controlStates.ERASE:
+            case this.constructor.controlStates.ERASE:
                 if (this.brushActive) {
                     this.brushMesh.scale.setScalar(this.brushSize);
                     
@@ -648,7 +648,7 @@ export class SurveyViewport {
                     this.brushMesh.visible = false;
                 }
                 break;
-            case this.controlStates.ORB_PLACE:
+            case this.constructor.controlStates.ORB_PLACE:
                 if (this.pointerDownViewport) {
                     this.raycaster.setFromCamera(this.pointer, this.camera);
                     const res = this.raycaster.intersectObject(
@@ -692,7 +692,7 @@ export class SurveyViewport {
      * controlState object to "camera".
      */
     toOrbit() {
-        this.controlState = this.controlStates.ORBIT;
+        this.controlState = this.constructor.controlStates.ORBIT;
 		this.controls.enabled = true;
 		this.controls.enablePan = false;
 		this.controls.enableRotate = true;
@@ -710,7 +710,7 @@ export class SurveyViewport {
      * controlState object to "panning".
      */
     toPan() {
-        this.controlState = this.controlStates.PAN;
+        this.controlState = this.constructor.controlStates.PAN;
 		this.controls.enabled = true;
 		this.controls.enablePan = true;
 		this.controls.enableRotate = false;
@@ -726,7 +726,7 @@ export class SurveyViewport {
      * Updates the controlState object to the "painting" state.
      */
     toPaint() {
-        this.controlState = this.controlStates.PAINT;
+        this.controlState = this.constructor.controlStates.PAINT;
         this.controls.enabled = false;
     }
 
@@ -734,12 +734,12 @@ export class SurveyViewport {
      * Updates the controlState object to the "erasing" state.
      */
     toErase() {
-        this.controlState = this.controlStates.ERASE;
+        this.controlState = this.constructor.controlStates.ERASE;
         this.controls.enabled = false;
     }
     
     toOrbPlace() {
-        this.controlState = this.controlStates.ORB_PLACE;
+        this.controlState = this.constructor.controlStates.ORB_PLACE;
         this.controls.enabled = false;
     }
 
@@ -1205,7 +1205,7 @@ export class SurveyViewport {
      */
     resetEventQueue() {
         this.eventQueue.reset();
-        var defaultEvent = new ViewportEvent(this.controlStates.PAINT);
+        var defaultEvent = new ViewportEvent(this.constructor.controlStates.PAINT);
         defaultEvent.updateColorStateFromMesh(this.currentMesh);
         this.eventQueue.push(defaultEvent);
     }

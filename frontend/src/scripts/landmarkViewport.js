@@ -119,7 +119,7 @@ export class LandmarkViewport extends SurveyViewport {
     }
 
     doMeshUpdateForControlState(controlState) {
-        if (controlState == this.controlStates.ORB_PLACE) {
+        if (controlState == this.constructor.controlStates.ORB_PLACE) {
             this.brushMesh.visible = true;
             if (this.pointerDownViewport) {
                 this.raycaster.setFromCamera(this.pointer, this.camera);
