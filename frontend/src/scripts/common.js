@@ -124,6 +124,11 @@ export function openAlert(message, buttonNames = [], buttonFunctions = []) {
 	openSidebarTab("alertTab");
 }	
 
+/**
+ * Highlights a given text object, and unhighlights any object with the 
+ * highlightedText class
+ * @param {Object} target - the object who will gain the highlighted class
+ */
 export function highlightText(target) {
     const highlightedText = document.getElementsByClassName("highlightedText");
     if (highlightedText.length) {

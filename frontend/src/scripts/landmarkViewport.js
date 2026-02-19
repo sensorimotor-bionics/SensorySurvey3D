@@ -235,9 +235,7 @@ export class LandmarkViewport extends SurveyViewport {
     }
 
     /**
-     * Configures the control object to allow the user to select an orb with 
-     * the left mouse button or a single-finger touch. Also updates the 
-     * controlState object to "SELECt".
+     * Updates the controlState object to the SELECT state.
      */
     toSelect() {
         this.controlState = this.constructor.controlStates.SELECT;

@@ -737,7 +737,10 @@ export class SurveyViewport {
         this.controlState = this.constructor.controlStates.ERASE;
         this.controls.enabled = false;
     }
-    
+
+    /**
+     * Updates the controlState object to the ORB_PLACE state.
+     */
     toOrbPlace() {
         this.controlState = this.constructor.controlStates.ORB_PLACE;
         this.controls.enabled = false;
