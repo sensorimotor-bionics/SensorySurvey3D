@@ -110,6 +110,12 @@ export class LandmarkViewport extends SurveyViewport {
         this._tempCurrentOrb = value;
     }
 
+    /**
+     * Create a new orb at the given position, and make it the current orb
+     * @param {number} x - the x coordinate at which the new orb will be placed
+     * @param {number} y - the y coordinate at which the new orb will be placed
+     * @param {number} z - the z coordinate at which the new orb will be placed
+     */
     placeOrbAtPosition(x, y, z) {
         const newOrb = this.orbMesh.clone();
         this.scene.add(newOrb);
@@ -119,6 +125,9 @@ export class LandmarkViewport extends SurveyViewport {
         this.currentOrb = newOrb;
     }
 
+    /**
+     * Clear all orbs from the viewport and list
+     */
     resetOrbs() {
         for (let i = 0; i < this.orbs.length; i++) {
             this.orbs[i].removeFromParent();
@@ -126,6 +135,13 @@ export class LandmarkViewport extends SurveyViewport {
         this.orbs = [];
     }
 
+    /**
+     * Look through the stored list of orbs until a match for the given orb is
+     * found, then return the index of the given orb
+     * @param {THREE.Object} orb - the orb whose index will be returned, if 
+     *      found in the list
+     * @returns {number}
+     */
     getIndexOfOrb(orb) {
         var index = -1;
         for (let i = 0; i < this.orbs.length; i++) {
@@ -218,6 +234,11 @@ export class LandmarkViewport extends SurveyViewport {
         this.placeMode = false;
     }
 
+    /**
+     * Configures the control object to allow the user to select an orb with 
+     * the left mouse button or a single-finger touch. Also updates the 
+     * controlState object to "SELECt".
+     */
     toSelect() {
         this.controlState = this.constructor.controlStates.SELECT;
         this.controls.enabled = false;
