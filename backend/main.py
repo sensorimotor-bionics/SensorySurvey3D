@@ -42,6 +42,10 @@ def landmarks() -> Response:
 
 @app.post("/save-landmark-set")
 async def save_landmark_set(request: Request) -> dict[str, Any]:
+    """
+    Check a request for mesh and landmark data, pack the corresponding objects
+    with those inputs, then save to the DATA_PATH.
+    """
     print("Saving landmark set...")
     data = await request.json()
     try:
@@ -68,6 +72,9 @@ async def save_landmark_set(request: Request) -> dict[str, Any]:
 
 @app.get("/all-mesh-filenames")
 def all_mesh_filenames() -> dict:
+    """
+    Returns a list of all available mesh filenames
+    """
     filenames = []
     for route in app.routes: 
         if isinstance(route, Mount) and route.path.startswith("/3dmodels"):
