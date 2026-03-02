@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import * as VP from '../scripts/surveyViewport'
-import * as SVY from '../scripts/survey'
-import * as COM from '../scripts/common'
+import * as VP from '../scripts/surveyViewport';
+import * as SVY from '../scripts/survey';
+import * as COM from '../scripts/common';
 
 var viewport;
 var surveyManager;
@@ -103,37 +103,6 @@ function toggleUndoRedo(enabled) {
 	document.getElementById("undoButton").disabled = !enabled;
 	document.getElementById("redoButton").disabled = !enabled;
 }
-
-/**
- * Open the alert tab, displaying the given message and creating buttons 
- * displaying the given names and with the given functions as their callbacks
- * @param {string} message - the message to be displayed with the alert
- * @param {string[]} buttonNames - the names of the buttons, to be displayed
- * @param {function[]} buttonFunctions - the functions to be used as callbacks
- * 		for each button, 
- */
-function openAlert(message, buttonNames = [], buttonFunctions = []) {
-	const alertTab = document.getElementById("alertTab");
-	alertTab.innerHTML = "";
-
-	const messageParagraph = document.createElement("p");
-	messageParagraph.style.textAlign = "center";
-	messageParagraph.innerHTML = message;
-
-	const buttonRow = document.createElement("div");
-	for (let i = 0; i < buttonNames.length; i++) {
-		const name = buttonNames[i];
-		const button = document.createElement("button");
-		button.innerHTML = name;
-		button.onpointerup = buttonFunctions[i];
-		buttonRow.appendChild(button);
-	}
-
-	alertTab.appendChild(messageParagraph);
-	alertTab.appendChild(buttonRow);
-
-	COM.openSidebarTab("alertTab");
-}	
 
 /**
  * Calls for the viewport to replace the current mesh, and in the process
@@ -551,7 +520,7 @@ function alertIfNoDepths() {
 			openQualityEditor();
 		}
 		
-		openAlert(
+		COM.openAlert(
 			"You must select at least one depth before continuing.",
 			["Go Back"],
 			[okFunction]
@@ -615,7 +584,7 @@ function processSubmissionResult(success) {
 			COM.openSidebarTab("waitingTab");
 		}
 
-		openAlert(
+		COM.openAlert(
 			"Submission was successful!",
 			["Ok"],
 			[okFunction]
@@ -626,7 +595,7 @@ function processSubmissionResult(success) {
 			COM.openSidebarTab("listTab");
 		}
 
-		openAlert(
+		COM.openAlert(
 			"Submission failed - please notify the experimenter!",
 			["Ok"],
 			[toListFunction]
@@ -644,6 +613,7 @@ function processSubmissionResult(success) {
  */
 function submitCallback() {
 	toggleButtons(false);
+
 	const surveyValidityError = surveyManager.validateSurvey();
 	if (!surveyValidityError) {
 		var noButton = function() {
@@ -652,7 +622,7 @@ function submitCallback() {
 		}
 
 		var yesButton = function() {
-			openAlert("Submitting...")
+			COM.openAlert("Submitting...")
 
 			const usedMeshes = surveyManager.survey.usedMeshFilenames;
 			const storedMeshes = viewport.storedMeshNames;
@@ -680,8 +650,13 @@ function submitCallback() {
 			});
 		}
 
-		openAlert(
-			"Are you sure you want to submit this survey?",
+		var confirmText = "Are you sure you want to submit this survey?";
+		if (surveyManager.survey.projectedFields.length == 0) {
+			confirmText = "This survey has no projected fields. " + confirmText;
+		}
+
+		COM.openAlert(
+			confirmText,
 			["No", "Yes"],
 			[noButton, yesButton]
 		);
@@ -693,7 +668,7 @@ function submitCallback() {
 			openList();
 		}
 
-		openAlert(
+		COM.openAlert(
 			`Cannot submit survey.<br><br>` + surveyValidityError,
 			["Go Back"],
 			[goBackButton]
@@ -759,7 +734,7 @@ function fieldDoneCallback() {
 			editQualityCallback(surveyManager.currentField);
 		}
 		
-		openAlert(
+		COM.openAlert(
 			alertMessage,
 			["Go Back", "Continue"],
 			[goBackFunction, continueFunction]
@@ -844,7 +819,7 @@ function fieldDeleteCallback() {
 		openList();
 	}
 
-	openAlert(
+	COM.openAlert(
 		"Are you sure you want to delete this projected field?",
 		["No", "Yes"],
 		[deleteNoFunction, deleteYesFunction]

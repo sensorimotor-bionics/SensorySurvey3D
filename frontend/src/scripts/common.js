@@ -92,3 +92,49 @@ export function activatePaletteButton(buttonID) {
     }
 	document.getElementById(buttonID).classList.add("selectedButton");
 }
+
+/**
+ * Open the alert tab, displaying the given message and creating buttons 
+ * displaying the given names and with the given functions as their callbacks
+ * @param {string} message - the message to be displayed with the alert
+ * @param {string[]} buttonNames - the names of the buttons, to be displayed
+ * @param {function[]} buttonFunctions - the functions to be used as callbacks
+ * 		for each button, 
+ */
+export function openAlert(message, buttonNames = [], buttonFunctions = []) {
+	const alertTab = document.getElementById("alertTab");
+	alertTab.innerHTML = "";
+
+	const messageParagraph = document.createElement("p");
+	messageParagraph.style.textAlign = "center";
+	messageParagraph.innerHTML = message;
+
+	const buttonRow = document.createElement("div");
+	for (let i = 0; i < buttonNames.length; i++) {
+		const name = buttonNames[i];
+		const button = document.createElement("button");
+		button.innerHTML = name;
+		button.onpointerup = buttonFunctions[i];
+		buttonRow.appendChild(button);
+	}
+
+	alertTab.appendChild(messageParagraph);
+	alertTab.appendChild(buttonRow);
+
+	openSidebarTab("alertTab");
+}	
+
+/**
+ * Highlights a given text object, and unhighlights any object with the 
+ * highlightedText class
+ * @param {Object} target - the object who will gain the highlighted class
+ */
+export function highlightText(target) {
+    const highlightedText = document.getElementsByClassName("highlightedText");
+    if (highlightedText.length) {
+        for (let i = 0; i < highlightedText.length; i++) {
+            highlightedText[i].classList.remove("highlightedText");
+        }
+    }
+    target.classList.add("highlightedText");
+}

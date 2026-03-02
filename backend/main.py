@@ -1,7 +1,12 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import os
+from typing import Any
+from pathlib import Path
+from asyncio import run
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response, FileResponse
-from survey3d import Survey, SurveyManager, Mesh
+from fastapi.routing import Mount
+from survey3d import SurveyManager, Mesh, LandmarkSet, Landmark
 
 # The app we are serving
 app = FastAPI()
@@ -15,9 +20,9 @@ DIST_PATH = r"../frontend/dist/"
 manager = SurveyManager(CONFIG_PATH, DATA_PATH)
 
 # Mount files
-app.mount("/assets", StaticFiles(directory=DIST_PATH + r"/assets", html=True))
-app.mount("/images", StaticFiles(directory=DIST_PATH + r"/images", html=True))
-app.mount("/3dmodels", StaticFiles(directory=DIST_PATH + r"/3dmodels", html=True))
+app.mount("/assets", StaticFiles(directory=DIST_PATH + r"assets", html=True))
+app.mount("/images", StaticFiles(directory=DIST_PATH + r"images", html=True))
+app.mount("/3dmodels", StaticFiles(directory=DIST_PATH + r"3dmodels", html=True))
 
 @app.get("/")
 def home() -> Response:
@@ -30,6 +35,59 @@ def participant() -> Response:
 @app.get("/experimenter")
 def experimenter() -> Response:
     return FileResponse(DIST_PATH + r"/experimenter/index.html")
+
+@app.get("/landmarks")
+def landmarks() -> Response:
+    return FileResponse(DIST_PATH + r"/landmarks/index.html")
+
+@app.post("/save-landmark-set")
+async def save_landmark_set(request: Request) -> dict[str, Any]:
+    """
+    Check a request for mesh and landmark data, pack the corresponding objects
+    with those inputs, then save to the DATA_PATH.
+    """
+    print("Saving landmark set...")
+    data = await request.json()
+    try:
+        mesh = Mesh()
+        mesh.fromDict(data["mesh"])
+        lset = LandmarkSet(
+            data["name"], 
+            mesh, 
+            [
+                Landmark(
+                    l["name"], 
+                    l["x"], 
+                    l["y"], 
+                    l["z"]
+                ) for l in data["landmarks"]
+            ],
+        )
+        lset.save(DATA_PATH)
+        print("Successfully saved landmark set")
+        return {"result": True, "error": ""}
+    except Exception as e:
+        print(f"Error while saving landmark set: {e}")
+        return {"result": False, "error": str(e)}
+
+@app.get("/all-mesh-filenames")
+def all_mesh_filenames() -> dict:
+    """
+    Returns a list of all available mesh filenames
+    """
+    filenames = []
+    for route in app.routes: 
+        if isinstance(route, Mount) and route.path.startswith("/3dmodels"):
+            route_directory = Path(route.app.directory)
+            route_prefix = route.path.split("/3dmodels")[-1][1:]
+            if route_prefix: route_prefix = route_prefix + "/"
+            for root, dirs, files in os.walk(route_directory):
+                for file in files:
+                    if file.endswith((".glb", ".gltf")):
+                        file_path = Path(root) / file
+                        relative_path = file_path.relative_to(route_directory)
+                        filenames.append(route_prefix + str(relative_path).replace("\\", "/"))
+    return {"filenames": filenames}
 
 @app.websocket("/participant-ws")
 async def participant_ws(websocket: WebSocket):
@@ -113,6 +171,6 @@ async def experimenter_ws(websocket: WebSocket):
     except WebSocketDisconnect:
         print("Experimenter disconnected")
 
-    @app.get("/favicon.ico")
-    async def favicon():
-        return FileResponse(DIST_PATH + r"/favicon.ico")
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse(DIST_PATH + r"/favicon.ico")

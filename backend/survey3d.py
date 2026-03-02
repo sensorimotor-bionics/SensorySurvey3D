@@ -3,6 +3,8 @@ import json
 from datetime import datetime
 from dataclasses import dataclass, field
 from typing import Sequence
+from os import PathLike
+from pathlib import Path
 
 @dataclass
 class Mesh():
@@ -176,15 +178,13 @@ class Survey():
 
         Returns: True if success, False if failure
         """
-        if self.projectedFields:
-            filename = f"Survey3D_{self.participant}_{self.date}_{self.startTime}.json"
-            print(f"Saving survey to {filename}...")
-            with open(os.path.join(path, filename), 'w') as file:
-                json.dump(self.toDict(), file, indent = 4)
-            return True
-        else:
-            print("Survey cannot be saved without any projected fields!")
-            return False
+        if not self.projectedFields:
+            print("Submitted survey has no projected fields.")
+        filename = f"Survey3D_{self.participant}_{self.date}_{self.startTime}.json"
+        print(f"Saving survey to {filename}...")
+        with open(os.path.join(path, filename), 'w') as file:
+            json.dump(self.toDict(), file, indent = 4)
+        return True
         
     def toDict(self) -> dict:
         """
@@ -288,6 +288,15 @@ class SurveyManager():
                 return False
                 
     def updateSurvey(self, survey: dict) -> bool:
+        """
+        Update the survey with data from a given dictionary.
+
+        Args:
+            survey: a dictionary of survey parameters from which the object
+            will be updated
+
+        Returns: True if success, False if failure
+        """
         if isinstance(self.survey, Survey):
             if self.survey.startTime == survey["startTime"]:
                 self.survey.fromDict(survey)
@@ -299,6 +308,16 @@ class SurveyManager():
         return False
     
     def saveMeshData(self, meshData: dict) -> bool:
+        """
+        Take a dictionary with mesh data fields, create a Mesh object, then save
+        it to the data path.
+
+        Args:
+            meshData: a dictionary of mesh parameters which will be saved as a
+            Mesh
+
+        Returns: True if success, False if failure
+        """
         try:
             for mesh in meshData:
                 obj = Mesh()
@@ -332,3 +351,69 @@ class SurveyManager():
         else:
             print("Cannot save when there is no survey in manager")
             return False
+
+@dataclass
+class Landmark():
+    """
+    A class which represents an annotated point in 3D space
+    """
+    name: str
+    x: float
+    y: float
+    z: float
+
+    def toDict(self):
+        """
+        Return a dictionary of the Landmark's properties
+        
+        Returns: a dictionary of the Landmark's properties
+        """
+        return {
+            "name": self.name,
+            "x": self.x,
+            "y": self.y,
+            "z": self.z,
+        }
+
+@dataclass  
+class LandmarkSet():
+    """
+    A class which represents a set of  made on a mesh
+    """
+    name: str
+    mesh: Mesh
+    landmarks: list[Landmark] = field(default_factory=list)
+
+    def toDict(self) -> dict:
+        """
+        Return a dictionary of the LandmarkSet's properties
+        
+        Returns: a dictionary of the LandmarkSet's properties
+        """
+        return {
+            "mesh": self.mesh.toDict(),
+            "landmarks": [p.toDict() for p in self.landmarks], 
+        }
+    
+    def save(self, path: PathLike):
+        """
+        Save the LandmarkSet to a .json file at the given path
+        
+        Args:
+            path - the path to which the file should be saved
+
+        Returns: True if successful, False if not
+        """
+        if not os.path.isdir(path):
+            raise OSError(f"Cannot save to non-directory path: {path}")
+        
+        if len(self.landmarks) == 0:
+            raise ValueError("Cannot save landmarks set with 0 landmarks")
+        
+        no_slash_mesh_filename = self.mesh.filename.replace("/", "-")
+        
+        filename = f"Survey3DLandmarks_{no_slash_mesh_filename}_{self.name}.json"
+        print(f"Saving landmarks to {filename}...")
+        with open(os.path.join(path, filename), 'w') as file:
+            json.dump(self.toDict(), file, indent = 4)
+        return True
