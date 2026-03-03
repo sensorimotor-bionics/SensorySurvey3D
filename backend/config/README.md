@@ -7,8 +7,14 @@ Here is an example entry in the participant config:
 {
     "participant_name" : {
         "models" : {
-            "Model Name" : {
+            "Model Name 1" : {
                 "file": "file_name1.gltf",
+                "views": {
+                    "Front": [1, 1, 1, 4]
+                }
+            },
+            "Model Name 2" : {
+                "file": "subfolder/file_name2.gltf",
                 "views": {
                     "Front": [1, 1, 1, 4]
                 }
@@ -36,7 +42,7 @@ This structure contains information about which 3D models will be available to p
 The name of the model used for the survey. This name will appear in the participant's dropdown menu when selecting which model on which to draw a projected field.
 
 ### File
-The name of the file to load for the model name. The survey will use this name to search in for the file in the /dist/public/3dmodels folder generated as a result of the ```npx vite build``` operation described in [the top-level README.](/README.md)
+The name of the file to load for the model name. The survey will use this name to search in for the file in the /frontend/dist/public/3dmodels folder generated as a result of the ```npx vite build``` operation described in [the top-level README.](/README.md) Paths to models are relative to this 3dmodels folder. For example, a model in a subfolder of 3dmodels would have the file "subfolder/file_name.gltf".
 
 ### Views
 Views are default camera locations. They are noted as [x, y, z, zoom], where each variable refers to the camera position. Each view will appear to the participant as a clickable button which will snap the camera to the corresponding position.
