@@ -3,13 +3,12 @@
 output_directory = "External";
 csv_path = "ExperimentLogExternal.xlsx";
 DataDir = "./mesh_utils";
-data_log = readtable(csv_path); % must use readcell to allow for multiple sets
+data_log = readtable(csv_path,'Format','auto'); % must use readcell to allow for multiple sets
 unique_keys = unique(data_log.ExperimentKey);
 unique_keys = unique_keys(cellfun(@length, unique_keys) > 0);
 data_added = false(length(unique_keys),1);
-session = string(datetime(data_log.Session, 'format', 'yyyy-MM-dd'));
 
-overwrite = false;
+overwrite = true;
 for k = 1:length(unique_keys)
     fprintf('Key %d of %d: %s\n', k, length(unique_keys), unique_keys{k})
     % Check if key subfolder exists, if not then make one
@@ -20,7 +19,7 @@ for k = 1:length(unique_keys)
     % Get matching experiments
     k_idx = find(strcmp(data_log.ExperimentKey, unique_keys(k)));
     for i = 1:length(k_idx)
-        output_fname = sprintf('OLSData.%s.%s.mat', data_log.Subject{k_idx(i)}, string(session(k_idx(i))));
+        output_fname = sprintf('OLSData.%s.%s.mat', data_log.Subject{k_idx(i)}, data_log.Session{k_idx(i)});
         % Check if existing path exists
         if exist(fullfile(output_directory, unique_keys(k), output_fname), 'file') == 2 && ~overwrite
             continue
@@ -29,7 +28,7 @@ for k = 1:length(unique_keys)
         % Use first 5 characters to avoid home/lab issues
         subject_folder_name = data_log.Subject{k_idx(i)};
         session_path = fullfile(DataDir, subject_folder_name, sprintf('%s.data.%s', data_log.Subject{k_idx(i)},...
-            string(session(k_idx(i)))));
+            string(data_log.Session{k_idx(i)})));
 
         % Parse the SetIDs
         if isa(data_log.Sets{k_idx(i)}, 'double')
@@ -42,9 +41,10 @@ for k = 1:length(unique_keys)
         elec_ids = str2num(data_log.Electrodes{k_idx(i)});
         ppw = str2num(data_log.PPW{k_idx(i)});
         pw = str2num(data_log.PW{k_idx(i)});
+        probe_date = data_log.Date(k_idx(i));
 
         % Load the struct
-        fprintf(' - Loading session %s_data_%s\n', data_log.Subject{k_idx(i)}, session(k_idx(i)))
+        fprintf(' - Loading session %s_data_%s\n', data_log.Subject{k_idx(i)}, data_log.Session{k_idx(i)})
         OLSData = struct();
 
         % Add annotations to struct
@@ -52,9 +52,10 @@ for k = 1:length(unique_keys)
 
         for s = 1:length(current_paths)
             OLSData(s).Subject = data_log.Subject{k_idx(i)};
-            OLSData(s).Session = session(k_idx(i));
+            OLSData(s).Session = data_log.Session{k_idx(i)};
             OLSData(s).Set = set_ids(s);
             OLSData(s).Channel = elec_ids(s);
+            OLSData(s).Date = probe_date;
             OLSData(s).PPW = ppw(s);
             OLSData(s).PW = pw(s);
             OLSData(s).Base = current_paths(s).folder;
@@ -91,7 +92,7 @@ for k = 1:length(unique_keys)
 
     ii = 1;
     for f = 1:length(k_idx)
-        expected_fname = sprintf('OLSData.%s.%s.mat', data_log.Subject{k_idx(f)}, session(k_idx(f)));
+        expected_fname = sprintf('OLSData.%s.%s.mat', data_log.Subject{k_idx(f)}, data_log.Session{k_idx(f)});
         if isfile(fullfile(output_directory, unique_keys{k}, expected_fname))
             temp = load(fullfile(output_directory, unique_keys{k}, expected_fname));
             for i = 1:length(temp.OLSData)

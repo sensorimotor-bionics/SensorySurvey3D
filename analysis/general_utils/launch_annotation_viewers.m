@@ -70,7 +70,7 @@ function Survey3DDataRecord = launch_annotation_viewers(subject,Survey3DData)
         
         %% annotation viewer
         disp(['Launching annotation viewer for model ' mesh_source '.'])
-        data = import_json(mesh_source);
+        data = import_json(mesh_source,false);
         three_dim.raw_verts = data.vertices;
         three_dim.faces = data.faces;
     

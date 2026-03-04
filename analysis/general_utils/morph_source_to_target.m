@@ -38,6 +38,17 @@ function MorphedMeshes = morph_source_to_target(Survey3DDataRecord,conform_to_2D
                 primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"dorsal");
         else
             % dorsum and palm illustrations are symmetric or morphing one 3D mesh to another 3D mesh
+            if contains(landmarks_source,'_gltf')
+                foo = split(landmarks_source,'_gltf');
+                landmarks_source = ['Survey3DLandmarks_' foo{1} '.gltf' foo{2}];
+            elseif contains(landmarks_source,'_glb')
+                foo = split(landmarks_source,'_glb');
+                landmarks_source = ['Survey3DLandmarks_' foo{1} '.glb' foo{2}];
+            end
+
+            if ~contains(landmarks_source,'Survey3DLandmarks')
+                landmarks_source = ['Survey3DLandmarks_' landmarks_source];
+            end
             [two_dim,three_dim] = generalized_mesh_transform(mesh_target,landmarks_target,mesh_source,landmarks_source,...
                 primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"unsided");
             three_dim_dorsum = [];
