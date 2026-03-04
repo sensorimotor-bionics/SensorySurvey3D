@@ -17,14 +17,6 @@ function [target, source] = generalized_mesh_transform(...
 
     target.verts = data.vertices;
     target.faces = data.faces;
-
-    % data = import_json(mesh_target,false);
-    % target2.verts = data.vertices;
-    % figure
-    % plot3(target2.verts(:,1),target2.verts(:,2),target2.verts(:,3),"r*")
-    % axis equal
-    % hold on
-    % plot3(target.verts(:,1),target.verts(:,2),target.verts(:,3),"b.")
     
     %% import source mesh
     data = import_json(mesh_source,false);
@@ -38,25 +30,6 @@ function [target, source] = generalized_mesh_transform(...
     source.landmark_report = import_json(landmarks_source,true);
     source.landmarks = import_model_landmarks(source.landmark_report,landmark_superset);
 
-    % figure
-    % plot3(source.verts(:,1),source.verts(:,2),source.verts(:,3),'.')
-    % hold on
-    % plot3(source.landmarks(:,1),source.landmarks(:,2),source.landmarks(:,3),'o')
-    % axis equal
-
-    % theta = 135;
-    % Rx = [1 0 0; 0 cosd(theta) -sind(theta); 0 sind(theta) cosd(theta)];
-    % Ry = [cosd(theta) 0 sind(theta); 0 1 0; -sind(theta) 0 cosd(theta)];
-    % Rz = [cosd(theta) -sind(theta) 0; sind(theta) cosd(theta) 0; 0 0 1];
-    % 
-    % foo = source.landmarks*Rz;
-    % 
-    % figure
-    % plot3(source.verts(:,1),source.verts(:,2),source.verts(:,3),'.')
-    % hold on
-    % plot3(foo(:,1),foo(:,2),foo(:,3),'o')
-    % axis equal
-
     % convert landmarks from strings to indices:
     dependencies_temp = nan(size(dependencies));
     for l = 1:length(primary_landmarks)
@@ -69,10 +42,6 @@ function [target, source] = generalized_mesh_transform(...
     dependencies = dependencies_temp;
     target.landmarks = import_model_landmarks(target.landmark_report,landmark_superset);
 
-    % if strcmp(which_side,"unsided")
-    %     [apply_transform_reference_target, dibs_target] = determine_dibs(target, primary_landmarks, landmark_superset, dependencies);
-    % end
-
     % find the long axis of the model--do pca on the xyz coords and re-plot
     [~,score] = pca([target.verts;target.landmarks],'Rows','all');
     target.landmarks = score(size(target.verts,1)+1:end,:);
@@ -80,20 +49,12 @@ function [target, source] = generalized_mesh_transform(...
 
     %% build proximity maps of mesh to keypoints
     disp('> Building proximity maps of source mesh to procrustes keypoints.')
-    [apply_transform_reference, dibs_source] = determine_dibs(source, primary_landmarks, landmark_superset, dependencies);
+    [apply_transform_reference, ~] = determine_dibs(source, primary_landmarks, landmark_superset, dependencies);
 
     %% initial procrustes alignment
     disp('> Performing initial procrustes alignment.')
     [~,source.landmarks,transform] = procrustes(target.landmarks,source.landmarks); % Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c
     source.verts = transform.b*source.verts*transform.T+transform.c(1,:);
-
-    % [source_is_oblique, source_is_palmar, ~, source_normals] = partition_by_normals_vertex(source, viewplot);
-    % 
-    % if strcmp(which_side,'unsided')
-    %     [target_is_oblique, target_is_palmar, ~, target_normals] = partition_by_normals_vertex(target, viewplot);
-    % else
-    %     target_is_palmar = target.verts(:,3)<-0.05;
-    % end
 
     %% iterative procrustes
     disp('> Executing iterative procrustes according to user-specified dependency tree.')
@@ -107,23 +68,6 @@ function [target, source] = generalized_mesh_transform(...
     % source.landmarks = source.landmarks-overall_shift;
     % source.verts = source.verts-overall_shift;
     % store_verts = source.verts;
-    % 
-    % source.verts = store_verts;
-    % which_dims = [1 2 3];
-
-    % figure; set(gcf,'position',[0,0,1500,1000])
-    % plot3(source.verts(:,1),source.verts(:,2),source.verts(:,3),'k.','MarkerSize',12)
-    % axis(gca,'equal')
-    % axis(gca,'off')
-    % view(20,50)
-    % saveas(gcf,['source_before_procrustes.png'])
-    % 
-    % figure; set(gcf,'position',[0,0,1500,1000])
-    % plot3(target.verts(:,1),target.verts(:,2),target.verts(:,3),'k.','MarkerSize',12)
-    % axis(gca,'equal')
-    % axis(gca,'off')
-    % view(20,50)
-    % saveas(gcf,['target_before_procrustes.png'])
 
     % iterate through list of dependencies and make adjustments
     for combo = 1:size(dependencies,1)
@@ -172,10 +116,7 @@ function [target, source] = generalized_mesh_transform(...
         disp('> Implementing snap-to.')
 
         k = 10;
-        % abbr_all = source.verts;
-
         faces_pos_source = incenter(triangulation(source.faces+1,source.verts));
-        face_normals_source = faceNormal(triangulation(source.faces+1,source.verts));
         faces_pos_target = incenter(triangulation(target.faces+1,target.verts));
         face_normals_target = faceNormal(triangulation(target.faces+1,target.verts));
 
@@ -183,11 +124,10 @@ function [target, source] = generalized_mesh_transform(...
         mdl_all = createns(faces_pos_source,'Distance','euclidean');
 
         % for each face in target, find k nearest faces in source
-        [IdxNN_all,D_all] = knnsearch(mdl_all,faces_pos_target,'K',k);
+        [IdxNN_all,~] = knnsearch(mdl_all,faces_pos_target,'K',k);
 
-        % have a matrix that is all target faces x all source faces
+        % have a matrix that is all target verts x all source verts
         % should begin as all zeros
-        % at (target face, source face), place percentage coverage
         coverage_transfer_matrix = zeros(size(target.verts,1),size(source.verts,1));
         
         % parse the locations of the target face verts and source face verts for those k nearest faces
@@ -217,7 +157,7 @@ function [target, source] = generalized_mesh_transform(...
                 end
             end
 
-             % zero z component of source verts, as that is my perspective view
+            % zero z component of source verts, as that is our perspective view
             these_verts_source_rezeroed(:,3,:) = 0;
 
             % compute total area of target face
@@ -241,227 +181,6 @@ function [target, source] = generalized_mesh_transform(...
         source.morph_to_verts = target.verts;
         source.morph_to_faces = target.faces;
         source.coverage_transfer_matrix = coverage_transfer_matrix;
-
-        % now, need to output coverage transfer matrix
-        % could store as sparse matrix if necessary?
-        % for any annotation that you want to plot, gonna have to multiply
-        % projected field with coverage transfer matrix per row
-        % then, sum over rows to determine coverage
-        % threshold at 50% for a new map
-
-        % 
-        % % 
-        % % temp_face_pos = nan([size(faces_pos_source,1),3,k]);
-        % % temp_norms = nan([size(faces_pos_source,1),3,k]);
-        % % 
-        % % temp_face_v1 = nan([size(faces_pos_source,1),3,k]);
-        % % temp_face_v2 = nan([size(faces_pos_source,1),3,k]);
-        % % temp_face_v3 = nan([size(faces_pos_source,1),3,k]);
-        % % 
-        % % for ii = 1:k
-        % %     temp_face_pos(:,:,ii) = faces_pos_target(IdxNN_all(:,ii),:); % positions of nearest vertices in target
-        % % 
-        % %     temp_norms(:,:,ii) = face_normals_target(IdxNN_all(:,ii),:); % positions of nearest vertices in target
-        % % 
-        % %     temp_face_v1(:,:,ii) = target.verts(target.faces(IdxNN_all(:,ii),1)+1,:);
-        % %     temp_face_v2(:,:,ii) = target.verts(target.faces(IdxNN_all(:,ii),2)+1,:);
-        % %     temp_face_v3(:,:,ii) = target.verts(target.faces(IdxNN_all(:,ii),3)+1,:);
-        % % end
-        % % 
-        % % temp_faces_final = nan(size(temp_face_pos,1),3);
-        % % temp_face_v1_final = nan(size(temp_face_pos,1),3);
-        % % temp_face_v2_final = nan(size(temp_face_pos,1),3);
-        % % temp_face_v3_final = nan(size(temp_face_pos,1),3);
-        % % 
-        % % for iii = 1:size(temp_face_pos,1)
-        % %     dots = nan(k,1);
-        % %     for ii = 1:k
-        % %         dots(ii) = dot(face_normals_source(iii,:),temp_norms(iii,:,ii));
-        % %     end
-        % %     temp_faces_final(iii,:) = temp_face_pos(iii,:,find(dots==max(dots),1,'first'));
-        % % 
-        % %     temp_face_v1_final(iii,:) = temp_face_v1(iii,:,find(dots==max(dots),1,'first'));
-        % %     temp_face_v2_final(iii,:) = temp_face_v2(iii,:,find(dots==max(dots),1,'first'));
-        % %     temp_face_v3_final(iii,:) = temp_face_v3(iii,:,find(dots==max(dots),1,'first'));
-        % % end
-        % % 
-        % % face_shifts = temp_faces_final-faces_pos_source;
-        % % 
-        % % % for each face in this, need to shift all three vertices appropriately
-        % % 
-        % % for f = 1:size(face_shifts,1)
-        % %     for v = 1:3
-        % %         % right now, shifting by face pos
-        % %         % abbr_all(source.faces(f,v)+1,:) = abbr_all(source.faces(f,v)+1,:)+face_shifts(f,:);
-        % % 
-        % %         if v==1
-        % %             abbr_all(source.faces(f,v)+1,:) = temp_face_v1_final(f,:);
-        % %         elseif v==2
-        % %             abbr_all(source.faces(f,v)+1,:) = temp_face_v2_final(f,:);
-        % %         elseif v==3
-        % %             abbr_all(source.faces(f,v)+1,:) = temp_face_v3_final(f,:);
-        % %         end
-        % % 
-        % %         % also shift individual vertices 
-        % %     end
-        % % end
-        % % 
-        % % 
-        % % % for each face, I've documented verts 1, 2, and 3
-        % % % I don't think the order super matters?
-        % % % need to reconstitute...
-        % % 
-        % % % counter rotates faces to match normals
-        % % 
-        % % % could procrustes each face into place
-        % % % would need to hierarchically reassign v1/v2/v3 IDs based on proximity
-        % % % each vertex moves to the spot of its closest match within the 3...
-        % % 
-        % % foo = abbr_all;
-        % % 
-        % % iii = 2;
-        % % 
-        % % figure
-        % % hold on
-        % % plot3(source.verts(:,1),source.verts(:,2),source.verts(:,3),'.')
-        % % axis equal
-        % % plot3(target.verts(:,1),target.verts(:,2),target.verts(:,3),'.')
-        % % plot3(squeeze(temp_face_pos(iii,1,:)),squeeze(temp_face_pos(iii,2,:)),squeeze(temp_face_pos(iii,3,:)),'bx')
-        % % plot3(source.verts(iii,1),source.verts(iii,2),source.verts(iii,3),'rx')
-        % % plot3(foo(iii,1),foo(iii,2),foo(iii,3),'gx')
-        % 
-        % % visualizations for paper
-        % % figure
-        % % shape_viewer(source.verts,source.faces,[1,0,0],gca)
-        % 
-        % figure; set(gcf,'position',[0,0,1500,1000])
-        % plot3(source.verts(:,1),source.verts(:,2),source.verts(:,3),'k.','MarkerSize',12)
-        % axis(gca,'equal')
-        % axis(gca,'off')
-        % view(20,50)
-        % saveas(gcf,['source_after_procrustes.png'])
-        % 
-        % k = 1;
-        % temp_verts = nan([size(source.verts),k]);
-        % temp_norms = nan([size(source.verts),k]);
-        % temp_D = nan([size(source.verts,1),k]);
-        % % temp_D_angle = nan([size(source.verts,1),k]);
-        % % all_dibs = unique(dibs_source);
-        % 
-        % for d = 1:size(apply_transform_reference_target,2)
-        % % for d = 1:length(all_dibs)
-        % 
-        %     % this_region_source = dibs_source == all_dibs(d);
-        %     % this_region_target = dibs_target == all_dibs(d);
-        %     this_region_source = apply_transform_reference(:,d)>0;
-        %     this_region_target = apply_transform_reference_target(:,d)>0;
-        % 
-        %     abbr_palm = target.verts((target_is_palmar|target_is_oblique)&this_region_target,:);
-        %     abbr_dorsum = target.verts((~target_is_palmar|target_is_oblique)&this_region_target,:);
-        % 
-        %     abbr_palm_norm = target_normals((target_is_palmar|target_is_oblique)&this_region_target,:);
-        %     abbr_dorsum_norm = target_normals((~target_is_palmar|target_is_oblique)&this_region_target,:);
-        % 
-        %     mdl_palm = createns(abbr_palm,'Distance','euclidean');
-        %     mdl_dorsum = createns(abbr_dorsum,'Distance','euclidean');
-        % 
-        %     % NSMethod must be "exhaustive"
-        %     % "Distance" must be a function
-        % 
-        %     % temp_verts = nan([size(source.verts),k]);
-        % 
-        %     % for ii = 1:length(source_is_palmar)
-        %     %     this_vert = source.verts(ii,:);
-        %     %     this_normal = source_normals(ii,:);
-        %     % 
-        %     %     if source_is_palmar(ii) % check in palmar group
-        %     %         try
-        %     %             mdl_palm = createns(abbr_palm-this_vert,'NSMethod','exhaustive','Distance',@dotprod);
-        %     %             [IdxNN_palm,~] = knnsearch(mdl_palm,this_normal,'K',k);
-        %     % 
-        %     %             % figure
-        %     %             % hold on
-        %     %             % plot3(source.verts(:,1),source.verts(:,2),source.verts(:,3),'.')
-        %     %             % axis equal
-        %     %             % plot3(target.verts(:,1),target.verts(:,2),target.verts(:,3),'.')
-        %     %             % plot3(abbr_palm(IdxNN_palm,1),abbr_palm(IdxNN_palm,2),abbr_palm(IdxNN_palm,3),'bx')
-        %     %             % plot3(source.verts(end,1),source.verts(end,2),source.verts(end,3),'rx')
-        %     % 
-        %     %             % smallest distance of these
-        %     %             % target.verts
-        %     % 
-        %     %             foo = vecnorm((abbr_palm(IdxNN_palm,:)-this_vert)')';
-        %     %             IdxNN_palm = IdxNN_palm(find(foo==min(foo),1,'first'));
-        %     %             temp_verts(ii,:) = abbr_palm(IdxNN_palm,:);
-        %     %         catch
-        %     %         end
-        %     %     else % check in dorsal group
-        %     %         try
-        %     %             mdl_dorsum = createns(abbr_dorsum-this_vert,'NSMethod','exhaustive','Distance',@dotprod);
-        %     %             [IdxNN_dorsum,~] = knnsearch(mdl_dorsum,this_normal,'K',k);
-        %     % 
-        %     %             foo = vecnorm((abbr_dorsum(IdxNN_dorsum,:)-this_vert)')';
-        %     %             IdxNN_dorsum = IdxNN_dorsum(find(foo==min(foo),1,'first'));
-        %     %             temp_verts(ii,:) = abbr_dorsum(IdxNN_dorsum,:);
-        %     %         catch
-        %     %         end
-        %     %     end
-        %     % end
-        %     % 
-        %     % foo = temp_verts;
-        % 
-        %     [IdxNN_palm,D_palm] = knnsearch(mdl_palm,[source.verts(source_is_palmar&this_region_source,:)],'K',k);
-        %     [IdxNN_dorsum,D_dorsum] = knnsearch(mdl_dorsum,[source.verts(~source_is_palmar&this_region_source,:)],'K',k);
-        % 
-        %     for ii = 1:k
-        %         try
-        %             temp_verts(source_is_palmar&this_region_source,:,ii) = abbr_palm(IdxNN_palm(:,ii),:); % positions of nearest vertices in target
-        %             temp_norms(source_is_palmar&this_region_source,:,ii) = abbr_palm_norm(IdxNN_palm(:,ii),:); % normals of the target for nearest vertices
-        %             temp_D(source_is_palmar&this_region_source,ii) = D_palm(:,ii); % distances between source vertex and nearest target vertices
-        %         catch
-        %         end
-        %         try
-        %             temp_verts(~source_is_palmar&this_region_source,:,ii) = abbr_dorsum(IdxNN_dorsum(:,ii),:);
-        %             temp_norms(~source_is_palmar&this_region_source,:,ii) = abbr_dorsum_norm(IdxNN_dorsum(:,ii),:);
-        %             temp_D(~source_is_palmar&this_region_source,ii) = D_dorsum(:,ii);
-        %         catch
-        %         end
-        %     end
-        % end
-        % 
-        % % for ii = 1:k
-        % %     temp_D_angle(:,ii) = acosd(dot(source_normals,temp_norms(:,:,ii),2)./(vecnorm(source_normals')'.*vecnorm(temp_norms(:,:,ii)')')); % source_normals vs temp_norms % angles between source normal and nearest target normals
-        % % end
-        % 
-        % all_dists = sum(temp_D,2);
-        % foo = sum(temp_verts.*repmat(permute(temp_D,[1,3,2]),[1,3,1])./repmat(all_dists,[1,3,k]),3);
-        % 
-        % % of the closest ones, which have the most similar normal?
-        % % find_min = temp_D_angle==repmat(min(temp_D_angle,[],2),[1,k]);
-        % % foo = zeros(size(find_min,1),3);
-        % % 
-        % % for ii = 1:size(find_min,1)
-        % %     foo(ii,:) = temp_verts(ii,:,find(find_min(ii,:),1,'first'));
-        % % end
-        % 
-        % source.verts = foo;
-        % 
-        % figure; set(gcf,'position',[0,0,1500,1000])
-        % plot3(source.verts(:,1),source.verts(:,2),source.verts(:,3),'k.','MarkerSize',12)
-        % axis(gca,'equal')
-        % axis(gca,'off')
-        % view(20,50)
-        % saveas(gcf,['source_after_snapto.png'])
-        % 
-        % % figure
-        % % plot3(foo(:,1),foo(:,2),foo(:,3),'.')
-        % % axis equal
-        % % 
-        % % figure
-        % % shape_viewer(foo,source.faces,[1,0,0],gca)
-        % 
-        % % figure
-        % % shape_viewer(source.verts,source.faces,[1,0,0],gca)
     end
 
     %% assess target/source mesh alignment
@@ -487,10 +206,6 @@ function [target, source] = generalized_mesh_transform(...
     % plot3(target.landmarks(:,1),target.landmarks(:,2),target.landmarks(:,3),'o')
     % axis equal
 
-    % figure
-    % plot3(temp_verts(:,1),temp_verts(:,2),temp_verts(:,3),'.')
-    % axis equal
-
     %% partition aligned source mesh according to normal orientations
     disp('> Partitioning into palmar and dorsal planar aspects using normals.')
     [source.oblique, source.is_palmar, source.is_dorsal, source.normals] = partition_by_normals_face(source, viewplot);
@@ -500,22 +215,4 @@ function [target, source] = generalized_mesh_transform(...
     if ~strcmp(which_side,"unsided")
         [target.verts_flat, source.verts_flat] = flatten_by_normals(target, source, landmark_superset, which_side);
     end
-end
-
-function D2 = dotprod(XI,XJ)
-    for ii = 1:size(XJ,1)
-        D2(ii) = acosd(dot(XI,XJ(ii,:))./(norm(XI).*norm(XJ(ii,:)))); %
-        % angles between source normal and vectors to targets
-
-        % D2(ii) = norm(XJ(ii,:))./abs(dot(XI,XJ(ii,:)))+norm(XJ(ii,:));
-        % loofah(ii) = dot(XI,XJ(ii,:));
-        % D2(ii) = abs(dot(XI,XJ(ii,:)));
-
-        % distance between plus the ratio of distance to dot product
-        % 
-        if D2(ii) > 90
-            D2(ii) = 180-D2(ii);
-        end
-    end
-    D2 = D2';
 end
