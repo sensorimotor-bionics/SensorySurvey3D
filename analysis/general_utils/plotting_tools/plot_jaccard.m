@@ -13,7 +13,7 @@ function plot_jaccard(Survey3DData,row)
     palm_ref_alpha = imresize(palm_ref_alpha, orig_size);
     [dor_ref_img, ~, dor_ref_alpha] = imread('TopLayer-contour.png');
 
-    Survey3DData(row).Channel
+    % Survey3DData(row).Channel
 
     palmar_3D = Survey3DData(row).Palmar.* palmar_mask; % apply the appropriate mask to 3D
     palmar_2D = Survey3DData(row).Palmar_2D;
@@ -45,7 +45,7 @@ function plot_jaccard(Survey3DData,row)
         axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]); set(h,'CameraPosition',[0,0,-10*1200])
         title('PALMAR 2D')
         sgtitle(['Jaccard: ' char(string(round(overlap_palm/union_palm,2)))])
-        saveas(gcf,['row_' char(string(row)) '_palmar_jaccard.png'])
+        % saveas(gcf,['row_' char(string(row)) '_palmar_jaccard.png'])
     catch
     end
 

@@ -33,11 +33,9 @@ dependencies = ["MpP","Tmcp";"MpD","Imcp";"EoW","Pmcp";...
 
 anchor_landmark = "EoW";
 
-%% load data, process models, flatten maps
-load(survey_data_file,'Survey3DData') % import merged OLSData from multiple sessions
-
+%% load data, process models
 % generate Survey3DData using general_data_extraction (external)
-% or private_utils/BCI_data_extraction (internal)
+load(survey_data_file,'Survey3DData') % import merged OLSData from multiple sessions
 
 Survey3DData = launch_annotation_viewers('BCI02',Survey3DData,"hand_landmarks");
 Survey3DData = launch_annotation_viewers('BCI03',Survey3DData,"hand_landmarks");
@@ -45,10 +43,11 @@ Survey3DData = revise_colormaps(Survey3DData);
 
 MorphedMeshes = morph_source_to_target(Survey3DData,conform_to_2D_illustration,primary_landmarks,accessory_landmarks,dependencies,anchor_landmark);
 
+%% flatten maps for comparison to 2D illustrations
 Survey3DData = flatten_3D_annotations('BCI02',Survey3DData,MorphedMeshes);
 Survey3DData = flatten_3D_annotations('BCI03',Survey3DData,MorphedMeshes);
 
-%% BEYOND THIS POINT IS FOR PAPER ONLY, COMPARING TO OUR SPECIFIC 2D PF DATA
+%% concatenation of 2D projection maps to Survey3DData
 % extract 2D from saved file
 load('Survey3D2DComp_Recent_BCI.mat','Survey3D2DComp');
 
@@ -81,7 +80,11 @@ for ddd = 1:length(Survey3DData)
     Survey3DData(ddd).Palmar(Survey3DData(ddd).Palmar>0) = 1;
     Survey3DData(ddd).Dorsal(Survey3DData(ddd).Dorsal>0) = 1;
 end
-% save('survey3d_260320.mat','-v7.3','Survey3DData')
+% save('survey3d_data_260320.mat','-v7.3','Survey3DData')
+
+%% compute and plot elements of Figure 3
+% to plot correctly, you're going to need functions from ChartsWithCharles
+% you can find it here: https://github.com/CMGreenspon/ChartsWithCharles
 
 % jaccard computation
 Survey3DData = compute_jaccard(Survey3DData);

@@ -61,6 +61,7 @@ function [target, source] = generalized_mesh_transform(...
     disp('> Performing initial procrustes alignment.')
     [~,source.landmarks,transform] = procrustes(target.landmarks,source.landmarks); % Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c
     source.verts = transform.b*source.verts*transform.T+transform.c(1,:);
+    source.raw_verts_aligned = source.verts;
 
     %% iterative procrustes
     disp('> Executing iterative procrustes according to user-specified dependency tree.')

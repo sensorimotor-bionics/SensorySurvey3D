@@ -17,7 +17,7 @@ function Survey3DDataRecord = flatten_3D_annotations(subject,Survey3DDataRecord,
 
     for idx = 1:length(documented_electrodes)
         this_model = MorphedMeshes(strcmp(which_models{idx},model_morphs));
-        [Survey3DDataRecord(these_idxs(idx)).Palmar,Survey3DDataRecord(these_idxs(idx)).Dorsal] = convert_3D_to_heatmap(this_model.ThreeDim,this_model.ThreeDimDorsum,documented_electrodes{idx},color_map{idx},size(palmar_mask));
+        [Survey3DDataRecord(these_idxs(idx)).Palmar,Survey3DDataRecord(these_idxs(idx)).Dorsal] = convert_3D_to_heatmap(this_model.source,this_model.sourceDorsum,documented_electrodes{idx},color_map{idx},size(palmar_mask));
         close all
     end
 end

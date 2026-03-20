@@ -39,7 +39,7 @@ function plot_oblique_distribution(Survey3DData)
     title('3D Annotation Obliqueness')
     ylabel('Proportion of Oblique Annotation Area')
     
-    ranksum(oblique_1,oblique_2)
+    % ranksum(oblique_1,oblique_2)
     
     ylim([0 1])
     text(1.5,0.9,'**','FontSize',14)
