@@ -45,7 +45,7 @@ function plot_jaccard(Survey3DData,row)
         axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]); set(h,'CameraPosition',[0,0,-10*1200])
         title('PALMAR 2D')
         sgtitle(['Jaccard: ' char(string(round(overlap_palm/union_palm,2)))])
-        % saveas(gcf,['row_' char(string(row)) '_palmar_jaccard.png'])
+        saveas(gcf,['row_' char(string(row)) '_palmar_jaccard.png'])
     catch
     end
 

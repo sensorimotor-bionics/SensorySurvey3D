@@ -1,6 +1,5 @@
 
 %% enter annotation details
-subject = 'BCI02';
 conform_to_2D_illustration = true;
 survey_data_file = "Survey3DData_Recent_BCI.mat";
 
@@ -44,11 +43,17 @@ load(survey_data_file,'Survey3DData') % import merged OLSData from multiple sess
 % generate Survey3DData using general_data_extraction (external)
 % or private_utils/BCI_data_extraction (internal)
 
-% Survey3DData = launch_annotation_viewers(subject,Survey3DData);
-Survey3DData = launch_annotation_viewers('BCI02',Survey3DData);
-Survey3DData = launch_annotation_viewers('BCI03',Survey3DData);
+Survey3DData = launch_annotation_viewers('BCI02',Survey3DData,"hand_landmarks");
+Survey3DData = launch_annotation_viewers('BCI03',Survey3DData,"hand_landmarks");
+Survey3DData = revise_colormaps(Survey3DData);
 
 MorphedMeshes = morph_source_to_target(Survey3DData,conform_to_2D_illustration,primary_landmarks,accessory_landmarks,dependencies,anchor_landmark);
+
+% figure; set(gcf,'position',[0,0,1500,1000])
+% shape_viewer(Survey3DData(10).Model.vertices,Survey3DData(10).Model.faces,Survey3DData(10).ColorMap,gca)
+% 
+% figure; set(gcf,'position',[0,0,1500,1000])
+% shape_viewer(MorphedMeshes(1).ThreeDim.verts_flat,MorphedMeshes(1).ThreeDim.faces,Survey3DData(1).ColorMap,gca)
 
 Survey3DData = flatten_3D_annotations('BCI02',Survey3DData,MorphedMeshes);
 Survey3DData = flatten_3D_annotations('BCI03',Survey3DData,MorphedMeshes);
@@ -86,7 +91,7 @@ for ddd = 1:length(Survey3DData)
     Survey3DData(ddd).Palmar(Survey3DData(ddd).Palmar>0) = 1;
     Survey3DData(ddd).Dorsal(Survey3DData(ddd).Dorsal>0) = 1;
 end
-% save('survey3d_260126.mat','-v7.3','Survey3DData')
+% save('survey3d_260320.mat','-v7.3','Survey3DData')
 
 % jaccard computation
 Survey3DData = compute_jaccard(Survey3DData);
@@ -99,8 +104,8 @@ plot_jaccard_distribution(Survey3DData);
 plot_jaccard(Survey3DData,15);
 plot_jaccard(Survey3DData,37);
 plot_jaccard(Survey3DData,44);
-plot_jaccard(Survey3DData,39); % ji 0.5867, obliqueness score 0.4377
-plot_jaccard(Survey3DData,74); % ji 0.1290, obliqueness score 0.7062
+plot_jaccard(Survey3DData,39); % ji 0.575179743669897, obliqueness score 0.408454854302412
+plot_jaccard(Survey3DData,74); % ji 0.120798319327731, obliqueness score 0.698514786697225
 
 % quantify oblique annotations for all subjects
 % i.e. annotations which are invisible to camera or squashed in a 2D representation

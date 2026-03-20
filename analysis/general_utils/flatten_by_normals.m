@@ -5,9 +5,9 @@ function [two_dim_verts_shifted, three_dim_verts_shifted] = flatten_by_normals(t
         this_face = three_dim.faces(n,:)+1;
         for v = 1:length(this_face)
             if three_dim.is_palmar(n)
-                three_dim_verts_flattened(this_face(v),3) = -0.1;
-            elseif three_dim.is_dorsal(n)
                 three_dim_verts_flattened(this_face(v),3) = 0.1;
+            elseif three_dim.is_dorsal(n)
+                three_dim_verts_flattened(this_face(v),3) = -0.1;
             else
                 three_dim_verts_flattened(this_face(v),3) = 0;
             end
@@ -15,11 +15,11 @@ function [two_dim_verts_shifted, three_dim_verts_shifted] = flatten_by_normals(t
     end
 
     if strcmp(which_side,"palmar")
-        landmarks = import_json("2D_model_procrustes_keypoints_palm_tight.json");
+        landmarks = import_json("2D_model_procrustes_keypoints_palm_tight.json",false);
         landmarks = import_model_landmarks(landmarks,landmark_superset);
         translation_adjustment = [90,30];
     elseif strcmp(which_side,"dorsal")
-        landmarks = import_json("2D_model_procrustes_keypoints_dorsum_tight.json");
+        landmarks = import_json("2D_model_procrustes_keypoints_dorsum_tight.json",false);
         landmarks = import_model_landmarks(landmarks,landmark_superset);
         translation_adjustment = [195,25];
     else
@@ -49,48 +49,48 @@ function [two_dim_verts_shifted, three_dim_verts_shifted] = flatten_by_normals(t
     % [dor_ref_img, ~, dor_ref_alpha] = imread(fullfile(ref_img_path, 'TopLayer-contour.png'));
 
     % if strcmp(which_side,"palmar")
-        % figure
-        % hold on
-        % image([mask_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
-        % plot3(three_dim_verts_shifted(:,1),three_dim_verts_shifted(:,2),three_dim_verts_shifted(:,3),'.')
-        % axis equal
-        % h = gca;
-        % axis(h,'off'); axis(h,'equal');
-        % set(h,'Projection','perspective')
-        % set(h,'CameraUpVector',[0 1 0])
-        % set(h,'CameraPosition',h.CameraPosition.*[1 1 -1]);
-        % 
-        % figure
-        % hold on
-        % image([mask_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
-        % plot3(two_dim_verts_shifted(:,1),two_dim_verts_shifted(:,2),two_dim_verts_shifted(:,3),'.')
-        % axis equal
-        % h = gca;
-        % axis(h,'off'); axis(h,'equal');
-        % set(h,'Projection','perspective')
-        % set(h,'CameraUpVector',[0 1 0])
-        % set(h,'CameraPosition',h.CameraPosition.*[1 1 -1]);
+    %     figure
+    %     hold on
+    %     image([mask_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+    %     plot3(three_dim_verts_shifted(:,1),three_dim_verts_shifted(:,2),three_dim_verts_shifted(:,3),'.')
+    %     axis equal
+    %     h = gca;
+    %     axis(h,'off'); axis(h,'equal');
+    %     set(h,'Projection','perspective')
+    %     set(h,'CameraUpVector',[0 1 0])
+    %     set(h,'CameraPosition',h.CameraPosition.*[1 1 -1]);
+    % 
+    %     figure
+    %     hold on
+    %     image([mask_size(2),0],[mask_size(1),0],palm_ref_img,'AlphaData', palm_ref_alpha)
+    %     plot3(two_dim_verts_shifted(:,1),two_dim_verts_shifted(:,2),two_dim_verts_shifted(:,3),'.')
+    %     axis equal
+    %     h = gca;
+    %     axis(h,'off'); axis(h,'equal');
+    %     set(h,'Projection','perspective')
+    %     set(h,'CameraUpVector',[0 1 0])
+    %     set(h,'CameraPosition',h.CameraPosition.*[1 1 -1]);
     % elseif strcmp(which_side,"dorsal")
-        % figure
-        % hold on
-        % image([mask_size(2),0],[mask_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
-        % plot3(three_dim_verts_shifted(:,1),three_dim_verts_shifted(:,2),three_dim_verts_shifted(:,3),'.')
-        % axis equal
-        % h = gca;
-        % axis(h,'off'); axis(h,'equal');
-        % set(h,'Projection','perspective')
-        % set(h,'CameraUpVector',[0 1 0])
-        % set(h,'CameraPosition',h.CameraPosition.*[1 1 -1]);
-        % 
-        % figure
-        % hold on
-        % image([mask_size(2),0],[mask_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
-        % plot3(two_dim_verts_shifted(:,1),two_dim_verts_shifted(:,2),two_dim_verts_shifted(:,3),'.')
-        % axis equal
-        % h = gca;
-        % axis(h,'off'); axis(h,'equal');
-        % set(h,'Projection','perspective')
-        % set(h,'CameraUpVector',[0 1 0])
-        % set(h,'CameraPosition',h.CameraPosition.*[1 1 -1]);
+    %     figure
+    %     hold on
+    %     image([mask_size(2),0],[mask_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
+    %     plot3(three_dim_verts_shifted(:,1),three_dim_verts_shifted(:,2),three_dim_verts_shifted(:,3),'.')
+    %     axis equal
+    %     h = gca;
+    %     axis(h,'off'); axis(h,'equal');
+    %     set(h,'Projection','perspective')
+    %     set(h,'CameraUpVector',[0 1 0])
+    %     set(h,'CameraPosition',h.CameraPosition.*[1 1 -1]);
+    % 
+    %     figure
+    %     hold on
+    %     image([mask_size(2),0],[mask_size(1),0],dor_ref_img,'AlphaData', dor_ref_alpha)
+    %     plot3(two_dim_verts_shifted(:,1),two_dim_verts_shifted(:,2),two_dim_verts_shifted(:,3),'.')
+    %     axis equal
+    %     h = gca;
+    %     axis(h,'off'); axis(h,'equal');
+    %     set(h,'Projection','perspective')
+    %     set(h,'CameraUpVector',[0 1 0])
+    %     set(h,'CameraPosition',h.CameraPosition.*[1 1 -1]);
     % end
 end

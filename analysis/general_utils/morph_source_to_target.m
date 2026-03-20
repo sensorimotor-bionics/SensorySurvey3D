@@ -25,6 +25,7 @@ function MorphedMeshes = morph_source_to_target(Survey3DDataRecord,conform_to_2D
         MorphedMeshes(m).ModelName = which_models{m};
         
         %% transform source mesh to target mesh
+        disp(' ')
         disp('Fitting source mesh to target mesh.')
         disp(' ')
         if conform_to_2D_illustration

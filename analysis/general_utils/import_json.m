@@ -4,6 +4,7 @@ function val = import_json(fname,create_landmark_report)
     str = char(raw'); 
     fclose(fid); 
     val = jsondecode(str);
+    old_val = val;
 
     if create_landmark_report
         try
@@ -12,7 +13,6 @@ function val = import_json(fname,create_landmark_report)
             all_x = {val.landmarks.x};
             all_y = {val.landmarks.y};
             all_z = {val.landmarks.z};
-            old_val = val;
             clear val
 
             for ii = 1:length(all_names)
