@@ -11,14 +11,14 @@ An example of how to perform morphs of 3D custom meshes to 3D intermediary model
 Both demo_two_dim_to_three_dim.m and demo_three_dim_to_three_dim.m demonstrate launch of the electrode-wise and row-wise annotation viewer GUIs.
 
 ### Functions included in the general_utils folder can:
-> Parse stored annotations and view projected fields on the appropriate mesh (launch_annotation_viewers).
-> Morph a source 3D mesh to a target 2D illustration (morph_source_to_target) and flatten 3D annotations into 2D colormaps for comparison to the target illustration (flatten_3D_annotations).
-> Morph a source 3D mesh to a target 3D mesh (morph_source_to_target) and provide a matrix for annotation projection between meshes.
-> Compute the jaccard index between source and target 2D colormaps (compute_jaccard).
-> Quantify the obliqueness of 3D annotations (quantify_oblique_annotations).
+- Parse stored annotations and view projected fields on the appropriate mesh (launch_annotation_viewers).
+- Morph a source 3D mesh to a target 2D illustration (morph_source_to_target) and flatten 3D annotations into 2D colormaps for comparison to the target illustration (flatten_3D_annotations).
+- Morph a source 3D mesh to a target 3D mesh (morph_source_to_target) and provide a matrix for annotation projection between meshes.
+- Compute the jaccard index between source and target 2D colormaps (compute_jaccard).
+- Quantify the obliqueness of 3D annotations (quantify_oblique_annotations).
 
-### Note:
-> When designing your own processing workflow, if the target is the default 2D hand palmar/dorsal illustration, you can avoid manually locating the mesh and landmarks files by setting conform_to_2D_illustration to true. If conform_to_2D_illustration is false, running morph_source_to_target will prompt you to navigate to and select the appropriate target mesh and landmarks files via graphical user interface (GUI). If the target model is not a hand, you will also be asked to specify the name of the bottom-most, top-most, left-most, and right-most landmark in your model to standardize viewing perspective.
+### Notes:
+- When designing your own processing workflow, if the target is the default 2D hand palmar/dorsal illustration, you can avoid manually locating the mesh and landmarks files by setting conform_to_2D_illustration to true. If conform_to_2D_illustration is false, running morph_source_to_target will prompt you to navigate to and select the appropriate target mesh and landmarks files via graphical user interface (GUI). If the target model is not a hand, you will also be asked to specify the name of the bottom-most, top-most, left-most, and right-most landmark in your model to standardize viewing perspective.
 
 ## Specifying Hand Landmarks
 
@@ -98,7 +98,7 @@ EDIT: Primary landmark "WuP" in the above illustrations has been moved to the ac
 "MpP_t"       % Middle of the hand, palmar side width marker, thumb side.
 ```
 
-In the placement illustrations above, accessory landmarks with "\_p" modifiers are marked with a blue x. Accessory landmarks with "\_t" modifiers are marked with a magenta x. If desired, you can also specify these landmarks via the Survey 3D graphical user interface.
+In the placement illustrations above, accessory landmarks with "\_p" modifiers are marked with a blue x. Accessory landmarks with "\_t" modifiers are marked with a magenta x.
 
 ## Specifying Arbitrary Landmarks
 
