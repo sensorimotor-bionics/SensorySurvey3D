@@ -1,22 +1,24 @@
 # Sensory Survey 3D Procrustes Workflow
 
-This generalized_procrustes_workflow loads data from experimental sessions specified by e.g.
+## Overview
 
-```
-subject = 'S113';                                                                % subject identifier
-session = "2025-11-10";                                                          % session number or date
-electrodes = [1 1 1 1 1 1 1 1 1 9 9 9 9 9 9 9 9 9 9];                            % electrodes activated at each trial
-data_path_format = ".\\mesh_utils\\participant_251013\\Survey3D_%s_%s_*.json";   % regex to identify relevant Survey 3D .json files
-```
+Use general_data_extraction.m to parse a set of .json annotation files into a readable .mat structure according to an experimental log (e.g. 113 Visit Notes.xlsx in the example_data folder).
 
-and projects them onto both the source model used in the original Survey 3D annotation (specified in mesh_source and landmarks_source) and the target model for iterative procrustes morphing (specified in mesh_target and landmarks_target).
+An example of how to perform morphs of 3D models to 2D illustrations is presented in demo_two_dim_to_three_dim.m. Function calls toward the end of that file also produce the plots presented in Figure 3 of the accompanying publication. In order to successfully generate the plots, you must add the Swarm function from ChartsWithCharles (https://github.com/CMGreenspon/ChartsWithCharles) to path.
 
-From there, the package can make basic comparisons across source and target annotation projections (e.g. Jaccard index calculation, oblique annotation quantification). It is intended for viewing and reviewing sensory data collected during brain-computer interface studies.
+An example of how to perform morphs of 3D custom meshes to 3D intermediary models is presented in demo_three_dim_to_three_dim.m. Function calls toward the end of that file illustrate how to view both raw annotations (on custom meshes) and projected annotations (on the intermediary mesh).
 
-Note:
-If the source is the default hand model, you can avoid manually locating the mesh and landmarks files by setting use_default_hand_source to true.
-If the target is the default 2D hand palmar and dorsal illustrations, you can avoid manually locating the mesh and landmarks files by setting conform_to_2D_illustration to true.
-If use_default_hand_source or conform_to_2D_illustration are false, running generalized_procrustes_workflow will prompt the user to navigate to and select the appropriate source and/or target mesh and landmarks files via graphical user interface.
+Both demo_two_dim_to_three_dim.m and demo_three_dim_to_three_dim.m demonstrate launch of the electrode-wise and row-wise annotation viewer GUIs.
+
+### Functions included in the general_utils folder can:
+> Parse stored annotations and view projected fields on the appropriate mesh (launch_annotation_viewers).
+> Morph a source 3D mesh to a target 2D illustration (morph_source_to_target) and flatten 3D annotations into 2D colormaps for comparison to the target illustration (flatten_3D_annotations).
+> Morph a source 3D mesh to a target 3D mesh (morph_source_to_target) and provide a matrix for annotation projection between meshes.
+> Compute the jaccard index between source and target 2D colormaps (compute_jaccard).
+> Quantify the obliqueness of 3D annotations (quantify_oblique_annotations).
+
+### Note:
+> When designing your own processing workflow, if the target is the default 2D hand palmar/dorsal illustration, you can avoid manually locating the mesh and landmarks files by setting conform_to_2D_illustration to true. If conform_to_2D_illustration is false, running morph_source_to_target will prompt you to navigate to and select the appropriate target mesh and landmarks files via graphical user interface (GUI). If the target model is not a hand, you will also be asked to specify the name of the bottom-most, top-most, left-most, and right-most landmark in your model to standardize viewing perspective.
 
 ## Specifying Hand Landmarks
 
@@ -45,18 +47,18 @@ If use_default_hand_source or conform_to_2D_illustration are false, running gene
 "Pmcp"    % Pinky metacarpal: the knuckle of the pinky finger.
 "MpP"     % Middle of the hand, palmar side.
 "MpD"     % Middle of the hand, dorsal side.
-"WuT"     % Wrist under thumb.
-"WuP"     % Wrist under pinky.
 "EoW"     % End of wrist.
 ```
 
-An illustration of suggested placements of these landmarks relative to the source or target mesh is presented below. Primary landmarks are represented by red dots. If desired, you can use the Survey 3D graphical user interface to produce an annotation hotspot file detailing the locations of these landmarks relative to the source and target meshes.
+An illustration of suggested placements of these landmarks relative to the source or target mesh is presented below. Primary landmarks are represented by red dots. If desired, you can use the Survey 3D "landmarks" functionality to produce a file detailing the locations of these landmarks on a custom model. In order for custom landmark definitions to be compatible with the default 2D and 3D models included with Survey 3D, all primary and accessory landmarks described on this page must be defined.
 
 <img width="500" height="651" alt="Screenshot 2025-11-26 at 3 35 56 PM" src="https://github.com/user-attachments/assets/42964523-a471-4e05-827c-abb1821ad77f" /> <br>
 Figure 1: Suggested primary (red dot) and accessory (blue and magenta x) landmarks illustrated on the palmar 2D hand illustration. <br>
 
 <img width="500" height="538" alt="Screenshot 2025-11-26 at 3 36 29 PM" src="https://github.com/user-attachments/assets/f6ccf24c-338a-4cae-9686-76c65a12fd79" /> <br>
 Figure 2: Suggested primary (red dot) and accessory (blue and magenta x) landmarks illustrated on the default 3D hand mesh. Landmarks labeled in white are internal to the mesh. <br>
+
+EDIT: Primary landmark "WuP" in the above illustrations has been moved to the accessory list and renamed to "EoW_p." Primary landmark "WuT" has been moved to the accessory list and renamed to "EoW_t." Two additional accessory markers have also been defined: "MpP_t", at the webbing between the thumb and index fingers, and "MpP_p," at the widest part of the palm beneath the pinky.
 
 ### Recommended accessory landmarks for hand models are width markers, including:
 
@@ -82,15 +84,27 @@ Figure 2: Suggested primary (red dot) and accessory (blue and magenta x) landmar
 "Pdip_t"      % Pdip width marker, thumb side.
 "Ppip_p"      % Ppip width marker, pinky side.
 "Ppip_t"      % Ppip width marker, thumb side.
+"EoW_p"       % Wrist under pinky.
+"EoW_t"       % Wrist under thumb.
+"Imcp_p"      % Imcp width marker, pinky side.
+"Imcp_t"      % Imcp width marker, thumb side.
+"Mmcp_p"      % Mmcp width marker, pinky side.
+"Mmcp_t"      % Mmcp width marker, thumb side.
+"Rmcp_p"      % Rmcp width marker, pinky side.
+"Rmcp_t"      % Rmcp width marker, thumb side.
+"Pmcp_p"      % Pmcp width marker, pinky side.
+"Pmcp_t"      % Pmcp width marker, thumb side.
+"MpP_p"       % Middle of the hand, palmar side width marker, pinky side.
+"MpP_t"       % Middle of the hand, palmar side width marker, thumb side.
 ```
 
-In the placement illustrations above, accessory landmarks with "\_p" modifiers are marked with a blue x. Accessory landmarks with "\_t" modifiers are marked with a magenta x. If desired, you can also specify these landmarks via the Survey 3D graphical user interface. If accessory landmarks (i.e. width markers) are not detailed in the source or target landmarks files, the system will auto determine finger widths at each of the relevant primary landmarks and use these in iterative procrustes transformations.
+In the placement illustrations above, accessory landmarks with "\_p" modifiers are marked with a blue x. Accessory landmarks with "\_t" modifiers are marked with a magenta x. If desired, you can also specify these landmarks via the Survey 3D graphical user interface.
 
 ## Specifying Arbitrary Landmarks
 
 Though it was developed for hand annotations, Survey 3D need not be used for hand annotation exclusively. Users can import arbitrary 3D meshes for annotation, including meshes resulting from 3D scanning of real hands, feet, limbs, chests, faces, etc.
 
-In order to perform procrustes transformations across arbitrary source and target meshes, arbitrary landmark specification is necessary. Custom landmark placement and naming can be performed using Survey 3D's graphical user interface. In order to morph between two arbitrary meshes, the same set of landmarks (and accessory landmarks, if applicable) must be defined for both the source and target mesh. Those landmark identifiers and their dependencies must be specified in generalized_procrustes_workflow.
+In order to perform procrustes transformations across arbitrary source and target meshes, arbitrary landmark specification is necessary. Survey 3D's aforementioned "landmarks" functionality allows you to specify the names of the landmarks that you define, so it can be used with custom models of anything, not just hands. In order to morph between two arbitrary meshes, however, the same set of landmarks (and accessory landmarks, if applicable) must be defined for both the source and target mesh. Moreover, those landmark identifiers and their dependencies must be specified in your workflow (see either demo file for an example).
 
 ## Hierarchical Dependency Definitions
 
@@ -99,7 +113,10 @@ Levels of dependency convey to the algorithm the relationship between landmarks,
 ### The default/recommended dependency arrangement for hand models is:
 
 ```
-dependencies = ["Tmcp", "Tpip";...
+dependencies = ["MpP", "Tmcp";...
+                "MpD", "Imcp";...
+                "EoW", "Pmcp";...
+                "Tmcp", "Tpip";...
                 "Tpip", "Tend";...
                 "Imcp", "Ipip";...
                 "Ipip", "Idip";...
@@ -112,7 +129,8 @@ dependencies = ["Tmcp", "Tpip";...
                 "Rdip", "Rend";...
                 "Pmcp", "Ppip";...
                 "Ppip", "Pdip";...
-                "Pdip", "Pend"];
+                "Pdip", "Pend";...
+                "EoW, "MpP"];
 
 anchor_landmark = "EoW";
 ```
