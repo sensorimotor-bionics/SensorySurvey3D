@@ -1,6 +1,6 @@
 function [target, source] = generalized_mesh_transform(...
     mesh_target, landmarks_target, mesh_source, landmarks_source,...
-    primary_landmarks, accessory_landmarks, dependencies, anchor_landmark, which_side)
+    primary_landmarks, accessory_landmarks, dependencies, anchor_landmark, which_side, axis_alignment)
 
     %% options
     viewplot = false;
@@ -42,27 +42,16 @@ function [target, source] = generalized_mesh_transform(...
     dependencies = dependencies_temp;
     target.landmarks = import_model_landmarks(target.landmark_report,landmark_superset);
 
-    % find the long axis of the model--do pca on the xyz coords and re-plot
-    axis_alignment = [target.landmark_report.EoW'; target.landmark_report.Mend'; target.landmark_report.Pend'; target.landmark_report.Tend'];
-    [~,~,transform] = procrustes([0 0 0; 1 0 0; 0 1 0; 0 -1 0],axis_alignment,'reflection',false); % Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c
+    % find the long and short axes of the model and re-plot accordingly
+    if strcmp(axis_alignment,"hand_landmarks")
+        axis_alignment_mod = [target.landmark_report.EoW'; target.landmark_report.Mend'; target.landmark_report.Pend'; target.landmark_report.Tend'];
+    else
+        axis_alignment_mod = axis_alignment;
+    end
+
+    [~,~,transform] = procrustes([0 0 0; 1 0 0; 0 1 0; 0 -1 0],axis_alignment_mod,'reflection',false); % Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c
     target.verts = transform.b*target.verts*transform.T+transform.c(1,:);
     target.landmarks = transform.b*target.landmarks*transform.T+transform.c(1,:);
-    % 
-    % [-0.438229,0.0437203,0.0469348;0.505564,-0.0259727,0.0211871;0.0463918,-0.396236,0.0584861;0.337431,0.270629,0.0211933]
-
-    % figure
-    % hold on
-    % plot3(target.landmarks(:,1),target.landmarks(:,2),target.landmarks(:,3),'x')
-    % axis equal
-    % 
-    % [~,score] = pca([target.verts;target.landmarks],'Rows','all');
-    % target.landmarks = score(size(target.verts,1)+1:end,:);
-    % target.verts = score(1:size(target.verts,1),:);
-    % 
-    % figure
-    % hold on
-    % plot3(target.landmarks(:,1),target.landmarks(:,2),target.landmarks(:,3),'x')
-    % axis equal
 
     %% build proximity maps of mesh to keypoints
     disp('> Building proximity maps of source mesh to procrustes keypoints.')
@@ -80,16 +69,17 @@ function [target, source] = generalized_mesh_transform(...
     which_dims = [1 2 3];
     source_verts_moved = zeros(size(source.verts));
     
-    % first shift to match xyz positions of anchor landmark
+    % % first, shift to match xyz positions of anchor landmark:
     % overall_shift = source.landmarks(anchor_landmark,:)-target.landmarks(anchor_landmark,:);
     % source.landmarks = source.landmarks-overall_shift;
     % source.verts = source.verts-overall_shift;
-    % store_verts = source.verts;
 
-    % figure; set(gcf,'position',[0,0,1500,1000])
-    % shape_viewer(source.verts,source.faces,[0.6 0.6 0.6],gca)
-    % view(20,50)
-    % saveas(gcf,['before_transformations.png'])
+    if viewplot
+        figure; set(gcf,'position',[0,0,1500,1000])
+        shape_viewer(source.verts,source.faces,[0.6 0.6 0.6],gca)
+        view(20,50)
+        title('source before Procrustes')
+    end
 
     % iterate through list of dependencies and make adjustments
     for combo = 1:size(dependencies,1)
@@ -104,7 +94,7 @@ function [target, source] = generalized_mesh_transform(...
         source_verts_moved(:,which_dims) = transform.b*source.verts(:,which_dims)*transform.T+transform.c(1,:);
         apply_transform = sum(apply_transform_reference(:,these_representations),2);
 
-        % peep which vertices are transformed in this iteration:
+        % % peep which vertices are transformed in this iteration:
         % figure; set(gcf,'position',[0,0,1109,600])
         % for ii = 1:size(source.verts,1)
         %     plot3(source.verts(ii,1),source.verts(ii,2),source.verts(ii,3),'.','Color',[apply_transform(ii) 0 0],'MarkerSize',50)
@@ -113,12 +103,12 @@ function [target, source] = generalized_mesh_transform(...
         % view(0,-90)
         % axis(gca,'equal')
         % axis(gca,'off')
-        % saveas(gcf,['combo_' char(string(combo)) '_dibs.png'])
+        % title(['dibs in iteration ' char(string(combo))])
 
         source_verts_temp = source.verts;
         source_verts_temp(:,which_dims) = source_verts_moved(:,which_dims).*apply_transform + source.verts(:,which_dims).*(1-apply_transform);
 
-        % peep the planned transformation in this iteration:
+        % % peep the planned transformation in this iteration:
         % figure; set(gcf,'position',[0,0,1500,1000])
         % plot3(source.verts(:,1),source.verts(:,2),source.verts(:,3),'r.','MarkerSize',12)
         % hold on
@@ -128,25 +118,17 @@ function [target, source] = generalized_mesh_transform(...
         % axis(gca,'equal')
         % axis(gca,'off')
         % view(20,50)
-        % saveas(gcf,['combo_' char(string(combo)) '_transformation.png'])
-
-        % figure; set(gcf,'position',[0,0,1500,1000])
-        % shape_viewer(source.verts,source.faces,[1.0 0.0 0.0],gca)
-        % hold on
-        % shape_viewer(source_verts_temp,source.faces,[0.6 0.6 0.6],gca)
-        % axis(gca,'equal')
-        % axis(gca,'off')
-        % % view(20,50)
-        % view(20,310)
-        % saveas(gcf,['combo2_' char(string(combo)) '_transformation.png'])
+        % title(['planned transformation in iteration ' char(string(combo))])
 
         source.verts = source_verts_temp;
     end
 
-    % figure; set(gcf,'position',[0,0,1500,1000])
-    % shape_viewer(source.verts,source.faces,[0.6 0.6 0.6],gca)
-    % view(20,50)
-    % saveas(gcf,['after_transformations.png'])
+    if viewplot
+        figure; set(gcf,'position',[0,0,1500,1000])
+        shape_viewer(source.verts,source.faces,[0.6 0.6 0.6],gca)
+        view(20,50)
+        title('source after Procrustes')
+    end
 
     %% snap-to for 3D-to-3D alignment
     if strcmp(which_side,"unsided")
@@ -183,24 +165,6 @@ function [target, source] = generalized_mesh_transform(...
 
             % shift target normal to unit vector along z
             [~,~,transform] = procrustes([0,0,0,;0,0,1],[0,0,0;this_normal_target],'reflection',false); % Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c
-            
-% if ii == 6000
-%     figure; set(gcf,'position',[0,0,1500,1000])
-%     shape_viewer((target.verts- repmat(faces_pos_target(ii,:),[size(target.verts,1),1]))*transform.T,target.faces,[0.6 0.6 0.6],gca)
-%     hold on
-%     shape_viewer((target.verts(target.faces(ii,:)+1,:)- repmat(faces_pos_target(ii,:),[3,1]))*transform.T,[0,1,2],[1.0 0.0 0.0],gca)
-%     view(90,100)
-%     saveas(gcf,['target_face.png'])
-% 
-%     figure; set(gcf,'position',[0,0,1500,1000])
-%     shape_viewer((source.verts- repmat(faces_pos_target(ii,:),[size(source.verts,1),1]))*transform.T,source.faces,[0.6 0.6 0.6],gca)
-%     hold on
-%     for fff = 1:k
-%         shape_viewer(these_verts_source_rezeroed(:,:,fff)*transform.T,[0,1,2],[0.0 0.0 1.0],gca)
-%     end
-%     view(90,100)
-%     saveas(gcf,['source_faces.png'])
-% end
 
             for idx = 1:3
                 % rotate verts of target face by this transform
@@ -218,30 +182,20 @@ function [target, source] = generalized_mesh_transform(...
             % compute total area of target face
             target_area = polyarea(these_verts_target_rezeroed(:,1),these_verts_target_rezeroed(:,2));
 
-% if ii==6000
-%     figure; set(gcf,'position',[0,0,1500,1000])
-%     plot3(0,0,0)
-%     hold on
-% end
             % compute area of overlap of each source face with target face
             for iii = 1:k
                 poly1 = polyshape(these_verts_source_rezeroed(:,1,iii),these_verts_source_rezeroed(:,2,iii));
                 poly2 = polyshape(these_verts_target_rezeroed(:,1),these_verts_target_rezeroed(:,2));
                 polyout = intersect(poly1,poly2);
-% plot(poly1,'Parent',hgtransform('Matrix',eye(4)),'FaceColor','b')
 
                 if polyout.NumRegions==1
-                    % if colormaps are face maps...
+                    % % if colormaps are face maps...
                     % coverage_transfer_matrix(ii,IdxNN_all(ii,iii)+1) = polyarea(polyout.Vertices(:,1),polyout.Vertices(:,2))/target_area; % at (target face, source face), place percentage coverage
                 
                     % colormaps are vertex maps; each vertex in target face has to be mapped to source face vertices
                     coverage_transfer_matrix(target.faces(ii,:)+1,source.faces(IdxNN_all(ii,iii),:)+1) = polyarea(polyout.Vertices(:,1),polyout.Vertices(:,2))/target_area; % at (target face, source face), place percentage coverage
                 end
             end
-% if ii==6000
-%     plot(polyshape(these_verts_target_rezeroed(:,1),these_verts_target_rezeroed(:,2)),'Parent',hgtransform('Matrix',eye(4)),'FaceColor','r')
-%     saveas(gcf,['face_overlap.svg'])
-% end
         end
 
         source.morph_to_verts = target.verts;
@@ -259,18 +213,6 @@ function [target, source] = generalized_mesh_transform(...
         axis equal
         plot3(target.verts(:,1),target.verts(:,2),target.verts(:,3),'.')
     end
-
-    % figure
-    % plot3(source.verts(:,1),source.verts(:,2),source.verts(:,3),'.')
-    % hold on
-    % plot3(source.landmarks(:,1),source.landmarks(:,2),source.landmarks(:,3),'o')
-    % axis equal
-    % 
-    % figure
-    % plot3(target.verts(:,1),target.verts(:,2),target.verts(:,3),'.')
-    % hold on
-    % plot3(target.landmarks(:,1),target.landmarks(:,2),target.landmarks(:,3),'o')
-    % axis equal
 
     %% partition aligned source mesh according to normal orientations
     disp('> Partitioning into palmar and dorsal planar aspects using normals.')

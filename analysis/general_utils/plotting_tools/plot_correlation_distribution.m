@@ -60,16 +60,6 @@ function plot_correlation_distribution(Survey3DData)
     bci02_color = [.49 .44 .70];
     bci03_color = [.91 .16 .54];
 
-    % group by palmar/dorsal
-    % ji_p = [dist_palmar_1(~isnan(dist_palmar_1));dist_palmar_2(~isnan(dist_palmar_2))];
-    % ji_d = [dist_dorsal_1(~isnan(dist_dorsal_1));dist_dorsal_2(~isnan(dist_dorsal_2))];
-    
-    % o_p = [obliqueness_palmar_1,obliqueness_palmar_2]';
-    % o_d = [obliqueness_dorsal_1,obliqueness_dorsal_2]';
-    
-    % [R,P] = corrcoef(ji_p,o_p)
-    % [R,P] = corrcoef(ji_d,o_d)
-
     % group by subject ID
     ji_1 = [dist_palmar_1(~isnan(dist_palmar_1));dist_dorsal_1(~isnan(dist_dorsal_1))];
     ji_2 = [dist_palmar_2(~isnan(dist_palmar_2));dist_dorsal_2(~isnan(dist_dorsal_2))];
@@ -114,26 +104,6 @@ function plot_correlation_distribution(Survey3DData)
     % saveas(gcf,'annotation_correlation.svg')
 
     [pval, ~] = bonf_holm([P_1(1,2),P_2(1,2),P_all(1,2)],0.05);
-    pvals = string(pval)
-
-
-    % separating palmar and dorsal and subject ID
-    % [R,P] = corrcoef(dist_palmar_1(~isnan(dist_palmar_1)),obliqueness_palmar_1)
-    % [R,P] = corrcoef(dist_dorsal_1(~isnan(dist_dorsal_1)),obliqueness_dorsal_1)
-    % [R,P] = corrcoef(dist_palmar_2(~isnan(dist_palmar_2)),obliqueness_palmar_2)
-    % [R,P] = corrcoef(dist_dorsal_2(~isnan(dist_dorsal_2)),obliqueness_dorsal_2)
-    % 
-    % foo = 0:.1:1;
-    % p = polyfit(dist_palmar_1(~isnan(dist_palmar_1)),obliqueness_palmar_1,1);
-    % plot(foo,p(1).*foo+p(2),'-','Color',bci02_color)
-    % 
-    % p = polyfit(dist_dorsal_1(~isnan(dist_dorsal_1)),obliqueness_dorsal_1,1);
-    % plot(foo,p(1).*foo+p(2),'--','Color',bci02_color)
-    % 
-    % p = polyfit(dist_palmar_2(~isnan(dist_palmar_2)),obliqueness_palmar_2,1);
-    % plot(foo,p(1).*foo+p(2),'-','Color',bci03_color)
-    % 
-    % p = polyfit(dist_dorsal_2(~isnan(dist_dorsal_2)),obliqueness_dorsal_2,1);
-    % plot(foo,p(1).*foo+p(2),'--','Color',bci03_color)
+    % pvals = string(pval)
 end
 

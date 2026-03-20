@@ -47,13 +47,6 @@ function Survey3DDataRecord = launch_annotation_viewers(subject,Survey3DData,axi
             end
         end
         
-        % all color maps together, specifically for DSMB submission
-        % all_color_maps = [];
-        % for ele = 1:length(unique_documented_electrodes)
-        %     this_ele = unique_documented_electrodes{ele};
-        %     all_color_maps = cat(2, all_color_maps, color_map.(this_ele));
-        % end
-        
         for ele = 1:length(unique_documented_electrodes)
             this_ele = unique_documented_electrodes{ele};
             which_map = nansum(color_map.(this_ele),2);
@@ -61,7 +54,6 @@ function Survey3DDataRecord = launch_annotation_viewers(subject,Survey3DData,axi
             if max(which_map,[],"all")>0
                 which_map = which_map./max(which_map,[],"all");
             end
-            % color_map.(this_ele) = which_map;
     
             which_rows = find(strcmp(documented_electrodes,this_ele));
             for ii = 1:length(which_rows)

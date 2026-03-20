@@ -48,35 +48,8 @@ function plot_oblique_distribution(Survey3DData)
     % saveas(gcf,'annotation_obliqueness.png')
     % saveas(gcf,'annotation_obliqueness.svg')
 
-    % figure;
-    % histogram(oblique_proportion(~isnan(oblique_proportion)),0:.2:1)
-    % xlabel('proportion of annotation occluded')
-    % ylabel('number of electrodes')
-    % title('3D annotation visibility')
-    % saveas(gcf,[subject '_annotation_visibility.svg'])
-    % 
-    % for ele = 1:length(documented_electrodes)
-    %     try
-    %         this_ele = documented_electrodes{ele};
-    %         foo = split(this_ele,'_');
-    % 
-    %         figure; set(gcf,'position',[0,0,1109,600])
-    %         subplot(1,2,1); hold on
-    %         axis tight; axis equal
-    %         subplot(1,2,2); hold on
-    %         axis tight; axis equal
-    % 
-    %         disp_shape_single(three_dim.verts_flat,three_dim.faces,color_map.(this_ele),0,0);
-    % 
-    %         sgtitle([foo(2) ['proportion occluded: ' char(string(round(oblique_proportion(double(string(foo(2)))),2)))]])
-    %         saveas(gcf,[subject '_occlusion_electrode_' char(foo(2)) '.png'])
-    %     catch
-    %     end
-    %     close all
-    % end
-
-    nanmean(oblique_1)
-    nanstd(oblique_1)
-    nanmean(oblique_2)
-    nanstd(oblique_2)
+    % nanmean(oblique_1)
+    % nanstd(oblique_1)
+    % nanmean(oblique_2)
+    % nanstd(oblique_2)
 end

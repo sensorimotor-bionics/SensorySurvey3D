@@ -12,6 +12,21 @@ function MorphedMeshes = morph_source_to_target(Survey3DDataRecord,conform_to_2D
         mesh_target = fullfile(location,file);
         [file,location] = uigetfile('*.json','Select target landmark file','.\mesh_utils\');
         landmarks_target = fullfile(location,file);
+
+        % define primary and short axes of target model
+        landmark_report = import_json(landmarks_target,true);
+        try
+            axis_alignment = [landmark_report.EoW'; landmark_report.Mend'; landmark_report.Pend'; landmark_report.Tend'];
+            axis_alignment = "hand_landmarks";
+        catch
+            % in order to perform a simple perspective adjustment, we need
+            % to know a bit more about your model:
+            % enter bottom-most landmark name
+            % enter top-most landmark name
+            % enter left-most landmark name
+            % enter right-most landmark name
+            axis_alignment = [landmark_report.(bottom_most)'; landmark_report.(top_most)'; landmark_report.(left_most)'; landmark_report.(right_most)'];
+        end
     end
 
     % identify the source mesh(es)
@@ -32,11 +47,11 @@ function MorphedMeshes = morph_source_to_target(Survey3DDataRecord,conform_to_2D
             % need to complete separate processing of the dorsum image as dorsum and palm 2D illustrations are not symmetric
             disp('Computing palmar aspect.')
             [two_dim,three_dim] = generalized_mesh_transform(mesh_target,landmarks_target_palmar,mesh_source,landmarks_source,...
-                primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"palmar");
+                primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"palmar","hand_landmarks");
             disp(' ')
             disp('Computing dorsal aspect.')
             [~,three_dim_dorsum] = generalized_mesh_transform(mesh_target,landmarks_target_dorsum,mesh_source,landmarks_source,...
-                primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"dorsal");
+                primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"dorsal","hand_landmarks");
         else
             % dorsum and palm illustrations are symmetric or morphing one 3D mesh to another 3D mesh
             if contains(landmarks_source,'_gltf')
@@ -50,8 +65,9 @@ function MorphedMeshes = morph_source_to_target(Survey3DDataRecord,conform_to_2D
             if ~contains(landmarks_source,'Survey3DLandmarks')
                 landmarks_source = ['Survey3DLandmarks_' landmarks_source];
             end
+
             [two_dim,three_dim] = generalized_mesh_transform(mesh_target,landmarks_target,mesh_source,landmarks_source,...
-                primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"unsided");
+                primary_landmarks,accessory_landmarks,dependencies,anchor_landmark,"unsided",axis_alignment);
             three_dim_dorsum = [];
         end
 

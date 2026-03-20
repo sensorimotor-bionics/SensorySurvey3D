@@ -11,71 +11,48 @@ function [is_oblique, is_palmar, is_dorsal, three_dim_normals] = partition_by_no
     is_dorsal = angles_list>=90+error_space;
     is_palmar = angles_list<=90-error_space;
     is_oblique = angles_list>60&angles_list<120;
-
-    % three_dim_normals = -three_dim_normals;
-
+    
     if viewplot
-        % figure; set(gcf,'position',[0,0,1500,1000])
-        % hold on
-        % shape_viewer(three_dim.verts,three_dim.faces,[0.6 0.6 0.6],gca)
-        % view(20,50)
-        % P = incenter(three_dim_triangulation);
-        % quiver3(P(is_dorsal,1),P(is_dorsal,2),P(is_dorsal,3), ...
-        %  three_dim_normals(is_dorsal,1),three_dim_normals(is_dorsal,2),three_dim_normals(is_dorsal,3),0.5,'color','r');
-        % quiver3(P(is_palmar,1),P(is_palmar,2),P(is_palmar,3), ...
-        %  three_dim_normals(is_palmar,1),three_dim_normals(is_palmar,2),three_dim_normals(is_palmar,3),0.5,'color','c');
-        % quiver3(P(is_oblique,1),P(is_oblique,2),P(is_oblique,3), ...
-        %  three_dim_normals(is_oblique,1),three_dim_normals(is_oblique,2),three_dim_normals(is_oblique,3),0.5,'color','k','LineWidth',1);
-        % h = gca; axis(h,'off'); axis(h,'equal'); set(h,'YDir', 'normal'); set(h,'CameraUpVector',[0 1 0]);
+        figure; set(gcf,'position',[0,0,1500,1000])
+        hold on
+        shape_viewer(three_dim.verts,three_dim.faces,[0.6 0.6 0.6],gca)
+        P = incenter(three_dim_triangulation);
+        quiver3(P(is_dorsal,1),P(is_dorsal,2),P(is_dorsal,3), ...
+         three_dim_normals(is_dorsal,1),three_dim_normals(is_dorsal,2),three_dim_normals(is_dorsal,3),1,'color','r');
+        quiver3(P(is_palmar,1),P(is_palmar,2),P(is_palmar,3), ...
+         three_dim_normals(is_palmar,1),three_dim_normals(is_palmar,2),three_dim_normals(is_palmar,3),1,'color','b');
+        axis(gca,'equal')
+        axis(gca,'off')
+        view(20,50)
+        title('palmar/dorsal face normals')
 
-        % figure; set(gcf,'position',[0,0,1500,1000])
-        % hold on
-        % shape_viewer(three_dim.verts,three_dim.faces,[0.6 0.6 0.6],gca)
-        % P = incenter(three_dim_triangulation);
-        % quiver3(P(is_dorsal,1),P(is_dorsal,2),P(is_dorsal,3), ...
-        %  three_dim_normals(is_dorsal,1),three_dim_normals(is_dorsal,2),three_dim_normals(is_dorsal,3),1,'color','r');
-        % quiver3(P(is_palmar,1),P(is_palmar,2),P(is_palmar,3), ...
-        %  three_dim_normals(is_palmar,1),three_dim_normals(is_palmar,2),three_dim_normals(is_palmar,3),1,'color','b');
-        % axis(gca,'equal')
-        % axis(gca,'off')
-        % view(20,50)
-        % saveas(gcf,'palmar_dorsal.png')
+        figure; set(gcf,'position',[0,0,1500,1500])
+        hold on
+        P = incenter(three_dim_triangulation);
+        quiver3(P(is_dorsal,1),P(is_dorsal,2),P(is_dorsal,3), ...
+         three_dim_normals(is_dorsal,1),three_dim_normals(is_dorsal,2),three_dim_normals(is_dorsal,3),0.5,'color','r');
+        quiver3(P(is_palmar,1),P(is_palmar,2),P(is_palmar,3), ...
+         three_dim_normals(is_palmar,1),three_dim_normals(is_palmar,2),three_dim_normals(is_palmar,3),0.5,'color','b');
+        shape_viewer(three_dim.verts.*[1 1 0]+[0 0 -.9],three_dim.faces(is_dorsal,:),[1 0 0],gca)
+        shape_viewer(three_dim.verts.*[1 1 0]+[0 0 0.9],three_dim.faces(is_palmar,:),[0 0 1],gca)
+        axis(gca,'equal')
+        axis(gca,'off')
+        view(10,40)
+        title('palmar/dorsal separated')
 
-        % figure; set(gcf,'position',[0,0,1500,1500])
-        % hold on
-        % % shape_viewer(three_dim.verts,three_dim.faces,[0.6 0.6 0.6],gca)
-        % P = incenter(three_dim_triangulation);
-        % % plot3(P(:,1),P(:,2),P(:,3),'.','Color',[0.5 0.5 0.5],'MarkerSize',12)
-        % quiver3(P(is_dorsal,1),P(is_dorsal,2),P(is_dorsal,3), ...
-        %  three_dim_normals(is_dorsal,1),three_dim_normals(is_dorsal,2),three_dim_normals(is_dorsal,3),0.5,'color','r');
-        % quiver3(P(is_palmar,1),P(is_palmar,2),P(is_palmar,3), ...
-        %  three_dim_normals(is_palmar,1),three_dim_normals(is_palmar,2),three_dim_normals(is_palmar,3),0.5,'color','b');
-        % shape_viewer(three_dim.verts.*[1 1 0]+[0 0 -.9],three_dim.faces(is_dorsal,:),[1 0 0],gca)
-        % shape_viewer(three_dim.verts.*[1 1 0]+[0 0 0.9],three_dim.faces(is_palmar,:),[0 0 1],gca)
-        % % plot3(P(is_dorsal,1),P(is_dorsal,2),ones(sum(is_dorsal),1).*-.55,'.','Color','r','MarkerSize',5)
-        % % plot3(P(is_palmar,1),P(is_palmar,2),ones(sum(is_palmar),1).*.6,'.','Color','b','MarkerSize',5)
-        % axis(gca,'equal')
-        % axis(gca,'off')
-        % view(10,40)
-        % saveas(gcf,'palmar_dorsal_separated.png')
-
-        % figure; set(gcf,'position',[0,0,1500,1500])
-        % hold on
-        % P = incenter(three_dim_triangulation);
-        % quiver3(P(is_oblique,1),P(is_oblique,2),P(is_oblique,3), ...
-        %  three_dim_normals(is_oblique,1),three_dim_normals(is_oblique,2),three_dim_normals(is_oblique,3),0.5,'color','k');
-        % shape_viewer(three_dim.verts.*[1 1 0]+[0 0 -.9],three_dim.faces(is_dorsal,:),[0.6 0.6 0.6],gca)
-        % shape_viewer(three_dim.verts.*[1 1 0]+[0 0 0.9],three_dim.faces(is_palmar,:),[0.6 0.6 0.6],gca)
-        % shape_viewer(three_dim.verts.*[1 1 0]+[0 0 -.9],three_dim.faces(is_oblique&is_dorsal,:),[1 0 0],gca)
-        % shape_viewer(three_dim.verts.*[1 1 0]+[0 0 0.9],three_dim.faces(is_oblique&is_palmar,:),[0 0 1],gca)
-        % % plot3(P(is_dorsal,1),P(is_dorsal,2),ones(sum(is_dorsal),1).*.6,'.','Color',[0.75 0.75 0.75],'MarkerSize',5)
-        % % plot3(P(is_palmar,1),P(is_palmar,2),ones(sum(is_palmar),1).*-.55,'.','Color',[0.75 0.75 0.75],'MarkerSize',5)
-        % % plot3(P(is_oblique,1),P(is_oblique,2),ones(sum(is_oblique),1).*.6,'.','Color','k','MarkerSize',5)
-        % % plot3(P(is_oblique,1),P(is_oblique,2),ones(sum(is_oblique),1).*-.55,'.','Color','k','MarkerSize',5)
-        % axis(gca,'equal')
-        % axis(gca,'off')
-        % view(10,40)
-        % saveas(gcf,'palmar_dorsal_oblique_separated.png')
+        figure; set(gcf,'position',[0,0,1500,1500])
+        hold on
+        P = incenter(three_dim_triangulation);
+        quiver3(P(is_oblique,1),P(is_oblique,2),P(is_oblique,3), ...
+         three_dim_normals(is_oblique,1),three_dim_normals(is_oblique,2),three_dim_normals(is_oblique,3),0.5,'color','k');
+        shape_viewer(three_dim.verts.*[1 1 0]+[0 0 -.9],three_dim.faces(is_dorsal,:),[0.6 0.6 0.6],gca)
+        shape_viewer(three_dim.verts.*[1 1 0]+[0 0 0.9],three_dim.faces(is_palmar,:),[0.6 0.6 0.6],gca)
+        shape_viewer(three_dim.verts.*[1 1 0]+[0 0 -.9],three_dim.faces(is_oblique&is_dorsal,:),[1 0 0],gca)
+        shape_viewer(three_dim.verts.*[1 1 0]+[0 0 0.9],three_dim.faces(is_oblique&is_palmar,:),[0 0 1],gca)
+        axis(gca,'equal')
+        axis(gca,'off')
+        view(10,40)
+        title('palmar/dorsal/oblique separated')
     end
 end
 

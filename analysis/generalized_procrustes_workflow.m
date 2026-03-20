@@ -33,10 +33,6 @@ dependencies = ["MpP","Tmcp";"MpD","Imcp";"EoW","Pmcp";...
 
 anchor_landmark = "EoW";
 
-% alternatively, could use Survey3D to produce an annotation hotspot file
-% with all of these landmarks pre-named
-% would still have to provide the dependency tree, though
-
 %% load data, process models, flatten maps
 load(survey_data_file,'Survey3DData') % import merged OLSData from multiple sessions
 
@@ -48,12 +44,6 @@ Survey3DData = launch_annotation_viewers('BCI03',Survey3DData,"hand_landmarks");
 Survey3DData = revise_colormaps(Survey3DData);
 
 MorphedMeshes = morph_source_to_target(Survey3DData,conform_to_2D_illustration,primary_landmarks,accessory_landmarks,dependencies,anchor_landmark);
-
-% figure; set(gcf,'position',[0,0,1500,1000])
-% shape_viewer(Survey3DData(10).Model.vertices,Survey3DData(10).Model.faces,Survey3DData(10).ColorMap,gca)
-% 
-% figure; set(gcf,'position',[0,0,1500,1000])
-% shape_viewer(MorphedMeshes(1).ThreeDim.verts_flat,MorphedMeshes(1).ThreeDim.faces,Survey3DData(1).ColorMap,gca)
 
 Survey3DData = flatten_3D_annotations('BCI02',Survey3DData,MorphedMeshes);
 Survey3DData = flatten_3D_annotations('BCI03',Survey3DData,MorphedMeshes);
@@ -97,13 +87,9 @@ end
 Survey3DData = compute_jaccard(Survey3DData);
 
 % plot distribution of jaccard computation
-% gotta do a column for what we're throwing out, tho? just chose max here
 plot_jaccard_distribution(Survey3DData);
 
 % show example images for 2D and 3D annotations for jaccard computation
-plot_jaccard(Survey3DData,15);
-plot_jaccard(Survey3DData,37);
-plot_jaccard(Survey3DData,44);
 plot_jaccard(Survey3DData,39); % ji 0.575179743669897, obliqueness score 0.408454854302412
 plot_jaccard(Survey3DData,74); % ji 0.120798319327731, obliqueness score 0.698514786697225
 
@@ -111,9 +97,6 @@ plot_jaccard(Survey3DData,74); % ji 0.120798319327731, obliqueness score 0.69851
 % i.e. annotations which are invisible to camera or squashed in a 2D representation
 Survey3DData = quantify_oblique_annotations(Survey3DData,MorphedMeshes);
 plot_oblique_distribution(Survey3DData);
-plot_obliqueness(Survey3DData,25);
-plot_obliqueness(Survey3DData,30);
-plot_obliqueness(Survey3DData,13);
 
 % compute correlation between jaccard index and obliqueness of annotation...
 plot_correlation_distribution(Survey3DData);

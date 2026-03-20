@@ -33,10 +33,13 @@ load(survey_data_file,'Survey3DData') % import merged OLSData from multiple sess
 Survey3DData = launch_annotation_viewers('S113',Survey3DData,"hand_landmarks");
 Survey3DData = launch_annotation_viewers('Pro1',Survey3DData,"hand_landmarks");
 
+% NOTE: if not working with the default hand landmark set, replace
+% "hand_landmarks" with a 4x3 matrix defining the xyz positions of the
+% extremes of the long and short axis of your model
+
 MorphedMeshes = morph_source_to_target(Survey3DData,conform_to_2D_illustration,primary_landmarks,accessory_landmarks,dependencies,anchor_landmark);
 
 % now, need to output coverage transfer matrix
-% could store as sparse matrix if necessary?
 % for any annotation that you want to plot, gonna have to multiply
 % projected field with coverage transfer matrix per row
 

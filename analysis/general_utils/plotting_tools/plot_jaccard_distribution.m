@@ -71,7 +71,7 @@ function plot_jaccard_distribution(Survey3DData)
     
     pval(1) = ranksum(dist_palmar_1,dist_dorsal_1);
     pval(2) = ranksum(dist_palmar_2,dist_dorsal_2);
-    pvals = string(pval)
+    % pvals = string(pval)
     
     ylim([0 1])
     text(1.5,0.8,'n.s.','FontSize',14)
@@ -86,10 +86,10 @@ function plot_jaccard_distribution(Survey3DData)
     plot_represented('BCI03',Survey3DData,kept_rows_palmar_2,kept_rows_dorsal_2)
 
     % want mean and standard dev within subject
-    nanmean([dist_palmar_1;dist_dorsal_1])
-    nanstd([dist_palmar_1;dist_dorsal_1])
-    nanmean([dist_palmar_2;dist_dorsal_2])
-    nanstd([dist_palmar_2;dist_dorsal_2])
+    % nanmean([dist_palmar_1;dist_dorsal_1])
+    % nanstd([dist_palmar_1;dist_dorsal_1])
+    % nanmean([dist_palmar_2;dist_dorsal_2])
+    % nanstd([dist_palmar_2;dist_dorsal_2])
 end
 
 %% helper functions

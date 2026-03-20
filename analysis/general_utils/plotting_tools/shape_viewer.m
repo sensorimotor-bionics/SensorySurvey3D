@@ -1,9 +1,8 @@
 function shape_viewer(verts,faces,colors,who)
     h = who;
     hp = patch('vertices',verts,'faces',faces+1,'parent',h);
-    % hp.EdgeColor = colors;
-    hp.FaceAlpha = 1; %0.5
-    hp.EdgeAlpha = 0; %1
+    hp.FaceAlpha = 1;
+    hp.EdgeAlpha = 0;
     hp.FaceVertexCData = colors;
     hp.FaceColor = 'flat';
     material(hp,[0.5 0.5 0.0 20 0.5]);
