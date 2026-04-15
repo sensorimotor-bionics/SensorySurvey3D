@@ -1,7 +1,7 @@
 %%% Preprocessing pipeline
 % Declare paths to data folders and .CSV with requested sessions/sets
 output_directory = "External";
-csv_path = "ExperimentLogExternal.xlsx";
+csv_path = "ExperimentLogExample.xlsx";
 DataDir = "./mesh_utils";
 data_log = readtable(csv_path,'Format','auto'); % must use readcell to allow for multiple sets
 unique_keys = unique(data_log.ExperimentKey);
