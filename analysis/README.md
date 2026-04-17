@@ -143,7 +143,7 @@ Iterative procrustes begins at the top of this list, extracts a row of landmark 
 
 In both demo_two_dim_to_three_dim.m and demo_three_dim_to_three_dim.m, Survey3DData is a structure summarizing experimental data across multiple sessions which is used in most operations (including, of course, launch_annotation_viewers). demo_two_dim_to_three_dim.m loads ```survey_data_file = "Survey3DData_Recent_BCI.mat"``` to produce the variable Survey3DData. The analogous file in demo_three_dim_to_three_dim.m is ```survey_data_file = "Survey3DData_Recent_External.mat"```. ```Survey3DData_Recent_BCI.mat```, ```Survey3DData_Recent_External.mat```, and all demo data can be accessed through the Sensorimotor Bionics Group's DABI in the ```SensorySurvey3D\example_data``` folder.
 
-### File structure organization for compatibility with general_data_extraction.m
+### File structure organization and experimental log design for compatibility with general_data_extraction.m
 
 Those working from scratch may be interested in general_data_extraction.m, which trawls through the mesh_utils folder to concatenate session data in accordance with ExperimentLogExample.xlsx, producing and saving the Survey3DData structure for further processing. ExperimentLogExample.xlsx therefore serves as a template for the formatting of compatible experiment log files.
 
@@ -153,7 +153,7 @@ For trawling purposes, the most important columns within the experiment log are 
 
 #### Experimental log columns Sets and Electrodes
 
-For launch_annotation_viewers to function properly, two additional columns, Sets and Electrodes, are necessary. Entries into the Sets column can be comma-separated lists of numbers if set identifiers are discontinuous (e.g. 1,2,5,6) or colon-separated starting and ending numbers (inclusive) if set identifiers are continuous or arbitrary/unspecified (e.g. 1:4 to represent 1,2,3,4). Entries into the Electrodes must be comma-separated lists of numbers (e.g. 25,146,2,47). The lengths of the lists in the Sets and Electrodes columns should match and should be equal to the number of .json files in the corresponding ```SensorySurvey3D\analysis\mesh_utils\[Subject]\[Subject].data.[Session]``` folder.
+For launch_annotation_viewers to function properly, two additional columns, Sets and Electrodes, are necessary. Entries into the Sets column can be comma-separated lists of numbers if set identifiers are discontinuous (e.g. 1,2,5,6) or colon-separated starting and ending numbers (inclusive) if set identifiers are continuous or arbitrary/unspecified (e.g. 1:4 to represent 1,2,3,4). Entries into the Electrodes column must be comma-separated lists of numbers (e.g. 25,146,2,47). The lengths of the lists in the Sets and Electrodes columns should match and should be equal to the number of .json files in the corresponding ```SensorySurvey3D\analysis\mesh_utils\[Subject]\[Subject].data.[Session]``` folder.
 
 Importantly, trawling within the ```[Subject].data.[Session]``` folder will occur alphabetically. As the .json files in this folder are differentiated by time/date stamp, Sets and Electrodes should be specified in experimental order with increasing timestamp.
 
