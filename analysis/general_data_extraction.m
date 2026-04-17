@@ -39,9 +39,12 @@ for k = 1:length(unique_keys)
 
         % Parse the Electrode IDs
         elec_ids = str2num(data_log.Electrodes{k_idx(i)});
+
+        %%% Optional experimental log columns -- edit as necessary
         ppw = str2num(data_log.PPW{k_idx(i)});
         pw = str2num(data_log.PW{k_idx(i)});
         probe_date = data_log.Date(k_idx(i));
+        %%%
 
         % Load the struct
         fprintf(' - Loading session %s_data_%s\n', data_log.Subject{k_idx(i)}, data_log.Session{k_idx(i)})
@@ -55,9 +58,13 @@ for k = 1:length(unique_keys)
             OLSData(s).Session = data_log.Session{k_idx(i)};
             OLSData(s).Set = set_ids(s);
             OLSData(s).Channel = elec_ids(s);
+
+            %%% Optional experimental log columns -- edit as necessary
             OLSData(s).Date = probe_date;
             OLSData(s).PPW = ppw(s);
             OLSData(s).PW = pw(s);
+            %%%
+            
             OLSData(s).Base = current_paths(s).folder;
             OLSData(s).Annotation = current_paths(s).name;
             OLSData = extract_colormaps(OLSData,s);
