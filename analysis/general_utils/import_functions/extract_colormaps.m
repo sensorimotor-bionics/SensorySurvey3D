@@ -4,7 +4,7 @@ function OLS_struct = extract_colormaps(OLS_struct,idx)
     annotation_path = OLS_struct(idx).Annotation;
     electrode_num = OLS_struct(idx).Channel;
 
-    data = import_json([base_path '\' annotation_path]);
+    data = import_json([base_path '\' annotation_path],false);
     OLS_struct(idx).ElectrodeID = ['e_' char(string(electrode_num))];
     model_options =  data.config.models;
   
@@ -26,7 +26,7 @@ function OLS_struct = extract_colormaps(OLS_struct,idx)
             model.name(model.name=='.') = '_';
             model.name(model.name=='/') = '_';
         end
-        mesh_data = import_json([model.name '.json']);
+        mesh_data = import_json([model.name '.json'],false);
         
         numverts = size(mesh_data.vertices,1);
         temp_field = zeros(numverts,1);
