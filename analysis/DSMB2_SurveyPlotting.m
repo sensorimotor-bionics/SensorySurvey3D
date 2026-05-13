@@ -60,6 +60,7 @@ anchor_landmark = "EoW";
 %%
 
 allData = [data{:}];
+%allData = data{2};
 
 Survey3DData = launch_annotation_viewers('BCI03',allData,"hand_landmarks");
 

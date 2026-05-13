@@ -73,7 +73,10 @@ function Survey3DDataRecord = launch_annotation_viewers(subject,Survey3DData,axi
         three_dim.raw_verts = data.vertices;
         three_dim.faces = data.faces;
 
-        annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,three_dim,subject,mesh_source)
+        %annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,three_dim,subject,mesh_source)
+
+        disp(['Launching rowwise annotation viewer for model ' mesh_source '.'])
+        row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_source)
 
 % %%
 % 

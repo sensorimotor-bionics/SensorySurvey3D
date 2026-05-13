@@ -114,6 +114,7 @@ function extract_SE(session_path,set_ids,output_directory,info)
 
             currField = zeros(numverts,1);          
             currField(currPF.vertices+1) = 1;
+            %currField(currPF.vertices~=0) = 1;
             
             if pf==1
                 model.vertices = mesh_data.vertices;
