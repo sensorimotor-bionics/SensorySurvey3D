@@ -67,8 +67,8 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
     
     for q = 1:length(qualities)
         qualityPresent = false;
-        combFields = zeros(size(Survey3DData(this_electrode(1)).Model.vertices,1),1);
         for ii = 1:length(this_electrode)
+            combFields = zeros(size(Survey3DData(this_electrode(ii)).Model.vertices,1),1);
             for ns = 1:Survey3DData(this_electrode(ii)).NumSense
                 occupied = ~isempty(Survey3DData(this_electrode(ii)).PFQualities(ns).(qualities{q}));
                 if (occupied)
