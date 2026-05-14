@@ -15,11 +15,10 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
     qual_width = 150;
 
     text_xstart = panel_width + 2*spacing;
-    qual_xstart = panel_width + 3*spacing;
-    fig_width = panel_width + qual_width + 4*spacing;
+    qual_start= 
    
 
-    fig = uifigure('Name','Annotation Viewer','Position',[0 0 fig_width+(num_columns)*col_width max([num_per_column*23,panel_width])]);
+    fig = uifigure('Name','Annotation Viewer','Position',[0 0 590+(num_columns)*col_width max([num_per_column*23,panel_width])]);
     p = uipanel(fig,'Position',[spacing spacing panel_width max([num_per_column*22,380])]);
     ax = uiaxes(p,'Position',[spacing spacing panel_width-20 max([num_per_column*21,360])]);
     title(ax,[subject ' ' mesh_source ' Annotations'], 'Interpreter', 'none')
@@ -29,10 +28,10 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
     default_pos = ax.CameraPosition;
 
     
-    uitextarea(fig,'Position',[text_xstart max([num_per_column*21,360])+10 spacing+qual_width+(num_columns)*col_width 20],'Value','Parsed Electrode Details',...
+    uitextarea(fig,'Position',[text_xstart max([num_per_column*21,360])+10 10+qual_width+(num_columns)*col_width 20],'Value','Parsed Electrode Details',...
         'FontWeight','bold','HorizontalAlignment','center','FontColor',[0 0.5 0.1]);
     cbx = [];
-    bg = uibuttongroup(fig,'Position',[text_xstart 10 (num_columns)*col_width max([num_per_column*21,360])]);
+    bg = uibuttongroup(fig,'Position',[text_xstart 10 0+(num_columns)*col_width max([num_per_column*21,360])]);
 
     electrode_counter = 1;
     for col = 1:num_columns
@@ -67,7 +66,7 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
         end
     end
     
-    qcbx = uitree(fig,'checkbox','Position',[qual_xstart+(num_columns)*col_width 10 qual_width max([num_per_column*21,360])]);
+    qcbx = uitree(fig,'checkbox','Position',[430+(num_columns)*col_width 10 qual_width max([num_per_column*21,360])]);
     qcbx.CheckedNodesChangedFcn = {@quality_change,three_dim,ax,cbx,Survey3DData,bg};
     parent = uitreenode(qcbx,'Text','Qualities');
     for q = 1:length(qualities)
