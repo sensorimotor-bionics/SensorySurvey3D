@@ -63,9 +63,6 @@ function extract_SE(session_path,set_ids,output_directory,info)
         model_options =  data.config.models;
         projected_fields = data.projectedFields;
 
-        numSens = length(projected_fields);
-        SurveyData(ii).NumSense = numSens;
-
         configQualities = data.config.qualityTypes;
         numQual = size(configQualities,1);
         for q = 1:numQual
@@ -77,13 +74,10 @@ function extract_SE(session_path,set_ids,output_directory,info)
         qualNames{numQual + 1} = 'Unspecified';
         qualNames{numQual + 2} = 'No_report';
 
-        for pf = 1:numSens
-            for q = 1:numQual+2
-                SurveyData(ii).PFQualities(pf).(qualNames{q}) = [];
-            end
-        end
+        numPF = length(projected_fields);
 
-        if numSens == 0
+        if numPF == 0
+            SurveyData(ii).NumSense = 0;
             for q = 1:numQual+2
                 SurveyData(ii).PFQualities.(qualNames{q}) = [];
             end
@@ -94,8 +88,39 @@ function extract_SE(session_path,set_ids,output_directory,info)
             continue
         end
 
-        for pf = 1:numSens
+        % Go through pfs and make sure that they actually have vertices,
+        % count and idx pfs with vertices
+        numSense = 0;
+        senseIdx = [];
+        for pf = 1:numPF
             currPF = projected_fields(pf);
+            if ~isempty(currPF.vertices)
+                numSense = numSense + 1;
+                senseIdx = [senseIdx pf];
+            end
+        end
+        % If none of them have vertices, it's an empty report
+        if numSense == 0
+            SurveyData(ii).NumSense = 0;
+            for q = 1:numQual+2
+                SurveyData(ii).PFQualities.(qualNames{q}) = [];
+            end
+            SurveyData(ii).PFQualities.No_report = true;
+            SurveyData(ii).Model = 'No_Report';
+            SurveyData(ii).ModelName = 'No_Report';
+            SurveyData(ii).PFBasics = 'No_Report';
+            continue
+        end
+
+        SurveyData(ii).NumSense = numSense;
+        for ns = 1:numSense
+            for q = 1:numQual+2
+                SurveyData(ii).PFQualities(ns).(qualNames{q}) = [];
+            end
+        end
+
+        for ns = 1:numSense
+            currPF = projected_fields(senseIdx(ns));
             model.id = currPF.model;
             model.id(model.id==' ') = '';
             model.id(model.id=='(') = '_';
@@ -116,7 +141,7 @@ function extract_SE(session_path,set_ids,output_directory,info)
             currField(currPF.vertices+1) = 1;
             %currField(currPF.vertices~=0) = 1;
             
-            if pf==1
+            if ns==1
                 model.vertices = mesh_data.vertices;
                 model.faces = mesh_data.faces;
                 model.filename = mesh_data.filename;
@@ -131,24 +156,24 @@ function extract_SE(session_path,set_ids,output_directory,info)
             savePF.naturalness = currPF.naturalness;
             savePF.pain = currPF.pain;
             savePF.intensity = currPF.intensity;
-            SurveyData(ii).PFBasics(pf) = savePF;
+            SurveyData(ii).PFBasics(ns) = savePF;
 
             % If nothing is drawn, label as no report and move on
             if sum(currField) == 0
-                SurveyData(ii).PFQualities(pf).No_report = true;
+                SurveyData(ii).PFQualities(ns).No_report = true;
                 continue
             end
 
             numPFQual = size(currPF.qualities,1);
             if numPFQual == 0
-                SurveyData(ii).PFQualities(pf).Unspecified = true;
+                SurveyData(ii).PFQualities(ns).Unspecified = true;
             end
             for qPf = 1:numPFQual
                 qType = currPF.qualities(qPf).type;
                 qType(qType==' ') = '_';
                 qType = [upper(qType(1)) lower(qType(2:end))];
                 qData = rmfield(currPF.qualities(qPf),'type');
-                SurveyData(ii).PFQualities(pf).(qType) = qData;
+                SurveyData(ii).PFQualities(ns).(qType) = qData;
             end
         end
     end

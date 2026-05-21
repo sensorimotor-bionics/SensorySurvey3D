@@ -5,7 +5,7 @@ function [pbt_regions, dbt_regions] = GetHandSegments(plot_segments)
     orig_size = [1200, 1050];
     % Palm segments
     [a,b,~] = fileparts(mfilename('fullpath'));
-    palm_boundary_template = imread(fullfile(a, '..', 'chicago_images','BoundaryMapPalm.png'));
+    palm_boundary_template = imread(fullfile(a, 'OLS_images','BoundaryMapPalm.png'));
     pbt_resize = imresize(palm_boundary_template, orig_size); % Resize to survey hand map image
     pbt_flat = ~logical(mean(pbt_resize,3));
     pbt_thin = ~bwmorph(pbt_flat, 'skel', Inf);
@@ -71,7 +71,7 @@ function [pbt_regions, dbt_regions] = GetHandSegments(plot_segments)
     end
     
     % Dorsum segments
-    dorsum_boundary_template = imread(fullfile(a, '..', 'chicago_images','BoundaryMapDorsum.png'));
+    dorsum_boundary_template = imread(fullfile(a, 'OLS_images','BoundaryMapDorsum.png'));
     dbt_resize = imresize(dorsum_boundary_template, orig_size); % Resize to survey hand map image
     dbt_flat = ~logical(mean(dbt_resize,3));
     dbt_thin = ~bwmorph(dbt_flat, 'skel', Inf);

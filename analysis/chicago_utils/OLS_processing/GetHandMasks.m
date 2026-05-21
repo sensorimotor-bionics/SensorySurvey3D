@@ -1,6 +1,6 @@
 function [palmar_mask, palmar_template, dorsum_mask, dorsal_template] = GetHandMasks()
     % Palm mask
-    palmar_template = imread(".\chicago_images\palm_right.png");
+    palmar_template = imread(".\chicago_utils\OLS_processing\OLS_images\palm_right.png");
     orig_size = size(palmar_template);
     bw_image = imbinarize(palmar_template); 
     bw_image = bw_image(:,:,1);
@@ -11,7 +11,7 @@ function [palmar_mask, palmar_template, dorsum_mask, dorsal_template] = GetHandM
     palmar_mask = cat(1, mask, zeros(100, orig_size(2))); % Return to original size
 
     % Dorsum mask
-    dorsal_template = imread(".\chicago_images\dorsum_right.png");
+    dorsal_template = imread(".\chicago_utils\OLS_processing\OLS_images\dorsum_right.png");
     orig_size = size(dorsal_template);
     bw_image = imbinarize(dorsal_template); 
     bw_image = bw_image(:,:,1);

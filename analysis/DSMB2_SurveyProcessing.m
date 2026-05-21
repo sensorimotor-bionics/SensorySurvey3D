@@ -12,7 +12,7 @@ clear all;
 close all;
 
 % Where to store extracted files
-input_directory = fullfile(ProjPath, 'SurveyRawDataDev2');
+input_directory = fullfile(ProjPath, 'SurveyRawDataDev3');
 
 subject_list = {'BCI02', 'BCI03'};
 
@@ -30,7 +30,7 @@ end
 
 allData = [data{:}];
 
-allData = createMaps(allData);
+allData2 = createMaps(allData);
 
 
 
