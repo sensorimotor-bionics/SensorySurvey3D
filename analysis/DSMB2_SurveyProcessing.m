@@ -32,16 +32,9 @@ allData = [data{:}];
 
 allData2 = createMaps(allData);
 
-
-
 %% Launch Annotation Viewers for each particpant
 
-allData = [data{:}];
-
 for s = 1:length(subject_list)
-    allData = launch_annotation_viewers(subject_list{s},allData,"hand_landmarks");
+    launch_annotation_viewers(subject_list{s},allData2,"hand_landmarks");
 end
-
-%allData = launch_annotation_viewers('BCI02',allData,"hand_landmarks");
-%allData = launch_annotation_viewers('BCI03',allData,"hand_landmarks");
 

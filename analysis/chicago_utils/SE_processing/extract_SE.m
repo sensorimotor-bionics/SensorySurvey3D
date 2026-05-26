@@ -158,12 +158,6 @@ function extract_SE(session_path,set_ids,output_directory,info)
             savePF.intensity = currPF.intensity;
             SurveyData(ii).PFBasics(ns) = savePF;
 
-            % If nothing is drawn, label as no report and move on
-            if sum(currField) == 0
-                SurveyData(ii).PFQualities(ns).No_report = true;
-                continue
-            end
-
             numPFQual = size(currPF.qualities,1);
             if numPFQual == 0
                 SurveyData(ii).PFQualities(ns).Unspecified = true;

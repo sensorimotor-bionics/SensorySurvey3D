@@ -70,57 +70,11 @@ function row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_sou
     bg.SelectionChangedFcn = {@rselection,three_dim,ax,Survey3DData,qualities,default_pos};
     
     this_row = find([bg.Buttons.Value]); % which rows correspond to selected electrode
-    %appropriate_fields = [];
-    
-    appropriate_fields = zeros(size(Survey3DData(this_row).Model.vertices,1),1);
-    for ns = 1:Survey3DData(this_row).NumSense
-        currSens = Survey3DData(this_row).PFQualities(ns);
-        currSens = rmfield(currSens,'No_report');
-        if any(~structfun(@isempty,currSens))
-            appropriate_fields = appropriate_fields + Survey3DData(this_row).PFBasics(ns).fields;
-        end        
+
+    combFields = zeros(size(Survey3DData(1).Model.vertices,1),1);
+    if ~ischar(Survey3DData(this_row).binaryMap)
+        combFields = Survey3DData(this_row).binaryMap;
     end
-    appropriate_fields(appropriate_fields>0) = 1; %for now, just binarily add up all the maps
+    shape_viewer(three_dim.raw_verts,three_dim.faces,combFields,ax)
 
-    % for q = 1:length(qualities)
-    %     combFields = zeros(size(Survey3DData(this_row).Model.vertices,1),1);
-    %     for ns = 1:Survey3DData(this_row).NumSense
-    %         occupied = ~isempty(Survey3DData(this_row).PFQualities(ns).(qualities{q}));
-    %         if (occupied)
-    %             combFields = combFields + Survey3DData(this_row).PFBasics(ns).fields;
-    %             appropriate_fields = cat(2,appropriate_fields,combFields);
-    %         end
-    %     end
-    %     combFields(combFields>0) = 1; %for now, just binarily add up all the maps
-    %     appropriate_fields = cat(2,appropriate_fields,combFields);
-
-
-        % qualityPresent = false;
-        % combFields = zeros(size(Survey3DData(this_electrode(1)).Model.vertices,1),1);
-        % for ii = 1:length(this_electrode)
-        %     for ns = 1:Survey3DData(this_electrode(ii)).NumSense
-        %         occupied = ~isempty(Survey3DData(this_electrode(ii)).PFQualities(ns).(qualities{q}));
-        %         if (occupied)
-        %             qualityPresent = true;
-        %             combFields = combFields + Survey3DData(this_electrode(ii)).PFBasics(ns).fields;
-        %         end
-        %     end
-        %     combFields(combFields>0) = 1; %for now, just binarily add up all the maps
-        %     if (qualityPresent)
-        %         % check box and consider these fields in the overall display
-        %         qcbx.CheckedNodes = cat(1,qcbx.CheckedNodes,qcbx.Children(1).Children(q));
-        %         appropriate_fields = cat(2,appropriate_fields,combFields);
-        %     end
-        % end
-        % which_occupied = ~cellfun(@isempty,{Survey3DData(this_row).(qualities{q})});
-        % if sum(which_occupied)
-        %     appropriate_fields = cat(2,appropriate_fields,cell2mat(cellfun(@(x) x.fields,{Survey3DData(this_row).(qualities{q})},'UniformOutput',false)));
-        % end
-    % end
-    
-    temp = nanmean(appropriate_fields,2);
-    if max(temp)>0
-        temp = temp./max(temp);
-    end
-    shape_viewer(three_dim.raw_verts,three_dim.faces,temp,ax)
 end
