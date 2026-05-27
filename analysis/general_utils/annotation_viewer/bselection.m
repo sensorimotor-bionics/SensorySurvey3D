@@ -7,7 +7,9 @@ function bselection(bg,eventData,three_dim,ax,cbx,Survey3DData,qualities,qcbx,de
     end
 
     % check the relevant qualities
-    this_electrode = find(strcmp({Survey3DData.ElectrodeID},bg.Buttons(find([bg.Buttons.Value])).Text)); % which rows correspond to selected electrode
+    bText = bg.Buttons(find([bg.Buttons.Value])).Text;
+    eText = getEText(bText);
+    this_electrode = find(strcmp({Survey3DData.ElectrodeID},eText)); % which rows correspond to selected electrode
     qcbx.CheckedNodes = [];
 
     combFields = zeros(size(Survey3DData(1).Model.vertices,1),1);

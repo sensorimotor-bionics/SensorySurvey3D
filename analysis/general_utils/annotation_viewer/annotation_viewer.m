@@ -38,7 +38,7 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
     for col = 1:num_columns
         if num_columns == 1
             for ii = 1:size(unique_documented_electrodes,2)
-                buttonText = unique_documented_electrodes{electrode_counter};
+                buttonText = getBText(unique_documented_electrodes{electrode_counter});
                 uiradiobutton(bg,'Position',[10+(col-1)*col_width (num_per_column-ii)*20+10 text_width 15],'Text',buttonText);
                 electrode_counter = electrode_counter+1;
             end
@@ -47,20 +47,20 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
 
             if num_remaining == 0
                 for ii = 1:30
-                    buttonText = unique_documented_electrodes{electrode_counter};
+                    buttonText = getBText(unique_documented_electrodes{electrode_counter});
                     uiradiobutton(bg,'Position',[10+(col-1)*col_width (num_per_column-ii)*20+10 text_width 15],'Text',buttonText);
                     electrode_counter = electrode_counter+1;
                 end
             else
                 for ii = 1:num_remaining
-                    buttonText = unique_documented_electrodes{electrode_counter};
+                    buttonText = getBText(unique_documented_electrodes{electrode_counter});
                     uiradiobutton(bg,'Position',[10+(col-1)*col_width (num_per_column-ii)*20+10 text_width 15],'Text',buttonText);
                     electrode_counter = electrode_counter+1;
                 end
             end
         else
             for ii = 1:30
-                buttonText = unique_documented_electrodes{electrode_counter};
+                buttonText = getBText(unique_documented_electrodes{electrode_counter});
                 uiradiobutton(bg,'Position',[10+(col-1)*col_width (num_per_column-ii)*20+10 text_width 15],'Text',buttonText);
                 electrode_counter = electrode_counter+1;
             end
@@ -77,7 +77,9 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
     
     bg.SelectionChangedFcn = {@bselection,three_dim,ax,cbx,Survey3DData,qualities,qcbx,default_pos};
     
-    this_electrode = find(strcmp({Survey3DData.ElectrodeID},bg.Buttons(find([bg.Buttons.Value])).Text)); % which rows correspond to selected electrode
+    bText = bg.Buttons(find([bg.Buttons.Value])).Text;
+    eText = getEText(bText);
+    this_electrode = find(strcmp({Survey3DData.ElectrodeID},eText)); % which rows correspond to selected electrode
     qcbx.CheckedNodes = [];    
 
     combFields = zeros(size(Survey3DData(1).Model.vertices,1),1);
