@@ -16,11 +16,11 @@ close all;
 addpath(genpath(pwd()))
 
 % Location of the log file that indicates which sessions and sets to use
-log_path = fullfile(pwd(), "SurveyLog_DSMB_chicago.xlsx");
+log_path = fullfile(pwd(), "SurveyLog_Paper_AMXE.xlsx");
 % The location that data is stored in
 DataDir = cc.load_config.system().backup_path;
 % Where to store extracted files
-output_directory = fullfile(ProjPath, 'SurveyRawDataDev3');
+output_directory = fullfile(ProjPath, 'SurveyRawData_Survey3DPaper');
 
 data_log = readtable(log_path,'Format','auto'); % must use readcell to allow for multiple sets
 elec_log = readtable("ElectrodeCharacteristics.xlsx",'Format','auto'); % must use readcell to allow for multiple sets

@@ -12,7 +12,7 @@ clear all;
 close all;
 
 % Where to store extracted files
-input_directory = fullfile(ProjPath, 'SurveyRawDataDev3');
+input_directory = fullfile(ProjPath, 'SurveyRawData_Survey3DPaper');
 
 subject_list = {'BCI02', 'BCI03'};
 
@@ -34,7 +34,7 @@ allData2 = createMaps(allData);
 
 %% Launch Annotation Viewers for each particpant
 
-for s = 1%:length(subject_list)
+for s = 1:length(subject_list)
     launch_annotation_viewers(subject_list{s},allData2,"hand_landmarks");
 end
 

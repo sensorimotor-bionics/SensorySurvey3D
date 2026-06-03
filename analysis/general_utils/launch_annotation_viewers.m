@@ -35,8 +35,8 @@ function launch_annotation_viewers(subject,Survey3DDataAll,axis_alignment)
         disp(['Launching annotation viewer for model ' mesh_source '.'])
         annotation_viewer(Survey3DData,sorted_elec,qualities,three_dim,subject,mesh_source)
 
-        % disp(['Launching rowwise annotation viewer for model ' mesh_source '.'])
-        % row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_source)
+        disp(['Launching rowwise annotation viewer for model ' mesh_source '.'])
+        row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_source)
 
         %% annotation viewer (use for alignment and procrustes)
         % disp(['Launching annotation viewer for model ' mesh_source '.'])
