@@ -12,7 +12,7 @@ clear all;
 close all;
 
 % Where to store extracted files
-input_directory = fullfile(ProjPath, 'SurveyRawData_Survey3DPaper');
+input_directory = fullfile(ProjPath, 'SurveyRawDataDev3');
 
 subject_list = {'BCI02', 'BCI03'};
 
@@ -26,15 +26,34 @@ for s = 1:length(subject_list)
     fprintf(' - Done!\n')
 end
 
+%% Load in conversion matrix
+
+conversionMatrix = sparse(load("chicago_utils\mesh_info\default_hand_r_vertical-default_hand_r_vertical_high_res.mat").coverage_transfer_matrix);
+
+%% Test conversion
+
+% testData = allData2(1).binaryMap;
+% tic
+% convertedData = double(sum(conversionMatrix.*sparse(repmat(testData',[size(conversionMatrix,1),1])),2)>=1.5);
+% toc
+% tic
+% convertedData2 = double((conversionMatrix*testData)>=1.5);
+% toc
+
 %% Create Maps for plotting
 
 allData = [data{:}];
 
 allData2 = createMaps(allData);
 
+modelIn = allData2(find(strcmp({allData2.ModelName},'default_hand_r_vertical.glb'),1)).Model;
+modelOut = allData2(find(strcmp({allData2.ModelName},'default_hand_r_vertical_high_res.glb'),1)).Model;
+
+allData3 = convertMaps(allData2,conversionMatrix,modelIn,modelOut);
+
 %% Launch Annotation Viewers for each particpant
 
 for s = 1:length(subject_list)
-    launch_annotation_viewers(subject_list{s},allData2,"hand_landmarks");
+    launch_annotation_viewers(subject_list{s},allData3,"hand_landmarks");
 end
 
