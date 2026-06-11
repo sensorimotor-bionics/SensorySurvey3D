@@ -1,4 +1,4 @@
-function quality_change(qcbx,eventData,three_dim,ax,cbx,Survey3DData,bg)
+function quality_change(qcbx,eventData,three_dim,ax,cbx,Survey3DData,bg,mode)
     cla(ax)
 
     % check the relevant qualities
@@ -16,10 +16,16 @@ function quality_change(qcbx,eventData,three_dim,ax,cbx,Survey3DData,bg)
                 continue
             end
             for q = 1:length(qualities)
-                combFields = combFields + Survey3DData(this_electrode(d)).binaryQualities.(qualities{q});
+                if mode == "bin"
+                    combFields = combFields + Survey3DData(this_electrode(d)).binaryQualities.(qualities{q});
+                elseif mode == "freq"
+                    combFields = combFields + Survey3DData(this_electrode(d)).freqQualities.(qualities{q});
+                end
             end
         end
-        combFields(combFields>0) = 1; %for now, just binarily add up all the maps
+        if mode == "bin"
+            combFields(combFields>0) = 1; %for now, just binarily add up all the maps
+        end
     
         shape_viewer(three_dim.raw_verts,three_dim.faces,combFields,ax)
     else

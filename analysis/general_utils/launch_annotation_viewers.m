@@ -1,4 +1,4 @@
-function launch_annotation_viewers(subject,Survey3DDataAll,axis_alignment)
+function launch_annotation_viewers(subject,Survey3DDataAll,axis_alignment,mode)
 
     %% import 3D mesh and annotation colormaps
     Survey3DDataRef = Survey3DDataAll;
@@ -22,6 +22,11 @@ function launch_annotation_viewers(subject,Survey3DDataAll,axis_alignment)
         unique_documented_electrodes = unique(documented_electrodes);
 
         elec_split = squeeze(split(unique_documented_electrodes,'_'));
+        % Make sure that the dimension is right (if there is only one
+        % unique electrode
+        if length(unique_documented_electrodes) == 1
+            elec_split = elec_split';
+        end
         elec_list = cellfun(@str2num,elec_split(:,2:end));
         [~, sort_idx] = sortrows(elec_list);
         sorted_elec = unique_documented_electrodes(:,sort_idx);
@@ -33,10 +38,10 @@ function launch_annotation_viewers(subject,Survey3DDataAll,axis_alignment)
         three_dim.faces = data.faces;
 
         disp(['Launching annotation viewer for model ' mesh_source '.'])
-        annotation_viewer(Survey3DData,sorted_elec,qualities,three_dim,subject,mesh_source)
+        annotation_viewer(Survey3DData,sorted_elec,qualities,three_dim,subject,mesh_source,mode)
 
-        disp(['Launching rowwise annotation viewer for model ' mesh_source '.'])
-        row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_source)
+        % disp(['Launching rowwise annotation viewer for model ' mesh_source '.'])
+        % row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_source)
 
         %% annotation viewer (use for alignment and procrustes)
         % disp(['Launching annotation viewer for model ' mesh_source '.'])

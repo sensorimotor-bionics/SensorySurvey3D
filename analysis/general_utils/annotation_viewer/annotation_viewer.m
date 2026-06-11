@@ -1,4 +1,4 @@
-function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,three_dim,subject,mesh_source)
+function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,three_dim,subject,mesh_source,mode)
     % a maximum of 30 entries per column, for cleanliness
     if size(unique_documented_electrodes,2) > 30
         num_per_column = 30;
@@ -68,14 +68,14 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
     end
     
     qcbx = uitree(fig,'checkbox','Position',[qual_xstart+(num_columns)*col_width 10 qual_width max([num_per_column*21,360])]);
-    qcbx.CheckedNodesChangedFcn = {@quality_change,three_dim,ax,cbx,Survey3DData,bg};
+    qcbx.CheckedNodesChangedFcn = {@quality_change,three_dim,ax,cbx,Survey3DData,bg,mode};
     parent = uitreenode(qcbx,'Text','Qualities');
     for q = 1:length(qualities)
         uitreenode(parent,'Text',qualities{q});
     end
     expand(qcbx)
     
-    bg.SelectionChangedFcn = {@bselection,three_dim,ax,cbx,Survey3DData,qualities,qcbx,default_pos};
+    bg.SelectionChangedFcn = {@bselection,three_dim,ax,cbx,Survey3DData,qualities,qcbx,default_pos,mode};
     
     bText = bg.Buttons(find([bg.Buttons.Value])).Text;
     eText = getEText(bText);
@@ -87,7 +87,11 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
         if ischar(Survey3DData(this_electrode(d)).binaryMap)
             continue
         end
-        combFields = combFields + Survey3DData(this_electrode(d)).binaryMap;
+        if mode == "bin"
+            combFields = combFields + Survey3DData(this_electrode(d)).binaryMap;
+        elseif mode == "freq"
+            combFields = combFields + Survey3DData(this_electrode(d)).freqMap;
+        end
         for q = 1:length(qualities)-1
             if (sum(Survey3DData(this_electrode(d)).binaryQualities.(qualities{q}),"all") > 0)
                 qcbx.CheckedNodes = cat(1,qcbx.CheckedNodes,qcbx.Children(1).Children(q));
@@ -97,7 +101,9 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
     if sum(combFields,'all') == 0
         qcbx.CheckedNodes = cat(1,qcbx.CheckedNodes,qcbx.Children(1).Children(length(qualities)));
     end
-    combFields(combFields>0) = 1; %for now, just binarily add up all the maps
+    if mode == "bin"
+        combFields(combFields>0) = 1; %for now, just binarily add up all the maps
+    end
 
     shape_viewer(three_dim.raw_verts,three_dim.faces,combFields,ax)
 

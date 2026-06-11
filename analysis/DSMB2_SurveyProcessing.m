@@ -51,9 +51,34 @@ modelOut = allData2(find(strcmp({allData2.ModelName},'default_hand_r_vertical_hi
 
 allData3 = convertMaps(allData2,conversionMatrix,modelIn,modelOut);
 
+%%
+
+% Earliest date to consolidate 'uuuu-MM-dd')
+earliest = '2025-11-01';
+earliest = datetime(earliest, 'Format', 'uuuu-MM-dd'); 
+% Latest date to consolidate 'uuuu-MM-dd')
+latest = '2026-07-01';
+latest = datetime(latest, 'Format', 'uuuu-MM-dd'); 
+
+consolidateModel = 'default_hand_r_vertical_high_res.glb';
+
+for s = 1:length(subject_list)
+    consolidatedElec{s} = consolidateElectrodes(allData3,subject_list{s},consolidateModel,earliest,latest);
+end
+
+allConsElec = [consolidatedElec{:}];
+
+%%
+
+for s = 1:length(subject_list)
+    allElec(s) = allElecDSMB(allConsElec,subject_list{s},consolidateModel);
+end
+
+%allElec = [allElec{:}];
+
 %% Launch Annotation Viewers for each particpant
 
 for s = 1:length(subject_list)
-    launch_annotation_viewers(subject_list{s},allData3,"hand_landmarks");
+    launch_annotation_viewers(subject_list{s},allElec,"hand_landmarks","freq");
 end
 

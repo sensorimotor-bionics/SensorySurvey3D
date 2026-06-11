@@ -1,4 +1,4 @@
-function bselection(bg,eventData,three_dim,ax,cbx,Survey3DData,qualities,qcbx,default_pos)
+function bselection(bg,eventData,three_dim,ax,cbx,Survey3DData,qualities,qcbx,default_pos,mode)
     ax.CameraPosition = default_pos;
     if isa(ax.Children(1),'matlab.graphics.primitive.Patch')
         delete(ax.Children(1))
@@ -17,7 +17,11 @@ function bselection(bg,eventData,three_dim,ax,cbx,Survey3DData,qualities,qcbx,de
         if ischar(Survey3DData(this_electrode(d)).binaryMap)
             continue
         end
-        combFields = combFields + Survey3DData(this_electrode(d)).binaryMap;
+        if mode == "bin"
+            combFields = combFields + Survey3DData(this_electrode(d)).binaryMap;
+        elseif mode == "freq"
+            combFields = combFields + Survey3DData(this_electrode(d)).freqMap;
+        end
         for q = 1:length(qualities)-1
             if (sum(Survey3DData(this_electrode(d)).binaryQualities.(qualities{q}),"all") > 0)
                 qcbx.CheckedNodes = cat(1,qcbx.CheckedNodes,qcbx.Children(1).Children(q));
@@ -27,7 +31,9 @@ function bselection(bg,eventData,three_dim,ax,cbx,Survey3DData,qualities,qcbx,de
     if sum(combFields,'all') == 0
         qcbx.CheckedNodes = cat(1,qcbx.CheckedNodes,qcbx.Children(1).Children(length(qualities)));
     end
-    combFields(combFields>0) = 1; %for now, just binarily add up all the maps
+    if mode == "bin"
+        combFields(combFields>0) = 1; %for now, just binarily add up all the maps
+    end
 
     shape_viewer(three_dim.raw_verts,three_dim.faces,combFields,ax)
 
