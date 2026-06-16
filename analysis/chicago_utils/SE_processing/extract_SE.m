@@ -85,6 +85,8 @@ function extract_SE(session_path,set_ids,output_directory,info)
             SurveyData(ii).Model = 'No_Report';
             SurveyData(ii).ModelName = 'No_Report';
             SurveyData(ii).PFBasics = 'No_Report';
+            SurveyData(ii).BinaryMap = 'No_Report';
+            SurveyData(ii).BinaryQualities = 'No_Report';
             continue
         end
 
@@ -109,6 +111,8 @@ function extract_SE(session_path,set_ids,output_directory,info)
             SurveyData(ii).Model = 'No_Report';
             SurveyData(ii).ModelName = 'No_Report';
             SurveyData(ii).PFBasics = 'No_Report';
+            SurveyData(ii).BinaryMap = 'No_Report';
+            SurveyData(ii).BinaryQualities = 'No_Report';
             continue
         end
 
@@ -170,6 +174,32 @@ function extract_SE(session_path,set_ids,output_directory,info)
                 SurveyData(ii).PFQualities(ns).(qType) = qData;
             end
         end
+
+        % Compute BinaryMap and BinaryQualities
+        binaryMap = zeros(size(SurveyData(ii).Model.vertices,1),1);
+        binaryQualities = struct();
+    
+        qualities = fieldnames(SurveyData(ii).PFQualities);
+    
+        for q = 1:length(qualities) 
+            binaryQualities.(qualities{q}) = zeros(size(SurveyData(ii).Model.vertices,1),1);
+        end
+        
+        for ns = 1:SurveyData(ii).NumSense
+            for q = 1:length(qualities) 
+                if (~isempty(SurveyData(ii).PFQualities(ns).(qualities{q})))
+                    binaryMap = binaryMap + SurveyData(ii).PFBasics(ns).fields;
+                    binaryQualities.(qualities{q}) = binaryQualities.(qualities{q}) + SurveyData(ii).PFBasics(ns).fields;
+                end
+            end              
+        end
+        binaryMap(binaryMap>0) = 1;
+        for q = 1:length(qualities) 
+            binaryQualities.(qualities{q})(binaryQualities.(qualities{q})>0) = 1;
+        end
+        SurveyData(ii).BinaryMap = binaryMap;
+        SurveyData(ii).BinaryQualities = binaryQualities;
+
     end
 
     if length(remSets) > 0

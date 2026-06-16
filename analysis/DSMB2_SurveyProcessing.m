@@ -12,7 +12,7 @@ clear all;
 close all;
 
 % Where to store extracted files
-input_directory = fullfile(ProjPath, 'SurveyRawDataDev3');
+input_directory = fullfile(ProjPath, 'SurveyRawDataDev4');
 
 subject_list = {'BCI02', 'BCI03'};
 
