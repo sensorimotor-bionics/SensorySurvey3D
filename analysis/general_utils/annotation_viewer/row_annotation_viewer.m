@@ -72,8 +72,8 @@ function row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_sou
     this_row = find([bg.Buttons.Value]); % which rows correspond to selected electrode
 
     combFields = zeros(size(Survey3DData(1).Model.vertices,1),1);
-    if ~ischar(Survey3DData(this_row).binaryMap)
-        combFields = Survey3DData(this_row).binaryMap;
+    if ~ischar(Survey3DData(this_row).BinaryMap)
+        combFields = Survey3DData(this_row).BinaryMap;
     end
     shape_viewer(three_dim.raw_verts,three_dim.faces,combFields,ax)
 

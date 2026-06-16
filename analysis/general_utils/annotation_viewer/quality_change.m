@@ -12,14 +12,14 @@ function quality_change(qcbx,eventData,three_dim,ax,cbx,Survey3DData,bg,mode)
 
         combFields = zeros(size(Survey3DData(1).Model.vertices,1),1);
         for d = 1:length(this_electrode)
-            if ischar(Survey3DData(this_electrode(d)).binaryMap)
+            if ischar(Survey3DData(this_electrode(d)).BinaryMap)
                 continue
             end
             for q = 1:length(qualities)
                 if mode == "bin"
-                    combFields = combFields + Survey3DData(this_electrode(d)).binaryQualities.(qualities{q});
+                    combFields = combFields + Survey3DData(this_electrode(d)).BinaryQualities.(qualities{q});
                 elseif mode == "freq"
-                    combFields = combFields + Survey3DData(this_electrode(d)).freqQualities.(qualities{q});
+                    combFields = combFields + Survey3DData(this_electrode(d)).FreqQualities.(qualities{q});
                 end
             end
         end

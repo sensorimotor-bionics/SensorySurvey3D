@@ -26,32 +26,20 @@ for s = 1:length(subject_list)
     fprintf(' - Done!\n')
 end
 
-%% Load in conversion matrix
+data = [data{:}];
+
+%% Mesh conversion (optional): Load in conversion matrix (can take a few minutes)
 
 conversionMatrix = sparse(load("chicago_utils\mesh_info\default_hand_r_vertical-default_hand_r_vertical_high_res.mat").coverage_transfer_matrix);
 
-%% Test conversion
+%% Mesh conversion (optional)
 
-% testData = allData2(1).binaryMap;
-% tic
-% convertedData = double(sum(conversionMatrix.*sparse(repmat(testData',[size(conversionMatrix,1),1])),2)>=1.5);
-% toc
-% tic
-% convertedData2 = double((conversionMatrix*testData)>=1.5);
-% toc
+modelIn = data(find(strcmp({data.ModelName},'default_hand_r_vertical.glb'),1)).Model;
+modelOut = data(find(strcmp({data.ModelName},'default_hand_r_vertical_high_res.glb'),1)).Model;
 
-%% Create Maps for plotting
+data2 = convertMaps(data,conversionMatrix,modelIn,modelOut);
 
-allData = [data{:}];
-
-allData2 = createMaps(allData);
-
-modelIn = allData2(find(strcmp({allData2.ModelName},'default_hand_r_vertical.glb'),1)).Model;
-modelOut = allData2(find(strcmp({allData2.ModelName},'default_hand_r_vertical_high_res.glb'),1)).Model;
-
-allData3 = convertMaps(allData2,conversionMatrix,modelIn,modelOut);
-
-%%
+%% Consolidate electrodes (with model and within date range)
 
 % Earliest date to consolidate 'uuuu-MM-dd')
 earliest = '2025-11-01';
@@ -63,22 +51,25 @@ latest = datetime(latest, 'Format', 'uuuu-MM-dd');
 consolidateModel = 'default_hand_r_vertical_high_res.glb';
 
 for s = 1:length(subject_list)
-    consolidatedElec{s} = consolidateElectrodes(allData3,subject_list{s},consolidateModel,earliest,latest);
+    consElec{s} = consolidateElectrodes(data2,subject_list{s},consolidateModel,earliest,latest);
 end
 
-allConsElec = [consolidatedElec{:}];
+consElec = [consElec{:}];
 
-%%
+%% Consolidate all individual electrodes together (with model)
+
+consolidateModel = 'default_hand_r_vertical_high_res.glb';
 
 for s = 1:length(subject_list)
-    allElec(s) = allElecDSMB(allConsElec,subject_list{s},consolidateModel);
+    allConsElec(s) = allElecDSMB(consElec,subject_list{s},consolidateModel);
 end
-
-%allElec = [allElec{:}];
 
 %% Launch Annotation Viewers for each particpant
 
+type = 'ar';
+mode = 'bin';
+
 for s = 1:length(subject_list)
-    launch_annotation_viewers(subject_list{s},allElec,"hand_landmarks","freq");
+    launch_annotation_viewers(subject_list{s},allConsElec,"hand_landmarks",type,mode);
 end
 

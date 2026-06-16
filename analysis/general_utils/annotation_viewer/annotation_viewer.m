@@ -84,16 +84,16 @@ function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,t
 
     combFields = zeros(size(Survey3DData(1).Model.vertices,1),1);
     for d = 1:length(this_electrode)
-        if ischar(Survey3DData(this_electrode(d)).binaryMap)
+        if ischar(Survey3DData(this_electrode(d)).BinaryMap)
             continue
         end
         if mode == "bin"
-            combFields = combFields + Survey3DData(this_electrode(d)).binaryMap;
+            combFields = combFields + Survey3DData(this_electrode(d)).BinaryMap;
         elseif mode == "freq"
-            combFields = combFields + Survey3DData(this_electrode(d)).freqMap;
+            combFields = combFields + Survey3DData(this_electrode(d)).FreqMap;
         end
         for q = 1:length(qualities)-1
-            if (sum(Survey3DData(this_electrode(d)).binaryQualities.(qualities{q}),"all") > 0)
+            if (sum(Survey3DData(this_electrode(d)).BinaryQualities.(qualities{q}),"all") > 0)
                 qcbx.CheckedNodes = cat(1,qcbx.CheckedNodes,qcbx.Children(1).Children(q));
             end
         end

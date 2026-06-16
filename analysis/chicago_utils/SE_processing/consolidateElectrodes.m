@@ -1,4 +1,10 @@
 function ConsolidatedElec = consolidateElectrodes(Survey3DData, subject, modelName, earliest, latest)
+% This function takes a set of 3D Survey Data and consolidates it by
+% electrode. It calculates where there ever was any activation overall and
+% by quality (BinaryMap and BinaryQualities) and the frequency of
+% activation overall and by quality (FreqMap and FreqQualities).
+% In the consolidation process it will filter by participant (subject),
+% model (modelName), and a range of dates (between earliest and latest).
 
     % Filter to consolidate the requested subject
     subjects = {Survey3DData.Subject};
@@ -54,24 +60,25 @@ function ConsolidatedElec = consolidateElectrodes(Survey3DData, subject, modelNa
 
         for ci = 1:numTest
             if electrodeData(ci).ModelName ~= "No_Report"
-                summedMap = summedMap + electrodeData(ci).binaryMap;
+                summedMap = summedMap + electrodeData(ci).BinaryMap;
                 for q = 1:length(qualities)
                     currQuality = qualities{q};
-                    summedQualities.(currQuality) = summedQualities.(currQuality) + electrodeData(ci).binaryQualities.(currQuality);
+                    summedQualities.(currQuality) = summedQualities.(currQuality) + electrodeData(ci).BinaryQualities.(currQuality);
                 end
             end
         end
 
-        ConsolidatedElec(c).binaryMap = (summedMap > 0);
-        ConsolidatedElec(c).freqMap = (summedMap/numTest);
+        ConsolidatedElec(c).AnyCoverage = sum(summedMap,'all')>0;
+        ConsolidatedElec(c).BinaryMap = (summedMap > 0);
+        ConsolidatedElec(c).FreqMap = (summedMap/numTest);
 
         for q = 1:length(qualities)
             currQuality = qualities{q};
-            binaryQualities.(currQuality) = (summedQualities.(currQuality) > 0);
-            freqQualities.(currQuality) = (summedQualities.(currQuality) / numTest);
+            BinaryQualities.(currQuality) = (summedQualities.(currQuality) > 0);
+            FreqQualities.(currQuality) = (summedQualities.(currQuality) / numTest);
         end
 
-        ConsolidatedElec(c).binaryQualities = binaryQualities;
-        ConsolidatedElec(c).freqQualities = freqQualities;
+        ConsolidatedElec(c).BinaryQualities = BinaryQualities;
+        ConsolidatedElec(c).FreqQualities = FreqQualities;
     end
 end

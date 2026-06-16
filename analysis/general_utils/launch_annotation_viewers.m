@@ -1,4 +1,19 @@
-function launch_annotation_viewers(subject,Survey3DDataAll,axis_alignment,mode)
+function launch_annotation_viewers(subject,Survey3DDataAll,axis_alignment,type,mode)
+
+    rowAnnValid = true;
+
+    if contains(type,'r')
+        if ~isfield(Survey3DDataAll,'Session')
+            warning('The survey data provided looks like it has been consolidated, so the rowwise annotation viewer will not be launched');
+            rowAnnValid = false;
+        end
+    end
+    if contains(mode,'freq')
+        if ~isfield(Survey3DDataAll,'FreqMap')
+            warning('The survey data provided looks like it has not been consolidated, so frequency maps are not available and the annotation viewers will not be launched.');
+            return;
+        end
+    end
 
     %% import 3D mesh and annotation colormaps
     Survey3DDataRef = Survey3DDataAll;
@@ -37,11 +52,15 @@ function launch_annotation_viewers(subject,Survey3DDataAll,axis_alignment,mode)
         three_dim.raw_verts = data.vertices;
         three_dim.faces = data.faces;
 
-        disp(['Launching annotation viewer for model ' mesh_source '.'])
-        annotation_viewer(Survey3DData,sorted_elec,qualities,three_dim,subject,mesh_source,mode)
+        if contains(type,'a')
+            disp(['Launching annotation viewer for model ' mesh_source '.'])
+            annotation_viewer(Survey3DData,sorted_elec,qualities,three_dim,subject,mesh_source,mode)
+        end
 
-        % disp(['Launching rowwise annotation viewer for model ' mesh_source '.'])
-        % row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_source)
+        if contains(type,'r') & rowAnnValid
+            disp(['Launching rowwise annotation viewer for model ' mesh_source '.'])
+            row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_source)
+        end
 
         %% annotation viewer (use for alignment and procrustes)
         % disp(['Launching annotation viewer for model ' mesh_source '.'])

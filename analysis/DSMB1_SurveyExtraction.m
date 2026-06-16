@@ -1,9 +1,17 @@
 %% Survey extraction
-% This code was initially modified from MC1_SurveyExtraction in MEU Survey
-% (misc_analysis/MMI). This code can process multi-channel data, but the
-% DSMB data should only be from single channel data.
+% This code extracts 2D survey data from OLS (extract_OLS) and 3D survey
+% data from Sensory Executive (extract_SE). It locates the data in the Data
+% Server and saves the extracted information in output_directory. Log_path
+% refers to an spreadsheet which outlines which participants, sessions, and
+% sets should be extracted. This code supports multi-electrode surveys.
+% A file is generated for each session that was extracted (organized by
+% participant). All the survey data is appended together separated into
+% files by participant and format (OLS vs SE).
+% The log file is intended to capture all meaningful survey data
+% collected over time. The later processing stages can then filter (by
+% date, participant, number of channels, etc...). 
 
-% Version 1.0 12/04/2025 Initial Version
+% Version 1.0 06/16/2026 Initial Version
 
 % Contact Mark Iskarous (miskarous@uchicago.edu) if you want to discuss the
 % code
@@ -11,8 +19,6 @@
 clear all;
 close all;
 
-% Extracts minimal data from survey sessions for plotting projected fields
-% Has scripts for all types of survey (HandMapV6, OLS, HandMapV7)
 addpath(genpath(pwd()))
 
 % Location of the log file that indicates which sessions and sets to use

@@ -1,4 +1,15 @@
 function extract_OLS(session_path,set_ids,output_directory,info)
+% This function was adapted from MC1_SurveyExtraction in MEU Survey
+% (misc_analysis/MMI). It extracts single and multi-electrode survey data
+% from all types of OLS surveys (HandMapV6, OLS, HandMapV7). It takes a
+% folder for the session (session_path), the sets of interest (set_ids),
+% the location where the extracted data should be saved (output_directory),
+% and some information (info) used for processing/saving.
+
+% Version 1.0 06/16/2026 Initial Version
+
+% Contact Mark Iskarous (miskarous@uchicago.edu) if you want to discuss the
+% code
 
     c_max = 4; % Just define the number of channels in a set (for padding purposes)
 

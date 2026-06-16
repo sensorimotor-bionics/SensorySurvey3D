@@ -1,4 +1,15 @@
 function extract_SE(session_path,set_ids,output_directory,info)
+% This function was adapted from extract_colormaps in  SensorySurvey3D. It
+% extracts single and multi-electrode survey data generated from
+% SensoryExecutive. It takes a folder for the session (session_path), the
+% sets of interest (set_ids), the location where the extracted data should
+% be saved (output_directory), and some information (info) used for
+% processing/saving.
+
+% Version 1.0 06/16/2026 Initial Version
+
+% Contact Mark Iskarous (miskarous@uchicago.edu) if you want to discuss the
+% code
 
     c_max = 4; % Just define the number of channels in a set (for padding purposes)
 
@@ -6,7 +17,6 @@ function extract_SE(session_path,set_ids,output_directory,info)
     subid = info{2};
     subject_id = info{3};
     session_str = info{4};
-    elec_log = info{5};
 
     current_paths = dir([char(session_path),'\Survey3D*.json']);
 
@@ -134,7 +144,6 @@ function extract_SE(session_path,set_ids,output_directory,info)
                 model.name(model.name=='.') = '_';
             catch
                 model.name = model.name.file;
-                %model.name(model.name=='.') = '_';
                 model.name(model.name=='/') = '_';
             end
 
@@ -143,7 +152,6 @@ function extract_SE(session_path,set_ids,output_directory,info)
 
             currField = zeros(numverts,1);          
             currField(currPF.vertices+1) = 1;
-            %currField(currPF.vertices~=0) = 1;
             
             if ns==1
                 model.vertices = mesh_data.vertices;
