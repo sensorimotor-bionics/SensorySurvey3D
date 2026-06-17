@@ -1,9 +1,12 @@
-%% Survey extraction
-% This code was initially modified from MC1_SurveyExtraction in MEU Survey
-% (misc_analysis/MMI). This code can process multi-channel data, but the
-% DSMB data should only be from single channel data.
+%% Survey processing
+% This code loads in the raw SE 3D Survey data and then processes it. An
+% example of mesh conversion is shown (you will need to provide your
+% conversion matrix). Then the data is consolidated by electrode (within a
+% provided date range) and all electrodes are further consolidated
+% together. Those consolidations are then saved in output_directory. The
+% annotation viewers can be launched for the raw or consolidated data.
 
-% Version 1.0 12/04/2025 Initial Version
+% Version 1.0 06/17/2025 Initial Version
 
 % Contact Mark Iskarous (miskarous@uchicago.edu) if you want to discuss the
 % code
@@ -11,12 +14,12 @@
 clear all;
 close all;
 
-% Where to store extracted files
-input_directory = fullfile(ProjPath, 'SurveyRawDataDev4');
+% Where to get extracted files
+input_directory = fullfile(ProjPath, 'SurveyRawData_2607');
+% Where to store processed files
+output_directory = fullfile(ProjPath,'SurveyProcessedData_2607');
 
 subject_list = {'BCI02', 'BCI03'};
-
-conform_to_2D_illustration = false;
 
 %% Load all Sensory Executive Data
 
@@ -37,7 +40,7 @@ conversionMatrix = sparse(load("chicago_utils\mesh_info\default_hand_r_vertical-
 modelIn = data(find(strcmp({data.ModelName},'default_hand_r_vertical.glb'),1)).Model;
 modelOut = data(find(strcmp({data.ModelName},'default_hand_r_vertical_high_res.glb'),1)).Model;
 
-data2 = convertMaps(data,conversionMatrix,modelIn,modelOut);
+data = convertMaps(data,conversionMatrix,modelIn,modelOut);
 
 %% Consolidate electrodes (with model and within date range)
 
@@ -51,7 +54,7 @@ latest = datetime(latest, 'Format', 'uuuu-MM-dd');
 consolidateModel = 'default_hand_r_vertical_high_res.glb';
 
 for s = 1:length(subject_list)
-    consElec{s} = consolidateElectrodes(data2,subject_list{s},consolidateModel,earliest,latest);
+    consElec{s} = consolidateElectrodes(data,subject_list{s},consolidateModel,earliest,latest);
 end
 
 consElec = [consElec{:}];
@@ -64,12 +67,36 @@ for s = 1:length(subject_list)
     allConsElec(s) = allElecDSMB(consElec,subject_list{s},consolidateModel);
 end
 
+%% Save processed data
+
+for s = 1:length(subject_list)
+    fprintf(' - Saving processed SE survey data from %s\n', subject_list{s});
+
+    % Filter to consolidate the requested subject
+    subjects = {consElec.Subject};
+    subjectIdx = find(strcmp(subjects,subject_list{s}));
+    ConsolidatedElectrodes = consElec(subjectIdx);
+
+    % Filter to consolidate the requested subject
+    subjects = {allConsElec.Subject};
+    subjectIdx = find(strcmp(subjects,subject_list{s}));
+    AllElectrodesCombined = allConsElec(subjectIdx);
+
+    % Check if key subfolder exists, if not then make one
+    if exist(fullfile(output_directory), 'dir') == 0
+        mkdir(fullfile(output_directory))
+    end
+
+    % Save
+    save(fullfile(output_directory, sprintf('SurveyProcessedSEData_%s_%s_%s.mat', subject_list{s},string(earliest),string(latest))),"ConsolidatedElectrodes","AllElectrodesCombined",'-v7.3')
+    fprintf(' - Done!\n')
+end
+
 %% Launch Annotation Viewers for each particpant
 
 type = 'ar';
-mode = 'bin';
+mode = 'freq';
 
 for s = 1:length(subject_list)
-    launch_annotation_viewers(subject_list{s},allConsElec,"hand_landmarks",type,mode);
+    launch_annotation_viewers(subject_list{s},consElec,"hand_landmarks",type,mode);
 end
-

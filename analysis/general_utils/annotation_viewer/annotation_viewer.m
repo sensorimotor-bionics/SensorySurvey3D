@@ -1,4 +1,6 @@
 function annotation_viewer(Survey3DData,unique_documented_electrodes,qualities,three_dim,subject,mesh_source,mode)
+% The annotation viewer shows the data for each electrode (or set of
+% electrodes). It also allows you to toggle on/off different qualities.
     % a maximum of 30 entries per column, for cleanliness
     if size(unique_documented_electrodes,2) > 30
         num_per_column = 30;

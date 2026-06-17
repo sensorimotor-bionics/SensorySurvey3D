@@ -1,4 +1,15 @@
 function launch_annotation_viewers(subject,Survey3DDataAll,axis_alignment,type,mode)
+% This function will launch the annotation viewers for the provided data
+% (Survey3DDataAll). The annotation viewer shows the data for each
+% electrode (or set of electrodes). It also allows you to toggle on/off
+% different qualities. The row annotation viewer plots each survey (one
+% set) separately. Type is used to select which of these viewers the user
+% requests ('a' for annotation, 'r' for row annotation, 'ar' for both).
+% Mode is what type of plot is used ('bin' for binary or 'freq' for
+% frequency). It will check that the data provided matches the requested
+% viewer (for example consolidated electrode data can't be used in the row
+% annotation viewer, and frequency information is only provided by
+% consolidated electrode data). The data is filtered by subject.
 
     rowAnnValid = true;
 

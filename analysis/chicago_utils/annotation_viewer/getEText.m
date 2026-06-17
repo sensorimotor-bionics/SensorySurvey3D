@@ -1,4 +1,7 @@
 function electrodeText = getEText(bText)
+% This function gets the text used for the button in the annotation viewer
+% and gives back the set of electrodes.
+
     c_max = 4; % max number of channels, make sure this aligns with other parts
     channels = zeros(c_max,1);
 

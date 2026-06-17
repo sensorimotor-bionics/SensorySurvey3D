@@ -1,4 +1,5 @@
 function row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_source)
+% The row annotation viewer plots each survey (one set) separately.
     % a maximum of 30 entries per column, for cleanliness
     if size(Survey3DData,2) > 30
         num_per_column = 30;
@@ -35,7 +36,6 @@ function row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_sou
         if num_columns == 1
             for ii = 1:size(Survey3DData,2)
                 buttonText = [Survey3DData(row_counter).Session '_' num2str(Survey3DData(row_counter).Set)];
-                %buttonText = Survey3DData(row_counter).Annotation(end-12:end); % The old version
                 uiradiobutton(bg,'Position',[10+(col-1)*col_width (num_per_column-ii)*20+10 text_width 15],'Text',buttonText);
                 row_counter = row_counter+1;
             end
@@ -45,14 +45,12 @@ function row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_sou
             if num_remaining == 0
                 for ii = 1:30
                     buttonText = [Survey3DData(row_counter).Session '_' num2str(Survey3DData(row_counter).Set)];
-                    %buttonText = Survey3DData(row_counter).Annotation(end-12:end); % The old version
                     uiradiobutton(bg,'Position',[10+(col-1)*col_width (num_per_column-ii)*20+10 text_width 15],'Text',buttonText);
                     row_counter = row_counter+1;
                 end
             else
                 for ii = 1:num_remaining
                     buttonText = [Survey3DData(row_counter).Session '_' num2str(Survey3DData(row_counter).Set)];
-                    %buttonText = Survey3DData(row_counter).Annotation(end-12:end); % The old version
                     uiradiobutton(bg,'Position',[10+(col-1)*col_width (num_per_column-ii)*20+10 text_width 15],'Text',buttonText);
                     row_counter = row_counter+1;
                 end
@@ -60,7 +58,6 @@ function row_annotation_viewer(Survey3DData,qualities,three_dim,subject,mesh_sou
         else
             for ii = 1:30
                 buttonText = [Survey3DData(row_counter).Session '_' num2str(Survey3DData(row_counter).Set)];
-                %buttonText = Survey3DData(row_counter).Annotation(end-12:end); % The old version
                 uiradiobutton(bg,'Position',[10+(col-1)*col_width (num_per_column-ii)*20+10 text_width 15],'Text',buttonText);
                 row_counter = row_counter+1;
             end

@@ -1,4 +1,6 @@
 function bText = getBText(electrodeText)
+% This function gets the set of electrodes and gives the text used for the
+% button in the annotation viewer.
     splitText = string(split(electrodeText,'_'));   
     numText = splitText(2:end);
     % Takes care of case when all electrodes are consolidated
