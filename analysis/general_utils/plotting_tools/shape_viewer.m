@@ -20,4 +20,7 @@ function shape_viewer(verts,faces,colors,who)
     axis(h,'off'); axis(h,'equal');
     set(h,'Projection','perspective')
     set(h,'CameraUpVector',[0 1 0])
+    % For DSMB reports I put a breakpoint here and do view(h,-90,180) and
+    % view(h,90,180) to get screenshots of the palmar and dorsal sides of
+    % the hand.
 end
