@@ -1,7 +1,7 @@
 
 %% enter annotation details
 conform_to_2D_illustration = false;
-survey_data_file = "Survey3DData_Recent_External.mat";
+survey_data_file = "Survey3DData_Recent_External_indexing_260526.mat";
 
 %% define your landmarks
 % primary landmarks:

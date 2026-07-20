@@ -79,7 +79,7 @@ for ddd = 1:length(Survey3DData)
     Survey3DData(ddd).Palmar(Survey3DData(ddd).Palmar>0) = 1;
     Survey3DData(ddd).Dorsal(Survey3DData(ddd).Dorsal>0) = 1;
 end
-% save('survey3d_data_260528.mat','-v7.3','Survey3DData','MorphedMeshes')
+% save('survey3d_data_260615.mat','-v7.3','Survey3DData','MorphedMeshes')
 
 %% compute and plot elements of Figure 3
 % to plot correctly, you're going to need functions from ChartsWithCharles

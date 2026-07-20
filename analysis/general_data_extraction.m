@@ -52,6 +52,10 @@ for k = 1:length(unique_keys)
 
         % Add annotations to struct
         current_paths = dir([char(session_path),'\',unique_keys{k},'*.json']);
+        try
+            current_model = dir([char(session_path),'\*.gl*.json']);
+        catch
+        end
 
         for s = 1:length(current_paths)
             OLSData(s).Subject = data_log.Subject{k_idx(i)};
@@ -67,7 +71,7 @@ for k = 1:length(unique_keys)
             
             OLSData(s).Base = current_paths(s).folder;
             OLSData(s).Annotation = current_paths(s).name;
-            OLSData = extract_colormaps(OLSData,s);
+            OLSData = extract_colormaps(OLSData,s,current_model);
         end
 
         save(fullfile(output_directory, unique_keys(k), output_fname), "OLSData")
@@ -115,7 +119,7 @@ for k = 1:length(unique_keys)
     % Rename data struct to experiment key - using eval should be safe this way
     eval(sprintf('%sData = data_struct;', unique_keys{k}))
     fprintf(' - Saving\n')
-    eval(sprintf('save(fullfile(output_directory, unique_keys{k}, "%sData_Recent.mat"), "%sData", "-v7.3")', unique_keys{k},...
+    eval(sprintf('save(fullfile(output_directory, unique_keys{k}, "%sData_Recent_External_indexing_260526.mat"), "%sData", "-v7.3")', unique_keys{k},...
         unique_keys{k}))
 end
 disp('Data extraction complete')
