@@ -520,7 +520,6 @@ export class SurveyViewport {
         this.gui.hide();
 
         // Set event listeners
-        window.onresize = this.onWindowResize.bind(this);
         document.onpointermove = this.onPointerMove.bind(this);
         document.onpointerup = this.onPointerUp.bind(this);
         document.addEventListener("keyup", event => {
@@ -528,6 +527,15 @@ export class SurveyViewport {
         })
         this.renderer.domElement.onpointerdown = 
             this.onPointerDownViewport.bind(this);
+
+        // Setup ResizeObserver
+        this.parentResizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                const cr = entry.contentRect;
+                this.resize(cr.width, cr.height);
+            }
+        });
+        this.parentResizeObserver.observe(parentElement);
     }
 
     static controlStates = {
@@ -794,14 +802,11 @@ export class SurveyViewport {
     /* 3D SPACE */
 
     /**
-     * Behavior for the viewport when the window is resized; makes the viewport
-     * fit within the new 3D container dimensions
+     * Resize the viewport to the given width and height
+     * @param {number} width - the viewport's new width
+     * @param {number} height - the viewport's new height
      */
-    onWindowResize() {
-        var style = window.getComputedStyle(this.parentElement, null);
-        var width = parseInt(style.getPropertyValue("width"));
-        var height = parseInt(style.getPropertyValue("height"));
-
+    resize(width, height) {
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
 
