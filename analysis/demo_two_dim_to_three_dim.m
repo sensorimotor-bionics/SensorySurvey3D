@@ -37,14 +37,14 @@ anchor_landmark = "EoW";
 % generate Survey3DData using general_data_extraction (external)
 load(survey_data_file,'Survey3DData') % import merged OLSData from multiple sessions
 
-Survey3DData = launch_annotation_viewers('BCI02',Survey3DData,"hand_landmarks");
-Survey3DData = launch_annotation_viewers('BCI03',Survey3DData,"hand_landmarks");
+Survey3DData = launch_annotation_viewers('C1',Survey3DData,"hand_landmarks");
+Survey3DData = launch_annotation_viewers('C2',Survey3DData,"hand_landmarks");
 
 MorphedMeshes = morph_source_to_target(Survey3DData,conform_to_2D_illustration,primary_landmarks,accessory_landmarks,dependencies,anchor_landmark);
 
 %% flatten maps for comparison to 2D illustrations
-Survey3DData = flatten_3D_annotations('BCI02',Survey3DData,MorphedMeshes);
-Survey3DData = flatten_3D_annotations('BCI03',Survey3DData,MorphedMeshes);
+Survey3DData = flatten_3D_annotations('C1',Survey3DData,MorphedMeshes);
+Survey3DData = flatten_3D_annotations('C2',Survey3DData,MorphedMeshes);
 
 %% concatenation of 2D projection maps to Survey3DData
 % extract 2D from saved file

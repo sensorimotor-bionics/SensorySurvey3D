@@ -1,7 +1,7 @@
 function plot_jaccard(Survey3DData,row)
-    if strcmp(Survey3DData(row).Subject,'BCI02')
+    if strcmp(Survey3DData(row).Subject,'C1')
         c = [1 1 1; .49 .44 .70];
-    elseif strcmp(Survey3DData(row).Subject,'BCI03')
+    elseif strcmp(Survey3DData(row).Subject,'C2')
         c = [1 1 1; .91 .16 .54];
     end
 

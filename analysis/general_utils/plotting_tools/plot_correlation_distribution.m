@@ -1,5 +1,5 @@
 function plot_correlation_distribution(Survey3DData)
-    rows = find(strcmp({Survey3DData.Subject},'BCI02'));
+    rows = find(strcmp({Survey3DData.Subject},'C1'));
     temp = Survey3DData(rows); % exclude other subjects from dataset
     channels = cell2mat({temp.Channel});
     ele_options = unique(channels);
@@ -28,7 +28,7 @@ function plot_correlation_distribution(Survey3DData)
     obliqueness_palmar_1 = cell2mat({Survey3DData(kept_rows_palmar_1(~isnan(kept_rows_palmar_1))).Oblique_Proportion});
     obliqueness_dorsal_1 = cell2mat({Survey3DData(kept_rows_dorsal_1(~isnan(kept_rows_dorsal_1))).Oblique_Proportion});
     
-    rows = find(strcmp({Survey3DData.Subject},'BCI03'));
+    rows = find(strcmp({Survey3DData.Subject},'C2'));
     temp = Survey3DData(rows); % exclude other subjects from dataset
     channels = cell2mat({temp.Channel});
     ele_options = unique(channels);
@@ -57,8 +57,8 @@ function plot_correlation_distribution(Survey3DData)
     obliqueness_palmar_2 = cell2mat({Survey3DData(kept_rows_palmar_2(~isnan(kept_rows_palmar_2))).Oblique_Proportion});
     obliqueness_dorsal_2 = cell2mat({Survey3DData(kept_rows_dorsal_2(~isnan(kept_rows_dorsal_2))).Oblique_Proportion});
     
-    bci02_color = [.49 .44 .70];
-    bci03_color = [.91 .16 .54];
+    c1_color = [.49 .44 .70];
+    c2_color = [.91 .16 .54];
 
     % group by subject ID
     ji_1 = [dist_palmar_1(~isnan(dist_palmar_1));dist_dorsal_1(~isnan(dist_dorsal_1))];
@@ -75,13 +75,13 @@ function plot_correlation_distribution(Survey3DData)
 
     figure
     hold on
-    scatter(dist_palmar_1(~isnan(dist_palmar_1)),obliqueness_palmar_1,[],bci02_color)
-    scatter(dist_dorsal_1(~isnan(dist_dorsal_1)),obliqueness_dorsal_1,[],bci02_color,'*')
-    text(0.8,0.8,[char(string(round(R_1(1,2),2))) ' n.s.'],'FontSize',14,'Color',bci02_color)
+    scatter(dist_palmar_1(~isnan(dist_palmar_1)),obliqueness_palmar_1,[],c1_color)
+    scatter(dist_dorsal_1(~isnan(dist_dorsal_1)),obliqueness_dorsal_1,[],c1_color,'*')
+    text(0.8,0.8,[char(string(round(R_1(1,2),2))) ' n.s.'],'FontSize',14,'Color',c1_color)
 
-    scatter(dist_palmar_2(~isnan(dist_palmar_2)),obliqueness_palmar_2,[],bci03_color)
-    scatter(dist_dorsal_2(~isnan(dist_dorsal_2)),obliqueness_dorsal_2,[],bci03_color,'*')
-    text(0.8,0.7,[char(string(round(R_2(1,2),2))) ' *'],'FontSize',14,'Color',bci03_color)
+    scatter(dist_palmar_2(~isnan(dist_palmar_2)),obliqueness_palmar_2,[],c2_color)
+    scatter(dist_dorsal_2(~isnan(dist_dorsal_2)),obliqueness_dorsal_2,[],c2_color,'*')
+    text(0.8,0.7,[char(string(round(R_2(1,2),2))) ' *'],'FontSize',14,'Color',c2_color)
 
     axis([-0.1 1 -0.1 1])
     axis square
@@ -91,10 +91,10 @@ function plot_correlation_distribution(Survey3DData)
 
     foo = 0:.1:1;
     p = polyfit(ji_1,o_1,1);
-    plot(foo,p(1).*foo+p(2),'--','Color',bci02_color)
+    plot(foo,p(1).*foo+p(2),'--','Color',c1_color)
 
     p = polyfit(ji_2,o_2,1);
-    plot(foo,p(1).*foo+p(2),'--','Color',bci03_color)
+    plot(foo,p(1).*foo+p(2),'--','Color',c2_color)
 
     p = polyfit([ji_1;ji_2],[o_1;o_2],1);
     plot(foo,p(1).*foo+p(2),'-','Color','k')

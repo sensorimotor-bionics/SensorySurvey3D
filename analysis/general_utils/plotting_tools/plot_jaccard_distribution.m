@@ -1,5 +1,5 @@
 function plot_jaccard_distribution(Survey3DData)
-    rows = find(strcmp({Survey3DData.Subject},'BCI02'));
+    rows = find(strcmp({Survey3DData.Subject},'C1'));
     temp = Survey3DData(rows); % exclude other subjects from dataset
     channels = cell2mat({temp.Channel});
     ele_options = unique(channels);
@@ -25,7 +25,7 @@ function plot_jaccard_distribution(Survey3DData)
         end
     end
     
-    rows = find(strcmp({Survey3DData.Subject},'BCI03'));
+    rows = find(strcmp({Survey3DData.Subject},'C2'));
     temp = Survey3DData(rows); % exclude other subjects from dataset
     channels = cell2mat({temp.Channel});
     ele_options = unique(channels);
@@ -51,8 +51,8 @@ function plot_jaccard_distribution(Survey3DData)
         end
     end
     
-    bci02_color = [.49 .44 .70];
-    bci03_color = [.91 .16 .54];
+    c1_color = [.49 .44 .70];
+    c2_color = [.91 .16 .54];
 
     % sum(~isnan(dist_palmar_1))
     % sum(~isnan(dist_dorsal_1))
@@ -60,12 +60,12 @@ function plot_jaccard_distribution(Survey3DData)
     % sum(~isnan(dist_dorsal_2))
     
     figure
-    Swarm(1,dist_palmar_1,'distribution_style','Box','color',bci02_color)
+    Swarm(1,dist_palmar_1,'distribution_style','Box','color',c1_color)
     hold on
-    Swarm(2,dist_dorsal_1,'distribution_style','Box','color',bci02_color)
+    Swarm(2,dist_dorsal_1,'distribution_style','Box','color',c1_color)
     
-    Swarm(3,dist_palmar_2,'distribution_style','Box','color',bci03_color)
-    Swarm(4,dist_dorsal_2,'distribution_style','Box','color',bci03_color)
+    Swarm(3,dist_palmar_2,'distribution_style','Box','color',c2_color)
+    Swarm(4,dist_dorsal_2,'distribution_style','Box','color',c2_color)
     title('2D/3D Annotation Jaccard Distance')
     ylabel('2D/3D Annotation Similarity')
     
@@ -82,8 +82,8 @@ function plot_jaccard_distribution(Survey3DData)
     % saveas(gcf,'annotation_jaccard.svg')
 
     % add a thing that shows all of the annotations that you're considering
-    plot_represented('BCI02',Survey3DData,kept_rows_palmar_1,kept_rows_dorsal_1)
-    plot_represented('BCI03',Survey3DData,kept_rows_palmar_2,kept_rows_dorsal_2)
+    plot_represented('C1',Survey3DData,kept_rows_palmar_1,kept_rows_dorsal_1)
+    plot_represented('C2',Survey3DData,kept_rows_palmar_2,kept_rows_dorsal_2)
 
     % want mean and standard dev within subject
     % nanmean([dist_palmar_1;dist_dorsal_1])
@@ -95,9 +95,9 @@ end
 %% helper functions
 
 function plot_represented(subject,Survey3DData,rows_palmar,rows_dorsal)
-    if strcmp(subject,'BCI02')
+    if strcmp(subject,'C1')
         c = [linspace(1,.49)',linspace(1,.44)',linspace(1,.70)'];
-    elseif strcmp(subject,'BCI03')
+    elseif strcmp(subject,'C2')
         c = [linspace(1,.91)',linspace(1,.16)',linspace(1,.54)'];
     end
 

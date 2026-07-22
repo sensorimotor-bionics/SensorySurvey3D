@@ -37,8 +37,8 @@ anchor_landmark = "EoW";
 % generate Survey3DData using general_data_extraction (external)
 load(survey_data_file,'Survey3DData') % import merged OLSData from multiple sessions
 
-Survey3DData = launch_annotation_viewers('S113',Survey3DData,"hand_landmarks");
-Survey3DData = launch_annotation_viewers('Pro1',Survey3DData,"hand_landmarks");
+Survey3DData = launch_annotation_viewers('R1',Survey3DData,"hand_landmarks");
+Survey3DData = launch_annotation_viewers('R2',Survey3DData,"hand_landmarks");
 
 % NOTE: if not working with the default hand landmark set, replace
 % "hand_landmarks" with a 4x3 matrix defining the xyz positions of the
@@ -51,7 +51,7 @@ Survey3DData = launch_annotation_viewers('Pro1',Survey3DData,"hand_landmarks");
 % when prompted for target files, we recommended to morph to the specs in mesh_utils/3D_intermediary_mesh
 MorphedMeshes = morph_source_to_target(Survey3DData,conform_to_2D_illustration,primary_landmarks,accessory_landmarks,dependencies,anchor_landmark);
 
-%% view 3D-to-3D projection example from S113
+%% view 3D-to-3D projection example from R1
 which_row = 10;
 which_model = find(strcmp({MorphedMeshes.ModelName},Survey3DData(which_row).ModelName));
 original_colormap = Survey3DData(which_row).ColorMap;
@@ -74,7 +74,7 @@ shape_viewer(MorphedMeshes(which_model).source.morph_to_verts,MorphedMeshes(whic
 view(-90,90)
 title('annotation on default after morph')
 
-%% view 3D-to-3D projection example from Pro1
+%% view 3D-to-3D projection example from R2
 which_row = 38;
 which_model = find(strcmp({MorphedMeshes.ModelName},Survey3DData(which_row).ModelName));
 original_colormap = Survey3DData(which_row).ColorMap;

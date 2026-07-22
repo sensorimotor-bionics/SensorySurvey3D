@@ -1,5 +1,5 @@
 function plot_oblique_distribution(Survey3DData)
-    temp = Survey3DData(strcmp({Survey3DData.Subject},'BCI02')); % exclude other subjects from dataset
+    temp = Survey3DData(strcmp({Survey3DData.Subject},'C1')); % exclude other subjects from dataset
     channels = cell2mat({temp.Channel});
     ele_options = unique(channels);
     oblique_1 = nan(length(ele_options),1);
@@ -11,7 +11,7 @@ function plot_oblique_distribution(Survey3DData)
         end
     end
     
-    temp = Survey3DData(strcmp({Survey3DData.Subject},'BCI03')); % exclude other subjects from dataset
+    temp = Survey3DData(strcmp({Survey3DData.Subject},'C2')); % exclude other subjects from dataset
     channels = cell2mat({temp.Channel});
     ele_options = unique(channels);
     oblique_2 = nan(length(ele_options),1);
@@ -23,8 +23,8 @@ function plot_oblique_distribution(Survey3DData)
         end
     end
     
-    bci02_color = [.49 .44 .70];
-    bci03_color = [.91 .16 .54];
+    c1_color = [.49 .44 .70];
+    c2_color = [.91 .16 .54];
 
     % sum(~isnan(oblique_1))
     % sum(~isnan(oblique_2))
@@ -33,9 +33,9 @@ function plot_oblique_distribution(Survey3DData)
     % nanmean(oblique_2)
 
     figure
-    Swarm(1,oblique_1,'distribution_style','Box','color',bci02_color)
+    Swarm(1,oblique_1,'distribution_style','Box','color',c1_color)
     hold on    
-    Swarm(2,oblique_2,'distribution_style','Box','color',bci03_color)
+    Swarm(2,oblique_2,'distribution_style','Box','color',c2_color)
     title('3D Annotation Obliqueness')
     ylabel('Proportion of Oblique Annotation Area')
     
