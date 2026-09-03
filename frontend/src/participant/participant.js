@@ -719,7 +719,7 @@ function fieldDoneCallback() {
 		alertMessage = 
 			`The current projected field is missing a drawing.`;
 	}
-	else if (!viewport.orbMesh.visible) {
+	else if (!viewport.orbMesh.visible && surveyManager.survey.config.alertIfNoHotSpot) {
 		alertMessage = 
 				`The current projected field is missing a hot spot.`;
 	}

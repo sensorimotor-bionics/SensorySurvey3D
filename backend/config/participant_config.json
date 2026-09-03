@@ -57,6 +57,7 @@
     "hideScaleValues": false,
     "hidePainSlider": false,
     "hideFieldIntensitySlider": false,
+    "alertIfNoHotSpot": true,
     "reportSide": "left",
     "controlEdge": "top"
   },
@@ -74,6 +75,7 @@
     "hideScaleValues": true,
     "hidePainSlider": true,
     "hideFieldIntensitySlider": false,
+    "alertIfNoHotSpot": false,
     "reportEdge": "right",
     "controlEdge": "bottom"
   }

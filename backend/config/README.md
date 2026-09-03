@@ -24,6 +24,7 @@ Here is an example entry in the participant config:
         "hideScaleValues" : false,
         "hidePainSlider" : false,
         "hideFieldIntensitySlider" : false,
+        "alertIfNoHotSpot": false,
         "reportSide" : "left",
         "controlEdge" : "top"
     }
@@ -62,6 +63,9 @@ There is a slider recording pain available to participants during the projected 
 
 ## Hide Field Intensity Slider
 There is a slider recording intensity available to participants during the projected field drawing phase of a survey. If this value is false, it appears. If true, it is hidden.
+
+## Alert If No Hot Spot
+If true, an alert will appear after completing the drawing step if the user did not place a hot spot. If false, the survey continues without the alert.
 
 ## Report Side and Control Edge
 There are three areas of the screen used for input during a survey: an area to report, one to manage the camera, and the 3D viewport. Depending on a user's comfort or ability, one may desire to shift these inputs to different parts of the screen. 
