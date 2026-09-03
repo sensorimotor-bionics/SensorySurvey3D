@@ -341,7 +341,7 @@ function populateFieldEditor(field) {
 		const modelSelect = document.getElementById("modelSelect");
 		if (field.model) {
 			performModelReplacement(
-				modelSelect.value,
+				field.model,
 				field.vertices,
 				new THREE.Color("#abcabc"),
 				field.hotSpot
